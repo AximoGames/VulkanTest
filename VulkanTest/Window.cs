@@ -6,13 +6,14 @@ using static Vortice.Win32.User32;
 
 namespace Vortice
 {
-    public sealed class Window
+    public unsafe sealed class Window
     {
         internal static readonly string WndClassName = "VorticeWindow";
         private const int CW_USEDEFAULT = unchecked((int)0x80000000);
         private WindowStyles _windowStyle = 0;
         private WindowStyles _windowWindowedStyle = 0;
         //private readonly WindowStyles _windowFullscreenStyle = WindowStyles.WS_CLIPSIBLINGS | WindowStyles.WS_GROUP | WindowStyles.WS_TABSTOP;
+        private unsafe IntPtr GlfwWindow;
 
         public unsafe Window(string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
@@ -24,6 +25,7 @@ namespace Vortice
             var win = GLFW.CreateWindow(width, height, Title, null, null);
             if (win == default)
                 throw new Exception("Windows creation failed");
+            GlfwWindow = (IntPtr)win;
 
             hwnd = GLFW.GetWin32Window(win);
             if (hwnd == IntPtr.Zero)
