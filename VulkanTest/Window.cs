@@ -18,64 +18,10 @@ namespace Vortice
         {
             Title = title;
 
-            int x = CW_USEDEFAULT;
-            int y = CW_USEDEFAULT;
-            bool resizable = (flags & WindowFlags.Resizable) != WindowFlags.None;
-
-            _windowWindowedStyle = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_CLIPSIBLINGS | WindowStyles.WS_BORDER | WindowStyles.WS_DLGFRAME | WindowStyles.WS_THICKFRAME | WindowStyles.WS_GROUP | WindowStyles.WS_TABSTOP;
-
-            if (resizable)
-            {
-                _windowWindowedStyle |= WindowStyles.WS_SIZEBOX | WindowStyles.WS_MAXIMIZEBOX;
-            }
-
-            _windowStyle = _windowWindowedStyle;
-
-            RawRect windowRect = new RawRect(0, 0, width, height);
-
-            // Adjust according to window styles
-            AdjustWindowRectEx(ref windowRect, _windowStyle, false, WindowExStyles.WS_EX_OVERLAPPEDWINDOW);
-
-            int windowWidth = windowRect.Right - windowRect.Left;
-            int windowHeight = windowRect.Bottom - windowRect.Top;
-
-            bool centerWindow = true;
-            if (centerWindow)
-            {
-                if (windowWidth > 0 && windowHeight > 0)
-                {
-                    int screenWidth = GetSystemMetrics(SystemMetrics.SM_CXSCREEN);
-                    int screenHeight = GetSystemMetrics(SystemMetrics.SM_CYSCREEN);
-
-                    // Place the window in the middle of the screen.WS_EX_APPWINDOW
-                    x = (screenWidth - windowWidth) / 2;
-                    y = (screenHeight - windowHeight) / 2;
-                }
-            }
-
             IntPtr hwnd;
-            //fixed (char* lpWndClassName = WndClassName)
-            //{
-            //    fixed (char* lpWindowName = Title)
-            //    {
-            //        hwnd = CreateWindowExW(
-            //            (uint)WindowExStyles.WS_EX_OVERLAPPEDWINDOW,
-            //            (ushort*)lpWndClassName,
-            //            (ushort*)lpWindowName,
-            //            (uint)_windowStyle,
-            //        x,
-            //        y,
-            //        windowWidth,
-            //        windowHeight,
-            //        IntPtr.Zero,
-            //        IntPtr.Zero,
-            //        IntPtr.Zero,
-            //        null);
-            //    }
-            //}
 
             GLFW.Init();
-            var win = GLFW.CreateWindow(windowWidth, windowHeight, Title, null, null);
+            var win = GLFW.CreateWindow(width, height, Title, null, null);
             if (win == default)
                 throw new Exception("Windows creation failed");
 
@@ -83,11 +29,13 @@ namespace Vortice
             if (hwnd == IntPtr.Zero)
                 throw new Exception("Can't get window handle");
 
+            // TODO: Frame Size (border, decoration, ...)
+
             ShowWindow(hwnd, ShowWindowCommand.Normal);
             Handle = hwnd;
-
-            GetClientRect(hwnd, out windowRect);
-            Extent = new VkExtent2D(windowRect.Right - windowRect.Left, windowRect.Bottom - windowRect.Top);
+            //GLFW.GetWindowFrameSize(win, out var a, out var b, out var c, out var d);
+            GLFW.GetWindowSize(win, out var w, out var h);
+            Extent = new VkExtent2D(w, h);
         }
 
         public string Title { get; }

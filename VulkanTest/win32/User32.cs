@@ -477,14 +477,6 @@ namespace Vortice.Win32
             return SetWindowLongPtr(hWnd, nIndex, value);
         }
 
-        [return: MarshalAs(UnmanagedType.U1)]
-        [DllImport(LibraryName, ExactSpelling = true)]
-        public static extern bool AdjustWindowRect([In][Out] ref RawRect lpRect, WindowStyles dwStyle, bool hasMenu);
-
-        [return: MarshalAs(UnmanagedType.U1)]
-        [DllImport(LibraryName, ExactSpelling = true)]
-        public static extern bool AdjustWindowRectEx([In][Out] ref RawRect lpRect, WindowStyles dwStyle, bool bMenu, WindowExStyles exStyle);
-
         [DllImport(LibraryName, ExactSpelling = true)]
         public static extern unsafe IntPtr CreateWindowExW(
             uint exStyle,
@@ -501,10 +493,6 @@ namespace Vortice.Win32
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport(LibraryName, ExactSpelling = true)]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
-
-
-        [DllImport("user32.dll")]
-        public static extern bool GetClientRect(IntPtr hwnd, out RawRect lpRect);
 
         [DllImport(LibraryName)]
         public static extern void PostQuitMessage(int nExitCode);
