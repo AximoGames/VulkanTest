@@ -1,4 +1,5 @@
 ﻿using System;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vortice.Vulkan;
 using Vortice.Win32;
 using static Vortice.Win32.User32;
@@ -53,30 +54,34 @@ namespace Vortice
             }
 
             IntPtr hwnd;
-            fixed (char* lpWndClassName = WndClassName)
-            {
-                fixed (char* lpWindowName = Title)
-                {
-                    hwnd = CreateWindowExW(
-                        (uint)WindowExStyles.WS_EX_OVERLAPPEDWINDOW,
-                        (ushort*)lpWndClassName,
-                        (ushort*)lpWindowName,
-                        (uint)_windowStyle,
-                    x,
-                    y,
-                    windowWidth,
-                    windowHeight,
-                    IntPtr.Zero,
-                    IntPtr.Zero,
-                    IntPtr.Zero,
-                    null);
-                }
-            }
+            //fixed (char* lpWndClassName = WndClassName)
+            //{
+            //    fixed (char* lpWindowName = Title)
+            //    {
+            //        hwnd = CreateWindowExW(
+            //            (uint)WindowExStyles.WS_EX_OVERLAPPEDWINDOW,
+            //            (ushort*)lpWndClassName,
+            //            (ushort*)lpWindowName,
+            //            (uint)_windowStyle,
+            //        x,
+            //        y,
+            //        windowWidth,
+            //        windowHeight,
+            //        IntPtr.Zero,
+            //        IntPtr.Zero,
+            //        IntPtr.Zero,
+            //        null);
+            //    }
+            //}
 
+            GLFW.Init();
+            var win = GLFW.CreateWindow(windowWidth, windowHeight, Title, null, null);
+            if (win == default)
+                throw new Exception("Windows creation failed");
+
+            hwnd = GLFW.GetWin32Window(win);
             if (hwnd == IntPtr.Zero)
-            {
-                return;
-            }
+                throw new Exception("Can't get window handle");
 
             ShowWindow(hwnd, ShowWindowCommand.Normal);
             Handle = hwnd;
