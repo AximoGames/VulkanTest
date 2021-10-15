@@ -445,54 +445,9 @@ namespace Vortice.Win32
         [DllImport(LibraryName, ExactSpelling = true)]
         public static extern int GetSystemMetrics(SystemMetrics smIndex);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLong")]
-        private static extern uint GetWindowLong32b(IntPtr hWnd, int nIndex);
-
-        public static uint GetWindowLong(IntPtr hWnd, int nIndex)
-        {
-            if (IntPtr.Size == 4)
-            {
-                return GetWindowLong32b(hWnd, nIndex);
-            }
-
-            return GetWindowLongPtr(hWnd, nIndex);
-        }
-
-        [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowLong")]
-        private static extern uint SetWindowLong32b(IntPtr hWnd, int nIndex, uint value);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
-
-        public static uint SetWindowLong(IntPtr hWnd, int nIndex, uint value)
-        {
-            if (IntPtr.Size == 4)
-            {
-                return SetWindowLong32b(hWnd, nIndex, value);
-            }
-
-            return SetWindowLongPtr(hWnd, nIndex, value);
-        }
-
-        [DllImport(LibraryName, ExactSpelling = true)]
-        public static extern unsafe IntPtr CreateWindowExW(
-            uint exStyle,
-            ushort* className,
-            ushort* windowName,
-            uint style,
-            int x, int y, int width, int height,
-            IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, void* lpParam);
-
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport(LibraryName, ExactSpelling = true)]
         public static extern bool DestroyWindow(IntPtr windowHandle);
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport(LibraryName, ExactSpelling = true)]
-        public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
 
         [DllImport(LibraryName)]
         public static extern void PostQuitMessage(int nExitCode);

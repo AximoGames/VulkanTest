@@ -9,9 +9,6 @@ namespace Vortice
     public unsafe sealed class Window
     {
         internal static readonly string WndClassName = "VorticeWindow";
-        private const int CW_USEDEFAULT = unchecked((int)0x80000000);
-        private WindowStyles _windowStyle = 0;
-        private WindowStyles _windowWindowedStyle = 0;
         //private readonly WindowStyles _windowFullscreenStyle = WindowStyles.WS_CLIPSIBLINGS | WindowStyles.WS_GROUP | WindowStyles.WS_TABSTOP;
         private unsafe IntPtr GlfwWindow;
 
@@ -33,7 +30,7 @@ namespace Vortice
 
             // TODO: Frame Size (border, decoration, ...)
 
-            ShowWindow(hwnd, ShowWindowCommand.Normal);
+            GLFW.ShowWindow(win);
             Handle = hwnd;
             //GLFW.GetWindowFrameSize(win, out var a, out var b, out var c, out var d);
             GLFW.GetWindowSize(win, out var w, out var h);
