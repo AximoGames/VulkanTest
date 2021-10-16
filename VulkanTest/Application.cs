@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using OpenTK.Windowing.Desktop;
 
 namespace Vortice
 {
@@ -12,11 +13,11 @@ namespace Vortice
 
         public abstract string Name { get; }
 
-        public Window? MainWindow { get; private set; }
+        public GameWindow? MainWindow { get; private set; }
 
         protected virtual void Initialize()
         {
-            MainWindow = new Window("bla", 800, 600);
+            MainWindow = new GameWindow(new GameWindowSettings(), new NativeWindowSettings());
         }
 
         protected virtual void OnTick()

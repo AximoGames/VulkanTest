@@ -6,6 +6,7 @@ using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 using System.Collections.Generic;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using OpenTK.Windowing.Desktop;
 
 namespace Vortice
 {
@@ -26,12 +27,12 @@ namespace Vortice
         public readonly VkDevice VkDevice;
         public readonly VkQueue GraphicsQueue;
         public readonly VkQueue PresentQueue;
-        public readonly Swapchain Swapchain;
+        public readonly SwapChain Swapchain;
         private PerFrame[] _perFrame;
 
         private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
 
-        public GraphicsDevice(string applicationName, bool enableValidation, Window? window)
+        public GraphicsDevice(string applicationName, bool enableValidation, GameWindow? window)
         {
             VkString name = applicationName;
             var appInfo = new VkApplicationInfo
@@ -248,7 +249,7 @@ namespace Vortice
             vkGetDeviceQueue(VkDevice, queueFamilies.presentFamily, 0, out PresentQueue);
 
             // Create swap chain
-            Swapchain = new Swapchain(this, window);
+            Swapchain = new SwapChain(this, window);
             _perFrame = new PerFrame[Swapchain.ImageCount];
             for (var i = 0; i < _perFrame.Length; i++)
             {
@@ -463,13 +464,13 @@ namespace Vortice
         private static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         #region Private Methods
-        private VkSurfaceKHR CreateSurface(Window? window)
+        private VkSurfaceKHR CreateSurface(GameWindow? window)
         {
             var surfaceCreateInfo = new VkWin32SurfaceCreateInfoKHR
             {
                 sType = VkStructureType.Win32SurfaceCreateInfoKHR,
                 hinstance = GetModuleHandle(null),
-                hwnd = window!.Handle
+                hwnd = GLFW.GetWin32Window((Window*)window.Context.WindowPtr),
             };
 
             vkCreateWin32SurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
