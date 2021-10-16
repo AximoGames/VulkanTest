@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using Vortice;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
@@ -14,7 +15,8 @@ namespace DrawTriangle
 		private static bool EnableValidationLayers = false;
 #endif
 
-        private GraphicsDevice? _graphicsDevice;
+        [NotNull]
+        private GraphicsDevice _graphicsDevice = default!;
         private float _green = 0.0f;
 
         public override string Name => "01-ClearScreen";
@@ -28,9 +30,9 @@ namespace DrawTriangle
             _graphicsDevice = new GraphicsDevice(Name, EnableValidationLayers, MainWindow);
         }
 
-        protected override void OnTick()
+        protected override void OnRenderFrame()
         {
-            _graphicsDevice!.RenderFrame(OnDraw);
+            _graphicsDevice.RenderFrame(OnDraw);
         }
 
         private void OnDraw(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, VkExtent2D size)
@@ -46,7 +48,7 @@ namespace DrawTriangle
             VkRenderPassBeginInfo renderPassBeginInfo = new VkRenderPassBeginInfo
             {
                 sType = VkStructureType.RenderPassBeginInfo,
-                renderPass = _graphicsDevice!.Swapchain.RenderPass,
+                renderPass = _graphicsDevice.Swapchain.RenderPass,
                 framebuffer = framebuffer,
                 renderArea = new VkRect2D(size),
                 clearValueCount = 1,

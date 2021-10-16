@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using OpenTK.Windowing.Desktop;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
@@ -9,7 +10,8 @@ namespace Vortice
     public sealed unsafe class SwapChain : IDisposable
     {
         public readonly GraphicsDevice Device;
-        public readonly GameWindow? Window;
+        [NotNull]
+        public readonly GameWindow? Window = default!;
         private readonly VkImageView[] _swapChainImageViews;
         public VkSwapchainKHR Handle;
         public int ImageCount => _swapChainImageViews.Length;
@@ -170,7 +172,7 @@ namespace Vortice
             }
             else
             {
-                VkExtent2D actualExtent = new VkExtent2D(Window!.ClientSize.X, Window!.ClientSize.Y);
+                VkExtent2D actualExtent = new VkExtent2D(Window.ClientSize.X, Window.ClientSize.Y);
 
                 actualExtent = new VkExtent2D(
                     Math.Max(capabilities.minImageExtent.width, Math.Min(capabilities.maxImageExtent.width, actualExtent.width)),

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using OpenTK.Windowing.Desktop;
 
 namespace Vortice
@@ -13,37 +15,26 @@ namespace Vortice
 
         public abstract string Name { get; }
 
-        public GameWindow? MainWindow { get; private set; }
+        [NotNull]
+        public GameWindow MainWindow { get; private set; } = default!;
 
         protected virtual void Initialize()
         {
-            MainWindow = new GameWindow(new GameWindowSettings(), new NativeWindowSettings());
+            MainWindow = new GameWindow(new GameWindowSettings { IsMultiThreaded = true, }, new NativeWindowSettings { Title = Name });
+            MainWindow.RenderFrame += (e) =>
+            {
+                OnRenderFrame();
+            };
         }
 
-        protected virtual void OnTick()
+        protected virtual void OnRenderFrame()
         {
         }
 
         public void Run()
         {
             Initialize();
-            while (true)
-            {
-                OnTick();
-            }
-        }
-
-        protected virtual void OnActivated()
-        {
-        }
-
-        protected virtual void OnDeactivated()
-        {
-        }
-
-        protected virtual void OnDraw(int width, int height)
-        {
-
+            MainWindow.Run();
         }
 
     }

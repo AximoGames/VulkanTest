@@ -32,7 +32,7 @@ namespace Vortice
 
         private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
 
-        public GraphicsDevice(string applicationName, bool enableValidation, GameWindow? window)
+        public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
         {
             VkString name = applicationName;
             var appInfo = new VkApplicationInfo
@@ -464,7 +464,7 @@ namespace Vortice
         private static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         #region Private Methods
-        private VkSurfaceKHR CreateSurface(GameWindow? window)
+        private VkSurfaceKHR CreateSurface(GameWindow window)
         {
             var surfaceCreateInfo = new VkWin32SurfaceCreateInfoKHR
             {
