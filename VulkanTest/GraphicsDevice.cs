@@ -4,8 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
-using static Vortice.Win32.Kernel32;
 using System.Collections.Generic;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Vortice
 {
@@ -458,6 +458,9 @@ namespace Vortice
         }
 
         public static implicit operator VkDevice(GraphicsDevice device) => device.VkDevice;
+
+        [DllImport("kernel32")]
+        private static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         #region Private Methods
         private VkSurfaceKHR CreateSurface(Window? window)

@@ -1,7 +1,6 @@
 ﻿using System;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vortice.Vulkan;
-using Vortice.Win32;
 
 namespace Vortice
 {
