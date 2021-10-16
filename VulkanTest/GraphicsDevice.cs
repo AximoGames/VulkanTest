@@ -17,10 +17,6 @@ namespace Vortice
 
         public readonly VkInstance VkInstance;
 
-#if !NET5_0_OR_GREATER
-        private readonly PFN_vkDebugUtilsMessengerCallbackEXT DebugMessagerCallbackDelegate = DebugMessengerCallback;
-#endif
-
         private readonly VkDebugUtilsMessengerEXT _debugMessenger = VkDebugUtilsMessengerEXT.Null;
         internal readonly VkSurfaceKHR _surface;
         public readonly VkPhysicalDevice PhysicalDevice;
@@ -45,14 +41,18 @@ namespace Vortice
                 apiVersion = vkEnumerateInstanceVersion()
             };
 
-            List<string> instanceExtensions = new List<string>
-            {
-                KHRSurfaceExtensionName
-            };
+            List<string> instanceExtensions = new List<string>();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            instanceExtensions.AddRange(GLFW.GetRequiredInstanceExtensions());
+
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // {
+            //     instanceExtensions.Add(KHRWin32SurfaceExtensionName);
+            // }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                instanceExtensions.Add(KHRWin32SurfaceExtensionName);
+                instanceExtensions.Add(KHRXlibSurfaceExtensionName);
             }
 
             List<string> instanceLayers = new List<string>();
@@ -92,11 +92,7 @@ namespace Vortice
             {
                 debugUtilsCreateInfo.messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Error | VkDebugUtilsMessageSeverityFlagsEXT.Warning;
                 debugUtilsCreateInfo.messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance;
-#if NET5_0_OR_GREATER
                 debugUtilsCreateInfo.pfnUserCallback = &DebugMessengerCallback;
-#else
-                debugUtilsCreateInfo.pfnUserCallback = Marshal.GetFunctionPointerForDelegate(DebugMessagerCallbackDelegate);
-#endif
 
                 instanceCreateInfo.pNext = &debugUtilsCreateInfo;
             }
@@ -145,7 +141,7 @@ namespace Vortice
 
             var availableDeviceExtensions = vkEnumerateDeviceExtensionProperties(PhysicalDevice);
 
-            var supportPresent = vkGetPhysicalDeviceWin32PresentationSupportKHR(PhysicalDevice, queueFamilies.graphicsFamily);
+            // var supportPresent = vkGetPhysicalDeviceWin32PresentationSupportKHR(PhysicalDevice, queueFamilies.graphicsFamily);
 
             float priority = 1.0f;
             VkDeviceQueueCreateInfo queueCreateInfo = new VkDeviceQueueCreateInfo
@@ -466,15 +462,45 @@ namespace Vortice
         #region Private Methods
         private VkSurfaceKHR CreateSurface(GameWindow window)
         {
-            var surfaceCreateInfo = new VkWin32SurfaceCreateInfoKHR
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                sType = VkStructureType.Win32SurfaceCreateInfoKHR,
-                hinstance = GetModuleHandle(null),
-                hwnd = GLFW.GetWin32Window((Window*)window.Context.WindowPtr),
-            };
+                var surfaceCreateInfo = new VkWin32SurfaceCreateInfoKHR
+                {
+                    sType = VkStructureType.Win32SurfaceCreateInfoKHR,
+                    hinstance = GetModuleHandle(null),
+                    hwnd = GLFW.GetWin32Window((Window*)window.Context.WindowPtr),
+                };
 
-            vkCreateWin32SurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
-            return surface;
+                vkCreateWin32SurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
+                return surface;
+            }
+
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                // var surfaceCreateInfo = new VkXcbSurfaceCreateInfoKHR
+                // {
+                //     sType = VkStructureType.Win32SurfaceCreateInfoKHR,
+                //     window = GLFW.GetX11Window((Window*)window.Context.WindowPtr),
+                //     con
+                // };
+
+                // vkCreateXcbSurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
+                // return surface;
+
+                GLFW.CreateWindowSurface(new VkHandle(VkInstance.Handle), (Window*)window.Context.WindowPtr, null, out var handle);
+                return new VkSurfaceKHR((ulong)handle.Handle);
+
+                // var surfaceCreateInfo = new VkXlibSurfaceCreateInfoKHR
+                // {
+                //     sType = VkStructureType.Win32SurfaceCreateInfoKHR,
+                //     window = (IntPtr)GLFW.GetX11Window((Window*)window.Context.WindowPtr),
+                // };
+
+                // vkCreateXlibSurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
+                // return surface;
+            }
+
+            throw new NotSupportedException();
         }
 
 #if NET5_0
