@@ -462,45 +462,8 @@ namespace Vortice
         #region Private Methods
         private VkSurfaceKHR CreateSurface(GameWindow window)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                var surfaceCreateInfo = new VkWin32SurfaceCreateInfoKHR
-                {
-                    sType = VkStructureType.Win32SurfaceCreateInfoKHR,
-                    hinstance = GetModuleHandle(null),
-                    hwnd = GLFW.GetWin32Window((Window*)window.Context.WindowPtr),
-                };
-
-                vkCreateWin32SurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
-                return surface;
-            }
-
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
-            {
-                // var surfaceCreateInfo = new VkXcbSurfaceCreateInfoKHR
-                // {
-                //     sType = VkStructureType.Win32SurfaceCreateInfoKHR,
-                //     window = GLFW.GetX11Window((Window*)window.Context.WindowPtr),
-                //     con
-                // };
-
-                // vkCreateXcbSurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
-                // return surface;
-
-                GLFW.CreateWindowSurface(new VkHandle(VkInstance.Handle), (Window*)window.Context.WindowPtr, null, out var handle);
-                return new VkSurfaceKHR((ulong)handle.Handle);
-
-                // var surfaceCreateInfo = new VkXlibSurfaceCreateInfoKHR
-                // {
-                //     sType = VkStructureType.Win32SurfaceCreateInfoKHR,
-                //     window = (IntPtr)GLFW.GetX11Window((Window*)window.Context.WindowPtr),
-                // };
-
-                // vkCreateXlibSurfaceKHR(VkInstance, &surfaceCreateInfo, null, out VkSurfaceKHR surface).CheckResult();
-                // return surface;
-            }
-
-            throw new NotSupportedException();
+            GLFW.CreateWindowSurface(new VkHandle(VkInstance.Handle), (Window*)window.Context.WindowPtr, null, out var handle);
+            return new VkSurfaceKHR((ulong)handle.Handle);
         }
 
 #if NET5_0
