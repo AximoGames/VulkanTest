@@ -36,7 +36,7 @@ void main()
                 //vkCreateShaderModule(VkDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
             }
 
-            using var testApp = new TestApp();
+            var testApp = new TestApp();
             testApp.Run();
         }
     }

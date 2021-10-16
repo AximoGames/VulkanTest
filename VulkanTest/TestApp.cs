@@ -21,17 +21,11 @@ namespace DrawTriangle
 
         protected override void Initialize()
         {
+            base.Initialize();
             // Need to initialize
             vkInitialize().CheckResult();
 
             _graphicsDevice = new GraphicsDevice(Name, EnableValidationLayers, MainWindow);
-        }
-
-        public override void Dispose()
-        {
-            _graphicsDevice!.Dispose();
-
-            base.Dispose();
         }
 
         protected override void OnTick()

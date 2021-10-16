@@ -2,7 +2,6 @@
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vortice.Vulkan;
 using Vortice.Win32;
-using static Vortice.Win32.User32;
 
 namespace Vortice
 {
