@@ -32,99 +32,7 @@ namespace Vortice
 
         public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
         {
-            VkString name = applicationName;
-            var appInfo = new VkApplicationInfo
-            {
-                sType = VkStructureType.ApplicationInfo,
-                pApplicationName = name,
-                applicationVersion = new VkVersion(1, 0, 0),
-                pEngineName = s_EngineName,
-                engineVersion = new VkVersion(1, 0, 0),
-                apiVersion = vkEnumerateInstanceVersion()
-            };
-
-            List<string> instanceExtensions = new List<string>();
-
-            instanceExtensions.AddRange(GLFW.GetRequiredInstanceExtensions());
-
-            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            // {
-            //     instanceExtensions.Add(KHRWin32SurfaceExtensionName);
-            // }
-
-            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            // {
-            //     instanceExtensions.Add(KHRXlibSurfaceExtensionName);
-            // }
-
-            List<string> instanceLayers = new List<string>();
-            if (enableValidation)
-            {
-                FindValidationLayers(instanceLayers);
-            }
-
-            if (instanceLayers.Count > 0)
-            {
-                instanceExtensions.Add(EXTDebugUtilsExtensionName);
-            }
-
-            using var vkInstanceExtensions = new VkStringArray(instanceExtensions);
-
-            var instanceCreateInfo = new VkInstanceCreateInfo
-            {
-                sType = VkStructureType.InstanceCreateInfo,
-                pApplicationInfo = &appInfo,
-                enabledExtensionCount = vkInstanceExtensions.Length,
-                ppEnabledExtensionNames = vkInstanceExtensions
-            };
-
-            using var vkLayerNames = new VkStringArray(instanceLayers);
-            if (instanceLayers.Count > 0)
-            {
-                instanceCreateInfo.enabledLayerCount = vkLayerNames.Length;
-                instanceCreateInfo.ppEnabledLayerNames = vkLayerNames;
-            }
-
-            var debugUtilsCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT
-            {
-                sType = VkStructureType.DebugUtilsMessengerCreateInfoEXT
-            };
-
-            if (instanceLayers.Count > 0)
-            {
-                debugUtilsCreateInfo.messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Error | VkDebugUtilsMessageSeverityFlagsEXT.Warning;
-                debugUtilsCreateInfo.messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance;
-                debugUtilsCreateInfo.pfnUserCallback = &DebugMessengerCallback;
-
-                instanceCreateInfo.pNext = &debugUtilsCreateInfo;
-            }
-
-            VkResult result = vkCreateInstance(&instanceCreateInfo, null, out VkInstance);
-            if (result != VkResult.Success)
-            {
-                throw new InvalidOperationException($"Failed to create vulkan instance: {result}");
-            }
-
-            vkLoadInstance(VkInstance);
-
-            if (instanceLayers.Count > 0)
-            {
-                vkCreateDebugUtilsMessengerEXT(VkInstance, &debugUtilsCreateInfo, null, out _debugMessenger).CheckResult();
-            }
-
-            Log.Info($"Created VkInstance with version: {appInfo.apiVersion.Major}.{appInfo.apiVersion.Minor}.{appInfo.apiVersion.Patch}");
-            if (instanceLayers.Count > 0)
-            {
-                foreach (var layer in instanceLayers)
-                {
-                    Log.Info($"Instance layer '{layer}'");
-                }
-            }
-
-            foreach (string extension in instanceExtensions)
-            {
-                Log.Info($"Instance extension '{extension}'");
-            }
+            CreateInstance(applicationName, enableValidation, out VkInstance, out _debugMessenger);
 
             _surface = CreateSurface(window);
 
@@ -239,7 +147,7 @@ namespace Vortice
                 pEnabledFeatures = null,
             };
 
-            result = vkCreateDevice(PhysicalDevice, &deviceCreateInfo, null, out VkDevice);
+            var result = vkCreateDevice(PhysicalDevice, &deviceCreateInfo, null, out VkDevice);
             if (result != VkResult.Success)
                 throw new Exception($"Failed to create Vulkan Logical Device, {result}");
 
@@ -262,6 +170,107 @@ namespace Vortice
                 vkCreateFence(VkDevice, &fenceCreateInfo, null, out _perFrame[i].QueueSubmitFence).CheckResult();
 
                 vkAllocateCommandBuffer(VkDevice, _perFrame[i].PrimaryCommandPool, out _perFrame[i].PrimaryCommandBuffer).CheckResult();
+            }
+        }
+
+        private void CreateInstance(string applicationName, bool enableValidation, out VkInstance instance, out VkDebugUtilsMessengerEXT _debugMessenger)
+        {
+            using VkString name = applicationName;
+            var appInfo = new VkApplicationInfo
+            {
+                sType = VkStructureType.ApplicationInfo,
+                pApplicationName = name,
+                applicationVersion = new VkVersion(1, 0, 0),
+                pEngineName = s_EngineName,
+                engineVersion = new VkVersion(1, 0, 0),
+                apiVersion = vkEnumerateInstanceVersion()
+            };
+
+            List<string> instanceExtensions = new List<string>();
+
+            instanceExtensions.AddRange(GLFW.GetRequiredInstanceExtensions());
+
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // {
+            //     instanceExtensions.Add(KHRWin32SurfaceExtensionName);
+            // }
+
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            // {
+            //     instanceExtensions.Add(KHRXlibSurfaceExtensionName);
+            // }
+
+            List<string> instanceLayers = new List<string>();
+            if (enableValidation)
+            {
+                FindValidationLayers(instanceLayers);
+            }
+
+            if (instanceLayers.Count > 0)
+            {
+                instanceExtensions.Add(EXTDebugUtilsExtensionName);
+            }
+
+            using var vkInstanceExtensions = new VkStringArray(instanceExtensions);
+
+            var instanceCreateInfo = new VkInstanceCreateInfo
+            {
+                sType = VkStructureType.InstanceCreateInfo,
+                pApplicationInfo = &appInfo,
+                enabledExtensionCount = vkInstanceExtensions.Length,
+                ppEnabledExtensionNames = vkInstanceExtensions
+            };
+
+            using var vkLayerNames = new VkStringArray(instanceLayers);
+            if (instanceLayers.Count > 0)
+            {
+                instanceCreateInfo.enabledLayerCount = vkLayerNames.Length;
+                instanceCreateInfo.ppEnabledLayerNames = vkLayerNames;
+            }
+
+            var debugUtilsCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT
+            {
+                sType = VkStructureType.DebugUtilsMessengerCreateInfoEXT
+            };
+
+            if (instanceLayers.Count > 0)
+            {
+                debugUtilsCreateInfo.messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Error | VkDebugUtilsMessageSeverityFlagsEXT.Warning;
+                debugUtilsCreateInfo.messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance;
+                debugUtilsCreateInfo.pfnUserCallback = &DebugMessengerCallback;
+
+                instanceCreateInfo.pNext = &debugUtilsCreateInfo;
+            }
+
+            VkResult result = vkCreateInstance(&instanceCreateInfo, null, out instance);
+            if (result != VkResult.Success)
+            {
+                throw new InvalidOperationException($"Failed to create vulkan instance: {result}");
+            }
+
+            vkLoadInstance(VkInstance);
+
+            if (instanceLayers.Count > 0)
+            {
+                vkCreateDebugUtilsMessengerEXT(VkInstance, &debugUtilsCreateInfo, null, out _debugMessenger).CheckResult();
+            }
+            else
+            {
+                _debugMessenger = VkDebugUtilsMessengerEXT.Null;
+            }
+
+            Log.Info($"Created VkInstance with version: {appInfo.apiVersion.Major}.{appInfo.apiVersion.Minor}.{appInfo.apiVersion.Patch}");
+            if (instanceLayers.Count > 0)
+            {
+                foreach (var layer in instanceLayers)
+                {
+                    Log.Info($"Instance layer '{layer}'");
+                }
+            }
+
+            foreach (string extension in instanceExtensions)
+            {
+                Log.Info($"Instance extension '{extension}'");
             }
         }
 
