@@ -48,14 +48,16 @@ namespace DrawTriangle
             VkRenderPassBeginInfo renderPassBeginInfo = new VkRenderPassBeginInfo
             {
                 sType = VkStructureType.RenderPassBeginInfo,
-                renderPass = _graphicsDevice.Swapchain.RenderPass,
+                renderPass = _graphicsDevice.RenderPass,
                 framebuffer = framebuffer,
                 renderArea = new VkRect2D(size),
                 clearValueCount = 1,
                 pClearValues = &clearValue
             };
             vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VkSubpassContents.Inline);
-            vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+            //vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
+            //vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+            //vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
             vkCmdEndRenderPass(commandBuffer);
         }
     }

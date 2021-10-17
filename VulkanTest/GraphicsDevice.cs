@@ -10,6 +10,7 @@ using OpenTK.Windowing.Desktop;
 
 namespace Vortice
 {
+
     public unsafe sealed class GraphicsDevice : IDisposable
     {
         private static readonly VkString s_EngineName = new VkString("Vortice");
@@ -23,8 +24,9 @@ namespace Vortice
         public readonly VkDevice VkDevice;
         public readonly VkQueue GraphicsQueue;
         public readonly VkQueue PresentQueue;
-        public readonly SwapChain Swapchain;
+        public readonly Swapchain Swapchain;
         private PerFrame[] _perFrame;
+        public VkRenderPass RenderPass;
 
         private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
 
@@ -137,7 +139,7 @@ namespace Vortice
             PhysicalDevice = physicalDevices[0];
             vkGetPhysicalDeviceProperties(PhysicalDevice, out VkPhysicalDeviceProperties properties);
 
-            var queueFamilies = FindQueueFamilies(PhysicalDevice, _surface);
+            queueFamilies = FindQueueFamilies(PhysicalDevice, _surface);
 
             var availableDeviceExtensions = vkEnumerateDeviceExtensionProperties(PhysicalDevice);
 
@@ -245,13 +247,114 @@ namespace Vortice
             vkGetDeviceQueue(VkDevice, queueFamilies.presentFamily, 0, out PresentQueue);
 
             // Create swap chain
-            Swapchain = new SwapChain(this, window);
-            _perFrame = new PerFrame[Swapchain.ImageCount];
+            Swapchain = new Swapchain(this, window);
+
+            GetImages();
+            CreateImageView();
+            CreateRenderPass(Swapchain.SurfaceFormat.format);
+
+            CreateCommandPool();
+            CreateFrameBuffers();
+
             for (var i = 0; i < _perFrame.Length; i++)
             {
                 VkFenceCreateInfo fenceCreateInfo = new VkFenceCreateInfo(VkFenceCreateFlags.Signaled);
                 vkCreateFence(VkDevice, &fenceCreateInfo, null, out _perFrame[i].QueueSubmitFence).CheckResult();
 
+                vkAllocateCommandBuffer(VkDevice, _perFrame[i].PrimaryCommandPool, out _perFrame[i].PrimaryCommandBuffer).CheckResult();
+            }
+        }
+
+        private void GetImages()
+        {
+            ReadOnlySpan<VkImage> swapChainImages = vkGetSwapchainImagesKHR(VkDevice, Swapchain.Handle);
+            _perFrame = new PerFrame[swapChainImages.Length];
+            for (var i = 0; i < swapChainImages.Length; i++)
+            {
+                _perFrame[i].Image = swapChainImages[i];
+            }
+        }
+
+        private void CreateImageView()
+        {
+            for (int i = 0; i < _perFrame.Length; i++)
+            {
+                var viewCreateInfo = new VkImageViewCreateInfo(
+                    _perFrame[i].Image,
+                    VkImageViewType.Image2D,
+                    Swapchain.SurfaceFormat.format,
+                    VkComponentMapping.Rgba,
+                    new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
+                    );
+
+                vkCreateImageView(VkDevice, &viewCreateInfo, null, out _perFrame[i].ImageView).CheckResult();
+            }
+        }
+
+        private void CreateRenderPass(VkFormat colorFormat)
+        {
+            VkAttachmentDescription attachment = new VkAttachmentDescription(
+                colorFormat,
+                VkSampleCountFlags.Count1,
+                VkAttachmentLoadOp.Clear, VkAttachmentStoreOp.Store,
+                VkAttachmentLoadOp.DontCare, VkAttachmentStoreOp.DontCare,
+                VkImageLayout.Undefined, VkImageLayout.PresentSrcKHR
+            );
+
+            VkAttachmentReference colorAttachmentRef = new VkAttachmentReference(0, VkImageLayout.ColorAttachmentOptimal);
+
+            VkSubpassDescription subpass = new VkSubpassDescription
+            {
+                pipelineBindPoint = VkPipelineBindPoint.Graphics,
+                colorAttachmentCount = 1,
+                pColorAttachments = &colorAttachmentRef
+            };
+
+            VkSubpassDependency[] dependencies = new VkSubpassDependency[2];
+
+            dependencies[0] = new VkSubpassDependency
+            {
+                srcSubpass = SubpassExternal,
+                dstSubpass = 0,
+                srcStageMask = VkPipelineStageFlags.BottomOfPipe,
+                dstStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
+                srcAccessMask = VkAccessFlags.MemoryRead,
+                dstAccessMask = VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
+                dependencyFlags = VkDependencyFlags.ByRegion
+            };
+
+            dependencies[1] = new VkSubpassDependency
+            {
+                srcSubpass = 0,
+                dstSubpass = SubpassExternal,
+                srcStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
+                dstStageMask = VkPipelineStageFlags.BottomOfPipe,
+                srcAccessMask = VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
+                dstAccessMask = VkAccessFlags.MemoryRead,
+                dependencyFlags = VkDependencyFlags.ByRegion
+            };
+
+            fixed (VkSubpassDependency* dependenciesPtr = &dependencies[0])
+            {
+                VkRenderPassCreateInfo createInfo = new VkRenderPassCreateInfo
+                {
+                    sType = VkStructureType.RenderPassCreateInfo,
+                    attachmentCount = 1,
+                    pAttachments = &attachment,
+                    subpassCount = 1,
+                    pSubpasses = &subpass,
+                    dependencyCount = 2,
+                    pDependencies = dependenciesPtr
+                };
+
+                vkCreateRenderPass(VkDevice, &createInfo, null, out RenderPass).CheckResult();
+            }
+        }
+
+        private void CreateCommandPool()
+        {
+            for (var i = 0; i < _perFrame.Length; i++)
+            {
                 VkCommandPoolCreateInfo poolCreateInfo = new VkCommandPoolCreateInfo
                 {
                     sType = VkStructureType.CommandPoolCreateInfo,
@@ -259,8 +362,6 @@ namespace Vortice
                     queueFamilyIndex = queueFamilies.graphicsFamily,
                 };
                 vkCreateCommandPool(VkDevice, &poolCreateInfo, null, out _perFrame[i].PrimaryCommandPool).CheckResult();
-
-                vkAllocateCommandBuffer(VkDevice, _perFrame[i].PrimaryCommandPool, out _perFrame[i].PrimaryCommandBuffer).CheckResult();
             }
         }
 
@@ -273,6 +374,14 @@ namespace Vortice
             }
 
             return false;
+        }
+
+        private void CreateFrameBuffers()
+        {
+            for (var i = 0; i < _perFrame.Length; i++)
+            {
+                vkCreateFramebuffer(VkDevice, RenderPass, new[] { _perFrame[i].ImageView }, Swapchain.Extent, 1u, out _perFrame[i].Framebuffer);
+            }
         }
 
         public void Dispose()
@@ -362,7 +471,7 @@ namespace Vortice
             };
             vkBeginCommandBuffer(cmd, &beginInfo).CheckResult();
 
-            draw(cmd, Swapchain.Framebuffers[swapchainIndex], Swapchain.Extent);
+            draw(cmd, _perFrame[swapchainIndex].Framebuffer, Swapchain.Extent);
 
             // Complete the command buffer.
             vkEndCommandBuffer(cmd).CheckResult();
@@ -456,9 +565,6 @@ namespace Vortice
 
         public static implicit operator VkDevice(GraphicsDevice device) => device.VkDevice;
 
-        [DllImport("kernel32")]
-        private static extern IntPtr GetModuleHandle(string? lpModuleName);
-
         #region Private Methods
         private VkSurfaceKHR CreateSurface(GameWindow window)
         {
@@ -532,6 +638,8 @@ namespace Vortice
             }
         }
 
+        private (uint graphicsFamily, uint presentFamily) queueFamilies;
+
         static (uint graphicsFamily, uint presentFamily) FindQueueFamilies(
             VkPhysicalDevice device, VkSurfaceKHR surface)
         {
@@ -568,6 +676,9 @@ namespace Vortice
 
         private struct PerFrame
         {
+            public VkImage Image;
+            public VkImageView ImageView;
+            public VkFramebuffer Framebuffer;
             public VkFence QueueSubmitFence;
             public VkCommandPool PrimaryCommandPool;
             public VkCommandBuffer PrimaryCommandBuffer;
