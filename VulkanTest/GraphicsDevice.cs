@@ -7,6 +7,7 @@ using static Vortice.Vulkan.Vulkan;
 using System.Collections.Generic;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
+using Vortice.ShaderCompiler;
 
 namespace Vortice
 {
@@ -25,6 +26,7 @@ namespace Vortice
         public readonly VkQueue GraphicsQueue;
         public readonly VkQueue PresentQueue;
         public readonly Swapchain Swapchain;
+        public readonly VkPipeline Pipelne;
         private PerFrame[] _perFrame; // TODO: Pin during init?
         public VkRenderPass RenderPass;
 
@@ -44,6 +46,7 @@ namespace Vortice
             GetImages();
             CreateImageView();
             CreateRenderPass(Swapchain.SurfaceFormat.format);
+            CreateGraphicsPipeline(out Pipelne);
 
             CreateCommandPool();
             CreateFrameBuffers();
@@ -364,6 +367,164 @@ namespace Vortice
             }
         }
 
+        private VkShaderModule CreateShaderModuleFromCode(string shaderCode, ShaderKind shaderKind)
+        {
+            using Compiler compiler = new Compiler();
+            using (var compilationResult = compiler.Compile(shaderCode, string.Empty, shaderKind))
+            {
+                vkCreateShaderModule(VkDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
+                return module;
+            }
+        }
+
+        private void CreateGraphicsPipeline(out VkPipeline pipeline)
+        {
+            //auto vertShaderCode = readFile("shaders/vert.spv");
+            //auto fragShaderCode = readFile("shaders/frag.spv");
+
+            string vertexShaderCode = @"#version 450
+
+layout(location = 0) out vec3 fragColor;
+
+vec2 positions[3] = vec2[](
+    vec2(0.0, -0.5),
+    vec2(0.5, 0.5),
+    vec2(-0.5, 0.5)
+);
+
+vec3 colors[3] = vec3[](
+    vec3(1.0, 0.0, 0.0),
+    vec3(0.0, 1.0, 0.0),
+    vec3(0.0, 0.0, 1.0)
+);
+
+void main() {
+    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+    fragColor = colors[gl_VertexIndex];
+}";
+
+            string fragShaderCode = @"#version 450
+
+layout(location = 0) in vec3 fragColor;
+
+layout(location = 0) out vec4 outColor;
+
+void main() {
+    outColor = vec4(fragColor, 1.0);
+}";
+
+            VkShaderModule vertShaderModule = CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
+            VkShaderModule fragShaderModule = CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
+
+            using var name = new VkString("main");
+
+            var vertShaderStageInfo = new VkPipelineShaderStageCreateInfo();
+            vertShaderStageInfo.sType = VkStructureType.PipelineShaderStageCreateInfo;
+            vertShaderStageInfo.stage = VkShaderStageFlags.Vertex;
+            vertShaderStageInfo.module = vertShaderModule;
+            vertShaderStageInfo.pName = name.Pointer;
+
+            var fragShaderStageInfo = new VkPipelineShaderStageCreateInfo();
+            fragShaderStageInfo.sType = VkStructureType.PipelineShaderStageCreateInfo;
+            fragShaderStageInfo.stage = VkShaderStageFlags.Fragment;
+            fragShaderStageInfo.module = fragShaderModule;
+            fragShaderStageInfo.pName = name.Pointer;
+
+            var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo();
+            vertexInputInfo.sType = VkStructureType.PipelineVertexInputStateCreateInfo;
+            vertexInputInfo.vertexBindingDescriptionCount = 0;
+            vertexInputInfo.vertexAttributeDescriptionCount = 0;
+
+            var inputAssembly = new VkPipelineInputAssemblyStateCreateInfo();
+            inputAssembly.sType = VkStructureType.PipelineInputAssemblyStateCreateInfo;
+            inputAssembly.topology = VkPrimitiveTopology.TriangleList;
+            inputAssembly.primitiveRestartEnable = VkBool32.False;
+
+            var viewport = new VkViewport();
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = Swapchain.Extent.width;
+            viewport.height = Swapchain.Extent.height;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+
+            var scissor = new VkRect2D();
+            scissor.offset = new VkOffset2D(0, 0);
+            scissor.extent = Swapchain.Extent;
+
+            var viewportState = new VkPipelineViewportStateCreateInfo();
+            viewportState.sType = VkStructureType.PipelineViewportStateCreateInfo;
+            viewportState.viewportCount = 1;
+            viewportState.pViewports = &viewport;
+            viewportState.scissorCount = 1;
+            viewportState.pScissors = &scissor;
+
+            var rasterizer = new VkPipelineRasterizationStateCreateInfo();
+            rasterizer.sType = VkStructureType.PipelineRasterizationStateCreateInfo;
+            rasterizer.depthClampEnable = VkBool32.False;
+            rasterizer.rasterizerDiscardEnable = VkBool32.False;
+            rasterizer.polygonMode = VkPolygonMode.Fill;
+            rasterizer.lineWidth = 1.0f;
+            rasterizer.cullMode = VkCullModeFlags.Back;
+            rasterizer.frontFace = VkFrontFace.Clockwise;
+            rasterizer.depthBiasEnable = VkBool32.False;
+
+            var multisampling = new VkPipelineMultisampleStateCreateInfo();
+            multisampling.sType = VkStructureType.PipelineMultisampleStateCreateInfo;
+            multisampling.sampleShadingEnable = VkBool32.False;
+            multisampling.rasterizationSamples = VkSampleCountFlags.Count1;
+
+            var colorBlendAttachment = new VkPipelineColorBlendAttachmentState();
+            colorBlendAttachment.colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A;
+            colorBlendAttachment.blendEnable = VkBool32.False;
+
+            var colorBlending = new VkPipelineColorBlendStateCreateInfo();
+            colorBlending.sType = VkStructureType.PipelineColorBlendStateCreateInfo;
+            colorBlending.logicOpEnable = VkBool32.False;
+            colorBlending.logicOp = VkLogicOp.Copy;
+            colorBlending.attachmentCount = 1;
+            colorBlending.pAttachments = &colorBlendAttachment;
+            colorBlending.blendConstants[0] = 0.0f;
+            colorBlending.blendConstants[1] = 0.0f;
+            colorBlending.blendConstants[2] = 0.0f;
+            colorBlending.blendConstants[3] = 0.0f;
+
+            var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
+            pipelineLayoutInfo.sType = VkStructureType.PipelineLayoutCreateInfo;
+            pipelineLayoutInfo.setLayoutCount = 0;
+            pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+            VkPipelineLayout pipelineLayout;
+            vkCreatePipelineLayout(VkDevice, &pipelineLayoutInfo, null, out pipelineLayout).CheckResult();
+
+            VkPipelineShaderStageCreateInfo[] shaderStages = new VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
+            fixed (VkPipelineShaderStageCreateInfo* shaderStagesPtr = &shaderStages[0])
+            {
+
+                var pipelineInfo = new VkGraphicsPipelineCreateInfo();
+                pipelineInfo.sType = VkStructureType.GraphicsPipelineCreateInfo;
+                pipelineInfo.stageCount = 2;
+                pipelineInfo.pStages = shaderStagesPtr;
+                pipelineInfo.pVertexInputState = &vertexInputInfo;
+                pipelineInfo.pInputAssemblyState = &inputAssembly;
+                pipelineInfo.pViewportState = &viewportState;
+                pipelineInfo.pRasterizationState = &rasterizer;
+                pipelineInfo.pMultisampleState = &multisampling;
+                pipelineInfo.pColorBlendState = &colorBlending;
+                pipelineInfo.layout = pipelineLayout;
+                pipelineInfo.renderPass = RenderPass;
+                pipelineInfo.subpass = 0;
+                pipelineInfo.basePipelineHandle = VkPipeline.Null;
+
+                VkPipeline graphicsPipeline;
+                vkCreateGraphicsPipelines(VkDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
+                pipeline = graphicsPipeline;
+            }
+
+            vkDestroyShaderModule(VkDevice, fragShaderModule, null);
+            vkDestroyShaderModule(VkDevice, vertShaderModule, null);
+        }
+
         private void CreateCommandPool()
         {
             for (var i = 0; i < _perFrame.Length; i++)
@@ -457,7 +618,7 @@ namespace Vortice
             }
         }
 
-        public void RenderFrame(Action<VkCommandBuffer, VkFramebuffer, VkExtent2D> draw, [CallerMemberName] string? frameName = null)
+        public void RenderFrame(Action<VkCommandBuffer, VkFramebuffer, VkExtent2D, VkPipeline> draw, [CallerMemberName] string? frameName = null)
         {
             VkResult result = AcquireNextImage(out uint swapchainIndex);
 
@@ -484,7 +645,7 @@ namespace Vortice
             };
             vkBeginCommandBuffer(cmd, &beginInfo).CheckResult();
 
-            draw(cmd, _perFrame[swapchainIndex].Framebuffer, Swapchain.Extent);
+            draw(cmd, _perFrame[swapchainIndex].Framebuffer, Swapchain.Extent, Pipelne);
 
             // Complete the command buffer.
             vkEndCommandBuffer(cmd).CheckResult();
@@ -599,6 +760,7 @@ namespace Vortice
                 if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Error)
                 {
                     Log.Error($"[Vulkan]: Validation: {messageSeverity} - {message}");
+                    throw new Exception(message);
                 }
                 else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Warning)
                 {
@@ -627,6 +789,12 @@ namespace Vortice
         private static void FindValidationLayers(List<string> appendTo)
         {
             ReadOnlySpan<VkLayerProperties> availableLayers = vkEnumerateInstanceLayerProperties();
+
+            for (int j = 0; j < availableLayers.Length; j++)
+            {
+                var name = availableLayers[j].GetLayerName();
+                Log.Info($"Found Layer: {name}");
+            }
 
             for (int i = 0; i < s_RequestedValidationLayers.Length; i++)
             {

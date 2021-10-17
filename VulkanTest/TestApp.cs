@@ -35,7 +35,7 @@ namespace DrawTriangle
             _graphicsDevice.RenderFrame(OnDraw);
         }
 
-        private void OnDraw(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, VkExtent2D size)
+        private void OnDraw(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, VkExtent2D size, VkPipeline pipeline)
         {
             float g = _green + 0.01f;
             if (g > 1.0f)
@@ -55,9 +55,9 @@ namespace DrawTriangle
                 pClearValues = &clearValue
             };
             vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VkSubpassContents.Inline);
-            //vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
-            //vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-            //vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+            vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
+            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+            vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
             vkCmdEndRenderPass(commandBuffer);
         }
     }
