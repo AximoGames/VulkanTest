@@ -25,7 +25,7 @@ namespace Vortice
         public readonly VkQueue GraphicsQueue;
         public readonly VkQueue PresentQueue;
         public readonly Swapchain Swapchain;
-        private PerFrame[] _perFrame;
+        private PerFrame[] _perFrame; // TODO: Pin during init?
         public VkRenderPass RenderPass;
 
         private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
@@ -36,123 +36,7 @@ namespace Vortice
 
             _surface = CreateSurface(window);
 
-            // Find physical device, setup queue's and create device.
-            var physicalDevices = vkEnumeratePhysicalDevices(VkInstance);
-            foreach (var physicalDevice in physicalDevices)
-            {
-                //vkGetPhysicalDeviceProperties(physicalDevice, out var properties);
-                //var deviceName = properties.GetDeviceName();
-            }
-
-            PhysicalDevice = physicalDevices[0];
-            vkGetPhysicalDeviceProperties(PhysicalDevice, out VkPhysicalDeviceProperties properties);
-
-            queueFamilies = FindQueueFamilies(PhysicalDevice, _surface);
-
-            var availableDeviceExtensions = vkEnumerateDeviceExtensionProperties(PhysicalDevice);
-
-            // var supportPresent = vkGetPhysicalDeviceWin32PresentationSupportKHR(PhysicalDevice, queueFamilies.graphicsFamily);
-
-            float priority = 1.0f;
-            VkDeviceQueueCreateInfo queueCreateInfo = new VkDeviceQueueCreateInfo
-            {
-                sType = VkStructureType.DeviceQueueCreateInfo,
-                queueFamilyIndex = queueFamilies.graphicsFamily,
-                queueCount = 1,
-                pQueuePriorities = &priority
-            };
-
-            List<string> enabledExtensions = new List<string>
-            {
-                KHRSwapchainExtensionName
-            };
-
-            VkPhysicalDeviceVulkan11Features features_1_1 = new VkPhysicalDeviceVulkan11Features
-            {
-                sType = VkStructureType.PhysicalDeviceVulkan11Features
-            };
-
-            VkPhysicalDeviceVulkan12Features features_1_2 = new VkPhysicalDeviceVulkan12Features
-            {
-                sType = VkStructureType.PhysicalDeviceVulkan12Features
-            };
-
-            VkPhysicalDeviceFeatures2 deviceFeatures2 = new VkPhysicalDeviceFeatures2
-            {
-                sType = VkStructureType.PhysicalDeviceFeatures2
-            };
-
-            deviceFeatures2.pNext = &features_1_1;
-            features_1_1.pNext = &features_1_2;
-
-            void** features_chain = &features_1_2.pNext;
-
-            VkPhysicalDevice8BitStorageFeatures storage_8bit_features = default;
-            if (properties.apiVersion <= VkVersion.Version_1_2)
-            {
-                if (CheckDeviceExtensionSupport(KHR8bitStorageExtensionName, availableDeviceExtensions))
-                {
-                    enabledExtensions.Add(KHR8bitStorageExtensionName);
-                    storage_8bit_features.sType = VkStructureType.PhysicalDevice8bitStorageFeatures;
-                    *features_chain = &storage_8bit_features;
-                    features_chain = &storage_8bit_features.pNext;
-                }
-            }
-
-            if (CheckDeviceExtensionSupport(KHRSpirv14ExtensionName, availableDeviceExtensions))
-            {
-                // Required for VK_KHR_ray_tracing_pipeline
-                enabledExtensions.Add(KHRSpirv14ExtensionName);
-
-                // Required by VK_KHR_spirv_1_4
-                enabledExtensions.Add(KHRShaderFloatControlsExtensionName);
-            }
-
-            if (CheckDeviceExtensionSupport(KHRBufferDeviceAddressExtensionName, availableDeviceExtensions))
-            {
-                // Required by VK_KHR_acceleration_structure
-                enabledExtensions.Add(KHRBufferDeviceAddressExtensionName);
-            }
-
-            if (CheckDeviceExtensionSupport(EXTDescriptorIndexingExtensionName, availableDeviceExtensions))
-            {
-                // Required by VK_KHR_acceleration_structure
-                enabledExtensions.Add(EXTDescriptorIndexingExtensionName);
-            }
-
-            VkPhysicalDeviceAccelerationStructureFeaturesKHR acceleration_structure_features = default;
-            if (CheckDeviceExtensionSupport(KHRAccelerationStructureExtensionName, availableDeviceExtensions))
-            {
-                // Required by VK_KHR_acceleration_structure
-                enabledExtensions.Add(KHRDeferredHostOperationsExtensionName);
-
-                enabledExtensions.Add(KHRAccelerationStructureExtensionName);
-                acceleration_structure_features.sType = VkStructureType.PhysicalDeviceAccelerationStructureFeaturesKHR;
-                *features_chain = &acceleration_structure_features;
-                features_chain = &acceleration_structure_features.pNext;
-            }
-
-            vkGetPhysicalDeviceFeatures2(PhysicalDevice, out deviceFeatures2);
-
-            using var deviceExtensionNames = new VkStringArray(enabledExtensions);
-
-            var deviceCreateInfo = new VkDeviceCreateInfo
-            {
-                sType = VkStructureType.DeviceCreateInfo,
-                pNext = &deviceFeatures2,
-                queueCreateInfoCount = 1,
-                pQueueCreateInfos = &queueCreateInfo,
-                enabledExtensionCount = deviceExtensionNames.Length,
-                ppEnabledExtensionNames = deviceExtensionNames,
-                pEnabledFeatures = null,
-            };
-
-            var result = vkCreateDevice(PhysicalDevice, &deviceCreateInfo, null, out VkDevice);
-            if (result != VkResult.Success)
-                throw new Exception($"Failed to create Vulkan Logical Device, {result}");
-
-            vkGetDeviceQueue(VkDevice, queueFamilies.graphicsFamily, 0, out GraphicsQueue);
-            vkGetDeviceQueue(VkDevice, queueFamilies.presentFamily, 0, out PresentQueue);
+            CreateDevice(out PhysicalDevice, out VkDevice, out GraphicsQueue, out PresentQueue);
 
             // Create swap chain
             Swapchain = new Swapchain(this, window);
@@ -272,6 +156,126 @@ namespace Vortice
             {
                 Log.Info($"Instance extension '{extension}'");
             }
+        }
+
+        public void CreateDevice(out VkPhysicalDevice physicalDevice, out VkDevice device, out VkQueue graphicsQueue, out VkQueue presentQueue)
+        {             // Find physical device, setup queue's and create device.
+            var physicalDevices = vkEnumeratePhysicalDevices(VkInstance);
+            foreach (var pDevice in physicalDevices)
+            {
+                //vkGetPhysicalDeviceProperties(pDevice, out var properties);
+                //var deviceName = properties.GetDeviceName();
+            }
+
+            physicalDevice = physicalDevices[0];
+            vkGetPhysicalDeviceProperties(physicalDevice, out VkPhysicalDeviceProperties properties);
+
+            queueFamilies = FindQueueFamilies(physicalDevice, _surface);
+
+            var availableDeviceExtensions = vkEnumerateDeviceExtensionProperties(physicalDevice);
+
+            // var supportPresent = vkGetPhysicalDeviceWin32PresentationSupportKHR(PhysicalDevice, queueFamilies.graphicsFamily);
+
+            float priority = 1.0f;
+            VkDeviceQueueCreateInfo queueCreateInfo = new VkDeviceQueueCreateInfo
+            {
+                sType = VkStructureType.DeviceQueueCreateInfo,
+                queueFamilyIndex = queueFamilies.graphicsFamily,
+                queueCount = 1,
+                pQueuePriorities = &priority
+            };
+
+            List<string> enabledExtensions = new List<string>
+            {
+                KHRSwapchainExtensionName
+            };
+
+            VkPhysicalDeviceVulkan11Features features_1_1 = new VkPhysicalDeviceVulkan11Features
+            {
+                sType = VkStructureType.PhysicalDeviceVulkan11Features
+            };
+
+            VkPhysicalDeviceVulkan12Features features_1_2 = new VkPhysicalDeviceVulkan12Features
+            {
+                sType = VkStructureType.PhysicalDeviceVulkan12Features
+            };
+
+            VkPhysicalDeviceFeatures2 deviceFeatures2 = new VkPhysicalDeviceFeatures2
+            {
+                sType = VkStructureType.PhysicalDeviceFeatures2
+            };
+
+            deviceFeatures2.pNext = &features_1_1;
+            features_1_1.pNext = &features_1_2;
+
+            void** features_chain = &features_1_2.pNext;
+
+            VkPhysicalDevice8BitStorageFeatures storage_8bit_features = default;
+            if (properties.apiVersion <= VkVersion.Version_1_2)
+            {
+                if (CheckDeviceExtensionSupport(KHR8bitStorageExtensionName, availableDeviceExtensions))
+                {
+                    enabledExtensions.Add(KHR8bitStorageExtensionName);
+                    storage_8bit_features.sType = VkStructureType.PhysicalDevice8bitStorageFeatures;
+                    *features_chain = &storage_8bit_features;
+                    features_chain = &storage_8bit_features.pNext;
+                }
+            }
+
+            if (CheckDeviceExtensionSupport(KHRSpirv14ExtensionName, availableDeviceExtensions))
+            {
+                // Required for VK_KHR_ray_tracing_pipeline
+                enabledExtensions.Add(KHRSpirv14ExtensionName);
+
+                // Required by VK_KHR_spirv_1_4
+                enabledExtensions.Add(KHRShaderFloatControlsExtensionName);
+            }
+
+            if (CheckDeviceExtensionSupport(KHRBufferDeviceAddressExtensionName, availableDeviceExtensions))
+            {
+                // Required by VK_KHR_acceleration_structure
+                enabledExtensions.Add(KHRBufferDeviceAddressExtensionName);
+            }
+
+            if (CheckDeviceExtensionSupport(EXTDescriptorIndexingExtensionName, availableDeviceExtensions))
+            {
+                // Required by VK_KHR_acceleration_structure
+                enabledExtensions.Add(EXTDescriptorIndexingExtensionName);
+            }
+
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR acceleration_structure_features = default;
+            if (CheckDeviceExtensionSupport(KHRAccelerationStructureExtensionName, availableDeviceExtensions))
+            {
+                // Required by VK_KHR_acceleration_structure
+                enabledExtensions.Add(KHRDeferredHostOperationsExtensionName);
+
+                enabledExtensions.Add(KHRAccelerationStructureExtensionName);
+                acceleration_structure_features.sType = VkStructureType.PhysicalDeviceAccelerationStructureFeaturesKHR;
+                *features_chain = &acceleration_structure_features;
+                features_chain = &acceleration_structure_features.pNext;
+            }
+
+            vkGetPhysicalDeviceFeatures2(physicalDevice, out deviceFeatures2);
+
+            using var deviceExtensionNames = new VkStringArray(enabledExtensions);
+
+            var deviceCreateInfo = new VkDeviceCreateInfo
+            {
+                sType = VkStructureType.DeviceCreateInfo,
+                pNext = &deviceFeatures2,
+                queueCreateInfoCount = 1,
+                pQueueCreateInfos = &queueCreateInfo,
+                enabledExtensionCount = deviceExtensionNames.Length,
+                ppEnabledExtensionNames = deviceExtensionNames,
+                pEnabledFeatures = null,
+            };
+
+            var result = vkCreateDevice(physicalDevice, &deviceCreateInfo, null, out device);
+            if (result != VkResult.Success)
+                throw new Exception($"Failed to create Vulkan Logical Device, {result}");
+
+            vkGetDeviceQueue(device, queueFamilies.graphicsFamily, 0, out graphicsQueue);
+            vkGetDeviceQueue(device, queueFamilies.presentFamily, 0, out presentQueue);
         }
 
         private void GetImages()
