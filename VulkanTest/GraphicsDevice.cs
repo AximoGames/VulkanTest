@@ -50,10 +50,10 @@ namespace Vortice
             //     instanceExtensions.Add(KHRWin32SurfaceExtensionName);
             // }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                instanceExtensions.Add(KHRXlibSurfaceExtensionName);
-            }
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            // {
+            //     instanceExtensions.Add(KHRXlibSurfaceExtensionName);
+            // }
 
             List<string> instanceLayers = new List<string>();
             if (enableValidation)
