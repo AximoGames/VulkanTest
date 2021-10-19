@@ -4,6 +4,12 @@ namespace Vortice
 {
     public static class Log
     {
+        public static void Verbose(string message)
+        {
+            WriteColored(ConsoleColor.Gray, "[VERBOSE]");
+            Console.WriteLine(" " + message);
+        }
+
         public static void Info(string message)
         {
             WriteColored(ConsoleColor.Green, "[INFO]");

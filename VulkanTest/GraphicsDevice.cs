@@ -98,6 +98,8 @@ namespace Vortice
                 instanceExtensions.Add(EXTDebugUtilsExtensionName);
             }
 
+            //instanceExtensions.Add("VK_KHR_buffer_device_address");
+
             using var vkInstanceExtensions = new VkStringArray(instanceExtensions);
 
             var instanceCreateInfo = new VkInstanceCreateInfo
@@ -123,7 +125,7 @@ namespace Vortice
             if (instanceLayers.Count > 0)
             {
                 debugUtilsCreateInfo.messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Error | VkDebugUtilsMessageSeverityFlagsEXT.Warning;
-                debugUtilsCreateInfo.messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance;
+                debugUtilsCreateInfo.messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance | VkDebugUtilsMessageTypeFlagsEXT.General;
                 debugUtilsCreateInfo.pfnUserCallback = &DebugMessengerCallback;
 
                 instanceCreateInfo.pNext = &debugUtilsCreateInfo;
@@ -159,6 +161,8 @@ namespace Vortice
             {
                 Log.Info($"Instance extension '{extension}'");
             }
+
+            GetAvailabeExtensions();
         }
 
         public void CreateDevice(out VkPhysicalDevice physicalDevice, out VkDevice device, out VkQueue graphicsQueue, out VkQueue presentQueue)
@@ -279,6 +283,16 @@ namespace Vortice
 
             vkGetDeviceQueue(device, queueFamilies.graphicsFamily, 0, out graphicsQueue);
             vkGetDeviceQueue(device, queueFamilies.presentFamily, 0, out presentQueue);
+        }
+
+        private void GetAvailabeExtensions()
+        {
+            var properties = vkEnumerateInstanceExtensionProperties(null);
+            foreach (var prop in properties)
+            {
+                var name = prop.GetExtensionName();
+                Log.Verbose(name);
+            }
         }
 
         private void GetImages()
@@ -766,6 +780,14 @@ void main() {
                 {
                     Log.Warn($"[Vulkan]: Validation: {messageSeverity} - {message}");
                 }
+                else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Info)
+                {
+                    Log.Info($"[Vulkan]: Validation: {messageSeverity} - {message}");
+                }
+                else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Verbose)
+                {
+                    Log.Verbose($"[Vulkan]: Validation: {messageSeverity} - {message}");
+                }
 
                 Debug.WriteLine($"[Vulkan]: Validation: {messageSeverity} - {message}");
             }
@@ -778,6 +800,14 @@ void main() {
                 else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Warning)
                 {
                     Log.Warn($"[Vulkan]: {messageSeverity} - {message}");
+                }
+                else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Info)
+                {
+                    Log.Info($"[Vulkan]: {messageSeverity} - {message}");
+                }
+                else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Verbose)
+                {
+                    Log.Verbose($"[Vulkan]: {messageSeverity} - {message}");
                 }
 
                 Debug.WriteLine($"[Vulkan]: {messageSeverity} - {message}");
