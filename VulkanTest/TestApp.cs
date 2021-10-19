@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using Vortice;
 using Vortice.Vulkan;
@@ -56,7 +57,12 @@ namespace DrawTriangle
             };
             vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VkSubpassContents.Inline);
             vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
-            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+            //vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+            vkCmdBindVertexBuffers(commandBuffer, 0, _graphicsDevice.VertexBuffer);
+
+            vkCmdDraw(commandBuffer, (uint)_graphicsDevice.Vertices.Length, 1, 0, 0);
+
             vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
             vkCmdEndRenderPass(commandBuffer);
         }
