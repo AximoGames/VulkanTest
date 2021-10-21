@@ -31,11 +31,10 @@ namespace Vortice
         private PerFrame[] _perFrame; // TODO: Pin during init?
         public VkRenderPass RenderPass;
         public VkBuffer VertexBuffer;
+        public VkBuffer IndexBuffer;
+        public VkDeviceMemory IndexBufferMemory;
         public VkDeviceMemory VertexBufferMemory;
         public VkCommandPool CommandPool;
-
-        public VkBuffer StagingBuffer;
-        public VkDeviceMemory StagingBufferMemory;
 
         private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
 
@@ -59,6 +58,7 @@ namespace Vortice
             CreateFrameBuffers();
 
             CreateVertexBuffer();
+            CreateIndexBuffer();
 
             for (var i = 0; i < _perFrame.Length; i++)
             {
@@ -434,9 +434,14 @@ namespace Vortice
         }
 
         public Vertex[] Vertices = new Vertex[] {
-            new Vertex { pos = new Vector2( 0.0f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f)},
+            new Vertex { pos = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f)},
+            new Vertex { pos = new Vector2( 0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f)},
             new Vertex { pos = new Vector2( 0.5f, 0.5f ),  color = new Vector3( 0.0f, 1.0f, 0.0f)},
             new Vertex { pos = new Vector2( -0.5f, 0.5f),  color = new Vector3( 0.0f, 0.0f, 1.0f)}
+        };
+
+        public ushort[] Indices = {
+            0, 1, 2, 2, 3, 0,
         };
 
         private void CreateGraphicsPipeline(out VkPipeline pipeline)
@@ -611,23 +616,47 @@ void main() {
 
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
-            CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out StagingBuffer, out StagingBufferMemory);
+            CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
 
             fixed (void* verticesPtr = &Vertices[0])
             {
                 void* data;
-                vkMapMemory(VkDevice, StagingBufferMemory, 0, bufferSize, 0, &data);
+                vkMapMemory(VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
                 Unsafe.CopyBlock(data, verticesPtr, bufferSize);
                 //memcpy(data, vertices.data(), (size_t)bufferSize);
-                vkUnmapMemory(VkDevice, StagingBufferMemory);
+                vkUnmapMemory(VkDevice, stagingBufferMemory);
             }
 
             CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.VertexBuffer, VkMemoryPropertyFlags.DeviceLocal, out VertexBuffer, out VertexBufferMemory);
 
-            CopyBuffer(StagingBuffer, VertexBuffer, bufferSize);
+            CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
 
-            vkDestroyBuffer(VkDevice, StagingBuffer, null);
-            vkFreeMemory(VkDevice, StagingBufferMemory, null);
+            vkDestroyBuffer(VkDevice, stagingBuffer, null);
+            vkFreeMemory(VkDevice, stagingBufferMemory, null);
+        }
+
+        void CreateIndexBuffer()
+        {
+            uint bufferSize = (uint)(Marshal.SizeOf<short>() * Indices.Length);
+
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
+            CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
+
+            fixed (ushort* indiciesPtr = &Indices[0])
+            {
+                void* data;
+                vkMapMemory(VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+                Unsafe.CopyBlock(data, indiciesPtr, bufferSize);
+                vkUnmapMemory(VkDevice, stagingBufferMemory);
+            }
+
+            CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.IndexBuffer, VkMemoryPropertyFlags.DeviceLocal, out IndexBuffer, out IndexBufferMemory);
+
+            CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
+
+            vkDestroyBuffer(VkDevice, stagingBuffer, null);
+            vkFreeMemory(VkDevice, stagingBufferMemory, null);
         }
 
         private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
