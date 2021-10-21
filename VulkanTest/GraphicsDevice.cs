@@ -32,6 +32,10 @@ namespace Vortice
         public VkRenderPass RenderPass;
         public VkBuffer VertexBuffer;
         public VkDeviceMemory VertexBufferMemory;
+        public VkCommandPool CommandPool;
+
+        public VkBuffer StagingBuffer;
+        public VkDeviceMemory StagingBufferMemory;
 
         private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
 
@@ -51,9 +55,10 @@ namespace Vortice
             CreateRenderPass(Swapchain.SurfaceFormat.format);
             CreateGraphicsPipeline(out Pipelne);
 
-            CreateVertexBuffer();
             CreateCommandPool();
             CreateFrameBuffers();
+
+            CreateVertexBuffer();
 
             for (var i = 0; i < _perFrame.Length; i++)
             {
@@ -602,46 +607,107 @@ void main() {
 
         private void CreateVertexBuffer()
         {
+            var bufferSize = (uint)(Marshal.SizeOf<Vertex>() * Vertices.Length);
+
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
+            CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out StagingBuffer, out StagingBufferMemory);
+
+            fixed (void* verticesPtr = &Vertices[0])
+            {
+                void* data;
+                vkMapMemory(VkDevice, StagingBufferMemory, 0, bufferSize, 0, &data);
+                Unsafe.CopyBlock(data, verticesPtr, bufferSize);
+                //memcpy(data, vertices.data(), (size_t)bufferSize);
+                vkUnmapMemory(VkDevice, StagingBufferMemory);
+            }
+
+            CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.VertexBuffer, VkMemoryPropertyFlags.DeviceLocal, out VertexBuffer, out VertexBufferMemory);
+
+            CopyBuffer(StagingBuffer, VertexBuffer, bufferSize);
+
+            vkDestroyBuffer(VkDevice, StagingBuffer, null);
+            vkFreeMemory(VkDevice, StagingBufferMemory, null);
+        }
+
+        private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
+        {
             VkBufferCreateInfo bufferInfo;
             bufferInfo.sType = VkStructureType.BufferCreateInfo;
-            bufferInfo.size = (uint)(Marshal.SizeOf<Vertex>() * Vertices.Length);
-            bufferInfo.usage = VkBufferUsageFlags.VertexBuffer;
+            bufferInfo.size = size;
+            bufferInfo.usage = usage;
             bufferInfo.sharingMode = VkSharingMode.Exclusive;
 
-            if (vkCreateBuffer(VkDevice, &bufferInfo, null, out VertexBuffer) != VkResult.Success)
+            if (vkCreateBuffer(VkDevice, &bufferInfo, null, out buffer) != VkResult.Success)
             {
-                throw new Exception("failed to create vertex buffer!");
+                throw new Exception("failed to create buffer!");
             }
 
             VkMemoryRequirements memRequirements;
-            vkGetBufferMemoryRequirements(VkDevice, VertexBuffer, out memRequirements);
+            vkGetBufferMemoryRequirements(VkDevice, buffer, out memRequirements);
 
             VkMemoryAllocateInfo allocInfo;
             allocInfo.sType = VkStructureType.MemoryAllocateInfo;
             allocInfo.allocationSize = memRequirements.size;
-            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent);
+            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-            if (vkAllocateMemory(VkDevice, &allocInfo, null, out VertexBufferMemory) != VkResult.Success)
+            if (vkAllocateMemory(VkDevice, &allocInfo, null, out bufferMemory) != VkResult.Success)
             {
-                throw new Exception("failed to allocate vertex buffer memory!");
+                throw new Exception("failed to allocate buffer memory!");
             }
 
-            vkBindBufferMemory(VkDevice, VertexBuffer, VertexBufferMemory, 0);
+            vkBindBufferMemory(VkDevice, buffer, bufferMemory, 0);
+        }
 
-            void* data;
-            fixed (void* d = &Vertices[0])
-            {
-                vkMapMemory(VkDevice, VertexBufferMemory, 0, bufferInfo.size, 0, &data);
-                Unsafe.CopyBlockUnaligned(data, d, (uint)bufferInfo.size);
-                vkUnmapMemory(VkDevice, VertexBufferMemory);
-            }
+        void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, ulong size)
+        {
+            VkCommandBufferAllocateInfo allocInfo;
+            allocInfo.sType = VkStructureType.CommandBufferAllocateInfo;
+            allocInfo.level = VkCommandBufferLevel.Primary;
+            allocInfo.commandPool = CommandPool;
+            allocInfo.commandBufferCount = 1;
+
+            VkCommandBuffer commandBuffer;
+            vkAllocateCommandBuffer(VkDevice, &allocInfo, out commandBuffer);
+
+            VkCommandBufferBeginInfo beginInfo;
+            beginInfo.sType = VkStructureType.CommandBufferBeginInfo;
+            beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmit;
+
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+            VkBufferCopy copyRegion;
+            copyRegion.size = size;
+            vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+            vkEndCommandBuffer(commandBuffer);
+
+            VkSubmitInfo submitInfo;
+            submitInfo.sType = VkStructureType.SubmitInfo;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandBuffer;
+
+            vkQueueSubmit(GraphicsQueue, 1, &submitInfo, VkFence.Null);
+            vkQueueWaitIdle(GraphicsQueue);
+
+            vkFreeCommandBuffers(VkDevice, CommandPool, 1, &commandBuffer);
         }
 
         private void CreateCommandPool()
         {
+            // General Pool
+            VkCommandPoolCreateInfo poolCreateInfo = new VkCommandPoolCreateInfo
+            {
+                sType = VkStructureType.CommandPoolCreateInfo,
+                flags = VkCommandPoolCreateFlags.Transient,
+                queueFamilyIndex = queueFamilies.graphicsFamily,
+            };
+            vkCreateCommandPool(VkDevice, &poolCreateInfo, null, out CommandPool).CheckResult();
+
+            // Per Frame Pools
             for (var i = 0; i < _perFrame.Length; i++)
             {
-                VkCommandPoolCreateInfo poolCreateInfo = new VkCommandPoolCreateInfo
+                poolCreateInfo = new VkCommandPoolCreateInfo
                 {
                     sType = VkStructureType.CommandPoolCreateInfo,
                     flags = VkCommandPoolCreateFlags.Transient,
