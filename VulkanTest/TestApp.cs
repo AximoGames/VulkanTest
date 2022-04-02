@@ -63,7 +63,7 @@ namespace DrawTriangle
             vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.IndexBuffer, 0, VkIndexType.Uint16);
 
             //vkCmdDraw(commandBuffer, (uint)_graphicsDevice.Vertices.Length, 1, 0, 0);
-            vkCmdDrawIndexed(commandBuffer, (uint)_graphicsDevice.Indices.Length, 1, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffer, _graphicsDevice.Indices.Length, 1, 0, 0, 0);
 
             vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
             vkCmdEndRenderPass(commandBuffer);

@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="OpenTK.Windowing.Desktop" Version="5.0.0-pre.6" />
-    <PackageReference Include="Vortice.ShaderCompiler" Version="1.4.0" />
-    <PackageReference Include="Vortice.Vulkan" Version="1.4.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="OpenTK.Windowing.Desktop" Version="5.0.0-pre.6" />
+		<PackageReference Include="Vortice.ShaderCompiler" Version="1.4.0" />
+		<PackageReference Include="Vortice.Vulkan" Version="1.5.8" />
+	</ItemGroup>
 
 </Project>

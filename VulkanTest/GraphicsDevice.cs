@@ -104,7 +104,7 @@ namespace Vortice
 
             if (instanceLayers.Count > 0)
             {
-                instanceExtensions.Add(EXTDebugUtilsExtensionName);
+                instanceExtensions.Add(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             }
 
             //instanceExtensions.Add("VK_KHR_buffer_device_address");
@@ -203,7 +203,7 @@ namespace Vortice
 
             List<string> enabledExtensions = new List<string>
             {
-                KHRSwapchainExtensionName
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME
             };
 
             VkPhysicalDeviceVulkan11Features features_1_1 = new VkPhysicalDeviceVulkan11Features
@@ -229,49 +229,49 @@ namespace Vortice
             VkPhysicalDevice8BitStorageFeatures storage_8bit_features = default;
             if (properties.apiVersion <= VkVersion.Version_1_2)
             {
-                if (CheckDeviceExtensionSupport(KHR8bitStorageExtensionName, availableDeviceExtensions))
+                if (CheckDeviceExtensionSupport(VK_KHR_8BIT_STORAGE_EXTENSION_NAME, availableDeviceExtensions))
                 {
-                    enabledExtensions.Add(KHR8bitStorageExtensionName);
+                    enabledExtensions.Add(VK_KHR_8BIT_STORAGE_EXTENSION_NAME);
                     storage_8bit_features.sType = VkStructureType.PhysicalDevice8bitStorageFeatures;
                     *features_chain = &storage_8bit_features;
                     features_chain = &storage_8bit_features.pNext;
                 }
             }
 
-            if (CheckDeviceExtensionSupport(KHRSpirv14ExtensionName, availableDeviceExtensions))
+            if (CheckDeviceExtensionSupport(VK_KHR_SPIRV_1_4_EXTENSION_NAME, availableDeviceExtensions))
             {
                 // Required for VK_KHR_ray_tracing_pipeline
-                enabledExtensions.Add(KHRSpirv14ExtensionName);
+                enabledExtensions.Add(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
 
                 // Required by VK_KHR_spirv_1_4
-                enabledExtensions.Add(KHRShaderFloatControlsExtensionName);
+                enabledExtensions.Add(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
             }
 
-            if (CheckDeviceExtensionSupport(KHRBufferDeviceAddressExtensionName, availableDeviceExtensions))
+            if (CheckDeviceExtensionSupport(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, availableDeviceExtensions))
             {
                 // Required by VK_KHR_acceleration_structure
-                enabledExtensions.Add(KHRBufferDeviceAddressExtensionName);
+                enabledExtensions.Add(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
             }
 
-            if (CheckDeviceExtensionSupport(EXTDescriptorIndexingExtensionName, availableDeviceExtensions))
+            if (CheckDeviceExtensionSupport(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, availableDeviceExtensions))
             {
                 // Required by VK_KHR_acceleration_structure
-                enabledExtensions.Add(EXTDescriptorIndexingExtensionName);
+                enabledExtensions.Add(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
             }
 
             VkPhysicalDeviceAccelerationStructureFeaturesKHR acceleration_structure_features = default;
-            if (CheckDeviceExtensionSupport(KHRAccelerationStructureExtensionName, availableDeviceExtensions))
+            if (CheckDeviceExtensionSupport(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, availableDeviceExtensions))
             {
                 // Required by VK_KHR_acceleration_structure
-                enabledExtensions.Add(KHRDeferredHostOperationsExtensionName);
+                enabledExtensions.Add(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
 
-                enabledExtensions.Add(KHRAccelerationStructureExtensionName);
+                enabledExtensions.Add(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
                 acceleration_structure_features.sType = VkStructureType.PhysicalDeviceAccelerationStructureFeaturesKHR;
                 *features_chain = &acceleration_structure_features;
                 features_chain = &acceleration_structure_features.pNext;
             }
 
-            vkGetPhysicalDeviceFeatures2(physicalDevice, out deviceFeatures2);
+            vkGetPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures2);
 
             using var deviceExtensionNames = new VkStringArray(enabledExtensions);
 
@@ -353,7 +353,7 @@ namespace Vortice
 
             dependencies[0] = new VkSubpassDependency
             {
-                srcSubpass = SubpassExternal,
+                srcSubpass = VK_SUBPASS_EXTERNAL,
                 dstSubpass = 0,
                 srcStageMask = VkPipelineStageFlags.BottomOfPipe,
                 dstStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
@@ -365,7 +365,7 @@ namespace Vortice
             dependencies[1] = new VkSubpassDependency
             {
                 srcSubpass = 0,
-                dstSubpass = SubpassExternal,
+                dstSubpass = VK_SUBPASS_EXTERNAL,
                 srcStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
                 dstStageMask = VkPipelineStageFlags.BottomOfPipe,
                 srcAccessMask = VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
@@ -953,9 +953,7 @@ void main() {
             return new VkSurfaceKHR((ulong)handle.Handle);
         }
 
-#if NET5_0
         [UnmanagedCallersOnly]
-#endif
         private static uint DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagsEXT messageSeverity,
             VkDebugUtilsMessageTypeFlagsEXT messageTypes,
             VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -1049,8 +1047,8 @@ void main() {
         {
             ReadOnlySpan<VkQueueFamilyProperties> queueFamilies = vkGetPhysicalDeviceQueueFamilyProperties(device);
 
-            uint graphicsFamily = QueueFamilyIgnored;
-            uint presentFamily = QueueFamilyIgnored;
+            uint graphicsFamily = VK_QUEUE_FAMILY_IGNORED;
+            uint presentFamily = VK_QUEUE_FAMILY_IGNORED;
             uint i = 0;
             foreach (VkQueueFamilyProperties queueFamily in queueFamilies)
             {
@@ -1065,8 +1063,8 @@ void main() {
                     presentFamily = i;
                 }
 
-                if (graphicsFamily != QueueFamilyIgnored
-                    && presentFamily != QueueFamilyIgnored)
+                if (graphicsFamily != VK_QUEUE_FAMILY_IGNORED
+                    && presentFamily != VK_QUEUE_FAMILY_IGNORED)
                 {
                     break;
                 }
