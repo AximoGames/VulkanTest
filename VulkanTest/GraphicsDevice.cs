@@ -420,12 +420,12 @@ namespace Vortice
 
                 attributeDescriptions[0].binding = 0;
                 attributeDescriptions[0].location = 0;
-                attributeDescriptions[0].format = VkFormat.R32G32SFloat;
+                attributeDescriptions[0].format = VkFormat.R32G32Sfloat;
                 attributeDescriptions[0].offset = 0;
 
                 attributeDescriptions[1].binding = 0;
                 attributeDescriptions[1].location = 1;
-                attributeDescriptions[1].format = VkFormat.R32G32B32SFloat;
+                attributeDescriptions[1].format = VkFormat.R32G32B32Sfloat;
                 attributeDescriptions[1].offset = (uint)Marshal.SizeOf<Vector2>();
 
                 return attributeDescriptions;
