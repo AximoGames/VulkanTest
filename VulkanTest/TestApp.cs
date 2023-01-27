@@ -59,7 +59,7 @@ namespace DrawTriangle
             vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
             //vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
-            vkCmdBindVertexBuffers(commandBuffer, 0, _graphicsDevice.VertexBuffer);
+            vkCmdBindVertexBuffer(commandBuffer, 0, _graphicsDevice.VertexBuffer);
             vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.IndexBuffer, 0, VkIndexType.Uint16);
 
             //vkCmdDraw(commandBuffer, (uint)_graphicsDevice.Vertices.Length, 1, 0, 0);
