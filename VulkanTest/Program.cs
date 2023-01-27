@@ -3,16 +3,16 @@ using Vortice.ShaderCompiler;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace DrawTriangle
-{
-    public static unsafe partial class Program
-    {
+namespace DrawTriangle;
 
-        public static void Main()
+public static unsafe partial class Program
+{
+
+    public static void Main()
+    {
+        try
         {
-            try
-            {
-                string vertexShader = @"
+            string vertexShader = @"
 #version 450
 layout (location = 0) in vec3 inPos;
 layout (location = 1) in vec3 inColor;
@@ -33,20 +33,19 @@ void main()
 	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.modelMatrix * vec4(inPos.xyz, 1.0);
 }
 ";
-                using Compiler compiler = new Compiler();
-                using (var compilationResult = compiler.Compile(vertexShader, string.Empty, ShaderKind.VertexShader))
-                {
-                    //vkCreateShaderModule(VkDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
-                }
-
-                var testApp = new TestApp();
-                testApp.Run();
-            }
-            catch (Exception ex)
+            using Compiler compiler = new Compiler();
+            using (var compilationResult = compiler.Compile(vertexShader, string.Empty, ShaderKind.VertexShader))
             {
-                Console.WriteLine(ex.ToString());
-                throw;
+                //vkCreateShaderModule(VkDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
             }
+
+            var testApp = new TestApp();
+            testApp.Run();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            throw;
         }
     }
 }

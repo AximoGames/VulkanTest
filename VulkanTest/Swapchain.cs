@@ -4,147 +4,146 @@ using OpenTK.Windowing.Desktop;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Vortice
+namespace Vortice;
+
+
+public sealed unsafe class Swapchain : IDisposable
 {
+    public readonly GraphicsDevice Device;
+    [NotNull]
+    public readonly GameWindow? Window = default!;
+    public VkSwapchainKHR Handle;
+    public VkExtent2D Extent { get; }
 
-    public sealed unsafe class Swapchain : IDisposable
+    public VkSurfaceFormatKHR SurfaceFormat;
+
+    public Swapchain(GraphicsDevice device, GameWindow? window)
     {
-        public readonly GraphicsDevice Device;
-        [NotNull]
-        public readonly GameWindow? Window = default!;
-        public VkSwapchainKHR Handle;
-        public VkExtent2D Extent { get; }
+        Device = device;
+        Window = window;
 
-        public VkSurfaceFormatKHR SurfaceFormat;
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.PhysicalDevice, device._surface);
 
-        public Swapchain(GraphicsDevice device, GameWindow? window)
+        SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.Formats);
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.PresentModes);
+        Extent = ChooseSwapExtent(swapChainSupport.Capabilities);
+
+        uint imageCount = swapChainSupport.Capabilities.minImageCount + 1;
+        if (swapChainSupport.Capabilities.maxImageCount > 0 &&
+            imageCount > swapChainSupport.Capabilities.maxImageCount)
         {
-            Device = device;
-            Window = window;
-
-            SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.PhysicalDevice, device._surface);
-
-            SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.Formats);
-            VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.PresentModes);
-            Extent = ChooseSwapExtent(swapChainSupport.Capabilities);
-
-            uint imageCount = swapChainSupport.Capabilities.minImageCount + 1;
-            if (swapChainSupport.Capabilities.maxImageCount > 0 &&
-                imageCount > swapChainSupport.Capabilities.maxImageCount)
-            {
-                imageCount = swapChainSupport.Capabilities.maxImageCount;
-            }
-
-            var createInfo = new VkSwapchainCreateInfoKHR
-            {
-                sType = VkStructureType.SwapchainCreateInfoKHR,
-                surface = device._surface,
-                minImageCount = imageCount,
-                imageFormat = SurfaceFormat.format,
-                imageColorSpace = SurfaceFormat.colorSpace,
-                imageExtent = Extent,
-                imageArrayLayers = 1,
-                imageUsage = VkImageUsageFlags.ColorAttachment,
-                imageSharingMode = VkSharingMode.Exclusive,
-                preTransform = swapChainSupport.Capabilities.currentTransform,
-                compositeAlpha = VkCompositeAlphaFlagsKHR.Opaque,
-                presentMode = presentMode,
-                clipped = true,
-                oldSwapchain = VkSwapchainKHR.Null
-            };
-
-            vkCreateSwapchainKHR(device.VkDevice, &createInfo, null, out Handle).CheckResult();
+            imageCount = swapChainSupport.Capabilities.maxImageCount;
         }
 
-        public void Dispose()
+        var createInfo = new VkSwapchainCreateInfoKHR
         {
-            //for (int i = 0; i < _swapChainImageViews.Length; i++)
-            //{
-            //    vkDestroyImageView(Device, _swapChainImageViews[i], null);
-            //}
-
-            //for (int i = 0; i < Framebuffers.Length; i++)
-            //{
-            //    vkDestroyFramebuffer(Device, Framebuffers[i], null);
-            //}
-
-            //vkDestroyRenderPass(Device, RenderPass, null);
-
-            //if (Handle != VkSwapchainKHR.Null)
-            //{
-            //    vkDestroySwapchainKHR(Device, Handle, null);
-            //}
-        }
-
-        private ref struct SwapChainSupportDetails
-        {
-            public VkSurfaceCapabilitiesKHR Capabilities;
-            public ReadOnlySpan<VkSurfaceFormatKHR> Formats;
-            public ReadOnlySpan<VkPresentModeKHR> PresentModes;
+            sType = VkStructureType.SwapchainCreateInfoKHR,
+            surface = device._surface,
+            minImageCount = imageCount,
+            imageFormat = SurfaceFormat.format,
+            imageColorSpace = SurfaceFormat.colorSpace,
+            imageExtent = Extent,
+            imageArrayLayers = 1,
+            imageUsage = VkImageUsageFlags.ColorAttachment,
+            imageSharingMode = VkSharingMode.Exclusive,
+            preTransform = swapChainSupport.Capabilities.currentTransform,
+            compositeAlpha = VkCompositeAlphaFlagsKHR.Opaque,
+            presentMode = presentMode,
+            clipped = true,
+            oldSwapchain = VkSwapchainKHR.Null
         };
 
-        private VkExtent2D ChooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities)
+        vkCreateSwapchainKHR(device.VkDevice, &createInfo, null, out Handle).CheckResult();
+    }
+
+    public void Dispose()
+    {
+        //for (int i = 0; i < _swapChainImageViews.Length; i++)
+        //{
+        //    vkDestroyImageView(Device, _swapChainImageViews[i], null);
+        //}
+
+        //for (int i = 0; i < Framebuffers.Length; i++)
+        //{
+        //    vkDestroyFramebuffer(Device, Framebuffers[i], null);
+        //}
+
+        //vkDestroyRenderPass(Device, RenderPass, null);
+
+        //if (Handle != VkSwapchainKHR.Null)
+        //{
+        //    vkDestroySwapchainKHR(Device, Handle, null);
+        //}
+    }
+
+    private ref struct SwapChainSupportDetails
+    {
+        public VkSurfaceCapabilitiesKHR Capabilities;
+        public ReadOnlySpan<VkSurfaceFormatKHR> Formats;
+        public ReadOnlySpan<VkPresentModeKHR> PresentModes;
+    };
+
+    private VkExtent2D ChooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities)
+    {
+        if (capabilities.currentExtent.width > 0)
         {
-            if (capabilities.currentExtent.width > 0)
-            {
-                return capabilities.currentExtent;
-            }
-            else
-            {
-                VkExtent2D actualExtent = new VkExtent2D(Window.ClientSize.X, Window.ClientSize.Y);
+            return capabilities.currentExtent;
+        }
+        else
+        {
+            VkExtent2D actualExtent = new VkExtent2D(Window.ClientSize.X, Window.ClientSize.Y);
 
-                actualExtent = new VkExtent2D(
-                    Math.Max(capabilities.minImageExtent.width, Math.Min(capabilities.maxImageExtent.width, actualExtent.width)),
-                    Math.Max(capabilities.minImageExtent.height, Math.Min(capabilities.maxImageExtent.height, actualExtent.height))
-                    );
+            actualExtent = new VkExtent2D(
+                Math.Max(capabilities.minImageExtent.width, Math.Min(capabilities.maxImageExtent.width, actualExtent.width)),
+                Math.Max(capabilities.minImageExtent.height, Math.Min(capabilities.maxImageExtent.height, actualExtent.height))
+                );
 
-                return actualExtent;
+            return actualExtent;
+        }
+    }
+
+    private static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
+    {
+        SwapChainSupportDetails details = new SwapChainSupportDetails();
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, out details.Capabilities).CheckResult();
+
+        details.Formats = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface);
+        details.PresentModes = vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface);
+        return details;
+    }
+
+    private static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(ReadOnlySpan<VkSurfaceFormatKHR> availableFormats)
+    {
+        // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
+        // there is no preferred format, so we assume VK_FORMAT_B8G8R8A8_UNORM
+        if ((availableFormats.Length == 1) && (availableFormats[0].format == VkFormat.Undefined))
+        {
+            return new VkSurfaceFormatKHR(VkFormat.B8G8R8A8Unorm, availableFormats[0].colorSpace);
+        }
+
+        // iterate over the list of available surface format and
+        // check for the presence of VK_FORMAT_B8G8R8A8_UNORM
+        foreach (VkSurfaceFormatKHR availableFormat in availableFormats)
+        {
+            if (availableFormat.format == VkFormat.B8G8R8A8Unorm)
+            {
+                return availableFormat;
             }
         }
 
-        private static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
-        {
-            SwapChainSupportDetails details = new SwapChainSupportDetails();
-            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, out details.Capabilities).CheckResult();
+        return availableFormats[0];
+    }
 
-            details.Formats = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface);
-            details.PresentModes = vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface);
-            return details;
+    private static VkPresentModeKHR ChooseSwapPresentMode(ReadOnlySpan<VkPresentModeKHR> availablePresentModes)
+    {
+        foreach (VkPresentModeKHR availablePresentMode in availablePresentModes)
+        {
+            if (availablePresentMode == VkPresentModeKHR.Mailbox)
+            {
+                return availablePresentMode;
+            }
         }
 
-        private static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(ReadOnlySpan<VkSurfaceFormatKHR> availableFormats)
-        {
-            // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
-            // there is no preferred format, so we assume VK_FORMAT_B8G8R8A8_UNORM
-            if ((availableFormats.Length == 1) && (availableFormats[0].format == VkFormat.Undefined))
-            {
-                return new VkSurfaceFormatKHR(VkFormat.B8G8R8A8Unorm, availableFormats[0].colorSpace);
-            }
-
-            // iterate over the list of available surface format and
-            // check for the presence of VK_FORMAT_B8G8R8A8_UNORM
-            foreach (VkSurfaceFormatKHR availableFormat in availableFormats)
-            {
-                if (availableFormat.format == VkFormat.B8G8R8A8Unorm)
-                {
-                    return availableFormat;
-                }
-            }
-
-            return availableFormats[0];
-        }
-
-        private static VkPresentModeKHR ChooseSwapPresentMode(ReadOnlySpan<VkPresentModeKHR> availablePresentModes)
-        {
-            foreach (VkPresentModeKHR availablePresentMode in availablePresentModes)
-            {
-                if (availablePresentMode == VkPresentModeKHR.Mailbox)
-                {
-                    return availablePresentMode;
-                }
-            }
-
-            return VkPresentModeKHR.Fifo;
-        }
+        return VkPresentModeKHR.Fifo;
     }
 }
