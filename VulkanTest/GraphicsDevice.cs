@@ -949,7 +949,7 @@ void main() {
         #region Private Methods
         private VkSurfaceKHR CreateSurface(GameWindow window)
         {
-            GLFW.CreateWindowSurface(new VkHandle(VkInstance.Handle), (Window*)window.Context.WindowPtr, null, out var handle);
+            GLFW.CreateWindowSurface(new VkHandle(VkInstance.Handle), window.WindowPtr, null, out var handle);
             return new VkSurfaceKHR((ulong)handle.Handle);
         }
 
