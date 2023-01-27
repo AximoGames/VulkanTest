@@ -232,7 +232,7 @@ namespace Vortice
                 if (CheckDeviceExtensionSupport(VK_KHR_8BIT_STORAGE_EXTENSION_NAME, availableDeviceExtensions))
                 {
                     enabledExtensions.Add(VK_KHR_8BIT_STORAGE_EXTENSION_NAME);
-                    storage_8bit_features.sType = VkStructureType.PhysicalDevice8bitStorageFeatures;
+                    storage_8bit_features.sType = VkStructureType.PhysicalDevice8BitStorageFeatures;
                     *features_chain = &storage_8bit_features;
                     features_chain = &storage_8bit_features.pNext;
                 }
