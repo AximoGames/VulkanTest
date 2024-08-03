@@ -12,8 +12,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="OpenTK.Windowing.Desktop" Version="5.0.0-pre.8" />
-		<PackageReference Include="Vortice.ShaderCompiler" Version="1.6.0" />
-		<PackageReference Include="Vortice.Vulkan" Version="1.5.28" />
+		<PackageReference Include="Vortice.ShaderCompiler" Version="1.7.2" />
+		<PackageReference Include="Vortice.Vulkan" Version="1.7.0" />
 	</ItemGroup>
 
 </Project>
