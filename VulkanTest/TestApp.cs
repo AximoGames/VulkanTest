@@ -9,7 +9,6 @@ namespace DrawTriangle;
 
 public unsafe class TestApp : Application
 {
-
 #if DEBUG
     private static bool EnableValidationLayers = true;
 #else
@@ -18,6 +17,7 @@ public unsafe class TestApp : Application
 
     [NotNull]
     private GraphicsDevice _graphicsDevice = default!;
+
     private float _green = 0.0f;
 
     public override string Name => "01-ClearScreen";

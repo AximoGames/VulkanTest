@@ -6,7 +6,6 @@ using System.Threading;
 
 namespace Vortice;
 
-
 public abstract class Application
 {
     protected Application()
@@ -21,10 +20,7 @@ public abstract class Application
     protected virtual void Initialize()
     {
         MainWindow = new MyGameWindow(Name);
-        MainWindow.RenderFrame += (e) =>
-        {
-            OnRenderFrame();
-        };
+        MainWindow.RenderFrame += (e) => { OnRenderFrame(); };
     }
 
     protected virtual void OnRenderFrame()
@@ -36,5 +32,4 @@ public abstract class Application
         Initialize();
         MainWindow.Run();
     }
-
 }

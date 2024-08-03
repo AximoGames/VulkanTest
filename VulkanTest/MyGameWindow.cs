@@ -3,10 +3,8 @@ using OpenTK.Windowing.Common;
 
 namespace Vortice;
 
-
 public class MyGameWindow : GameWindow
 {
-
     public MyGameWindow(string name) :
         base(new GameWindowSettings { IsMultiThreaded = true }, new NativeWindowSettings { Title = name, API = ContextAPI.NoAPI })
     {
@@ -22,5 +20,4 @@ public class MyGameWindow : GameWindow
             OnRenderFrame(new FrameEventArgs());
         }
     }
-
 }

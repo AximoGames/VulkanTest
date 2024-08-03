@@ -6,12 +6,13 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Vortice;
 
-
 public sealed unsafe class Swapchain : IDisposable
 {
     public readonly GraphicsDevice Device;
+
     [NotNull]
     public readonly GameWindow? Window = default!;
+
     public VkSwapchainKHR Handle;
     public VkExtent2D Extent { get; }
 
@@ -96,7 +97,7 @@ public sealed unsafe class Swapchain : IDisposable
             actualExtent = new VkExtent2D(
                 Math.Max(capabilities.minImageExtent.width, Math.Min(capabilities.maxImageExtent.width, actualExtent.width)),
                 Math.Max(capabilities.minImageExtent.height, Math.Min(capabilities.maxImageExtent.height, actualExtent.height))
-                );
+            );
 
             return actualExtent;
         }

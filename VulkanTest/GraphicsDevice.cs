@@ -174,7 +174,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
     }
 
     public void CreateDevice(out VkPhysicalDevice physicalDevice, out VkDevice device, out VkQueue graphicsQueue, out VkQueue presentQueue)
-    {             // Find physical device, setup queue's and create device.
+    {
+        // Find physical device, setup queue's and create device.
         var physicalDevices = vkEnumeratePhysicalDevices(VkInstance);
         foreach (var pDevice in physicalDevices)
         {
@@ -323,7 +324,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
                 Swapchain.SurfaceFormat.format,
                 VkComponentMapping.Rgba,
                 new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
-                );
+            );
 
             vkCreateImageView(VkDevice, &viewCreateInfo, null, out _perFrame[i].ImageView).CheckResult();
         }
@@ -429,17 +430,18 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
             return attributeDescriptions;
         }
-
     }
 
-    public Vertex[] Vertices = new Vertex[] {
-        new Vertex { pos = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f)},
-        new Vertex { pos = new Vector2( 0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f)},
-        new Vertex { pos = new Vector2( 0.5f, 0.5f ),  color = new Vector3( 0.0f, 1.0f, 0.0f)},
-        new Vertex { pos = new Vector2( -0.5f, 0.5f),  color = new Vector3( 0.0f, 0.0f, 1.0f)}
+    public Vertex[] Vertices = new Vertex[]
+    {
+        new Vertex { pos = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new Vertex { pos = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new Vertex { pos = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
+        new Vertex { pos = new Vector2(-0.5f, 0.5f), color = new Vector3(0.0f, 0.0f, 1.0f) }
     };
 
-    public ushort[] Indices = {
+    public ushort[] Indices =
+    {
         0, 1, 2, 2, 3, 0,
     };
 
@@ -492,7 +494,6 @@ void main() {
 
         fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
         {
-
             var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo();
             vertexInputInfo.sType = VkStructureType.PipelineVertexInputStateCreateInfo;
 
@@ -567,7 +568,6 @@ void main() {
             VkPipelineShaderStageCreateInfo[] shaderStages = new VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
             fixed (VkPipelineShaderStageCreateInfo* shaderStagesPtr = &shaderStages[0])
             {
-
                 var pipelineInfo = new VkGraphicsPipelineCreateInfo();
                 pipelineInfo.sType = VkStructureType.GraphicsPipelineCreateInfo;
                 pipelineInfo.stageCount = 2;
@@ -801,6 +801,7 @@ void main() {
         {
             vkDestroySemaphore(VkDevice, semaphore, null);
         }
+
         _recycledSemaphores.Clear();
 
         if (VkDevice != VkDevice.Null)
@@ -946,6 +947,7 @@ void main() {
     public static implicit operator VkDevice(GraphicsDevice device) => device.VkDevice;
 
     #region Private Methods
+
     private VkSurfaceKHR CreateSurface(GameWindow window)
     {
         GLFW.CreateWindowSurface(new VkHandle(VkInstance.Handle), window.WindowPtr, null, out var handle);
@@ -1073,6 +1075,7 @@ void main() {
 
         return (graphicsFamily, presentFamily);
     }
+
     #endregion
 
     private struct PerFrame
