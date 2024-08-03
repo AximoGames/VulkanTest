@@ -38,7 +38,6 @@ public sealed unsafe class Swapchain : IDisposable
 
         var createInfo = new VkSwapchainCreateInfoKHR
         {
-            sType = VkStructureType.SwapchainCreateInfoKHR,
             surface = device._surface,
             minImageCount = imageCount,
             imageFormat = SurfaceFormat.format,

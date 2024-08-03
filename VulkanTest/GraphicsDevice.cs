@@ -73,7 +73,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         using VkString name = applicationName;
         var appInfo = new VkApplicationInfo
         {
-            sType = VkStructureType.ApplicationInfo,
             pApplicationName = name,
             applicationVersion = new VkVersion(1, 0, 0),
             pEngineName = s_EngineName,
@@ -112,7 +111,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         var instanceCreateInfo = new VkInstanceCreateInfo
         {
-            sType = VkStructureType.InstanceCreateInfo,
             pApplicationInfo = &appInfo,
             enabledExtensionCount = vkInstanceExtensions.Length,
             ppEnabledExtensionNames = vkInstanceExtensions
@@ -127,7 +125,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         var debugUtilsCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT
         {
-            sType = VkStructureType.DebugUtilsMessengerCreateInfoEXT
         };
 
         if (instanceLayers.Count > 0)
@@ -195,7 +192,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         float priority = 1.0f;
         VkDeviceQueueCreateInfo queueCreateInfo = new VkDeviceQueueCreateInfo
         {
-            sType = VkStructureType.DeviceQueueCreateInfo,
             queueFamilyIndex = queueFamilies.graphicsFamily,
             queueCount = 1,
             pQueuePriorities = &priority
@@ -208,17 +204,14 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         VkPhysicalDeviceVulkan11Features features_1_1 = new VkPhysicalDeviceVulkan11Features
         {
-            sType = VkStructureType.PhysicalDeviceVulkan11Features
         };
 
         VkPhysicalDeviceVulkan12Features features_1_2 = new VkPhysicalDeviceVulkan12Features
         {
-            sType = VkStructureType.PhysicalDeviceVulkan12Features
         };
 
         VkPhysicalDeviceFeatures2 deviceFeatures2 = new VkPhysicalDeviceFeatures2
         {
-            sType = VkStructureType.PhysicalDeviceFeatures2
         };
 
         deviceFeatures2.pNext = &features_1_1;
@@ -232,7 +225,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
             if (CheckDeviceExtensionSupport(VK_KHR_8BIT_STORAGE_EXTENSION_NAME, availableDeviceExtensions))
             {
                 enabledExtensions.Add(VK_KHR_8BIT_STORAGE_EXTENSION_NAME);
-                storage_8bit_features.sType = VkStructureType.PhysicalDevice8BitStorageFeatures;
                 *features_chain = &storage_8bit_features;
                 features_chain = &storage_8bit_features.pNext;
             }
@@ -266,7 +258,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
             enabledExtensions.Add(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
 
             enabledExtensions.Add(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-            acceleration_structure_features.sType = VkStructureType.PhysicalDeviceAccelerationStructureFeaturesKHR;
             *features_chain = &acceleration_structure_features;
             features_chain = &acceleration_structure_features.pNext;
         }
@@ -277,7 +268,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         var deviceCreateInfo = new VkDeviceCreateInfo
         {
-            sType = VkStructureType.DeviceCreateInfo,
             pNext = &deviceFeatures2,
             queueCreateInfoCount = 1,
             pQueueCreateInfos = &queueCreateInfo,
@@ -377,7 +367,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         {
             VkRenderPassCreateInfo createInfo = new VkRenderPassCreateInfo
             {
-                sType = VkStructureType.RenderPassCreateInfo,
                 attachmentCount = 1,
                 pAttachments = &attachment,
                 subpassCount = 1,
@@ -478,13 +467,11 @@ void main() {
         using var name = new VkString("main");
 
         var vertShaderStageInfo = new VkPipelineShaderStageCreateInfo();
-        vertShaderStageInfo.sType = VkStructureType.PipelineShaderStageCreateInfo;
         vertShaderStageInfo.stage = VkShaderStageFlags.Vertex;
         vertShaderStageInfo.module = vertShaderModule;
         vertShaderStageInfo.pName = name.Pointer;
 
         var fragShaderStageInfo = new VkPipelineShaderStageCreateInfo();
-        fragShaderStageInfo.sType = VkStructureType.PipelineShaderStageCreateInfo;
         fragShaderStageInfo.stage = VkShaderStageFlags.Fragment;
         fragShaderStageInfo.module = fragShaderModule;
         fragShaderStageInfo.pName = name.Pointer;
@@ -495,7 +482,6 @@ void main() {
         fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
         {
             var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo();
-            vertexInputInfo.sType = VkStructureType.PipelineVertexInputStateCreateInfo;
 
             vertexInputInfo.vertexBindingDescriptionCount = 1;
             vertexInputInfo.vertexAttributeDescriptionCount = (uint)attributeDescriptions.Length;
@@ -504,7 +490,6 @@ void main() {
             vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptionsPtr;
 
             var inputAssembly = new VkPipelineInputAssemblyStateCreateInfo();
-            inputAssembly.sType = VkStructureType.PipelineInputAssemblyStateCreateInfo;
             inputAssembly.topology = VkPrimitiveTopology.TriangleList;
             inputAssembly.primitiveRestartEnable = VkBool32.False;
 
@@ -521,14 +506,12 @@ void main() {
             scissor.extent = Swapchain.Extent;
 
             var viewportState = new VkPipelineViewportStateCreateInfo();
-            viewportState.sType = VkStructureType.PipelineViewportStateCreateInfo;
             viewportState.viewportCount = 1;
             viewportState.pViewports = &viewport;
             viewportState.scissorCount = 1;
             viewportState.pScissors = &scissor;
 
             var rasterizer = new VkPipelineRasterizationStateCreateInfo();
-            rasterizer.sType = VkStructureType.PipelineRasterizationStateCreateInfo;
             rasterizer.depthClampEnable = VkBool32.False;
             rasterizer.rasterizerDiscardEnable = VkBool32.False;
             rasterizer.polygonMode = VkPolygonMode.Fill;
@@ -538,7 +521,6 @@ void main() {
             rasterizer.depthBiasEnable = VkBool32.False;
 
             var multisampling = new VkPipelineMultisampleStateCreateInfo();
-            multisampling.sType = VkStructureType.PipelineMultisampleStateCreateInfo;
             multisampling.sampleShadingEnable = VkBool32.False;
             multisampling.rasterizationSamples = VkSampleCountFlags.Count1;
 
@@ -547,7 +529,6 @@ void main() {
             colorBlendAttachment.blendEnable = VkBool32.False;
 
             var colorBlending = new VkPipelineColorBlendStateCreateInfo();
-            colorBlending.sType = VkStructureType.PipelineColorBlendStateCreateInfo;
             colorBlending.logicOpEnable = VkBool32.False;
             colorBlending.logicOp = VkLogicOp.Copy;
             colorBlending.attachmentCount = 1;
@@ -558,7 +539,6 @@ void main() {
             colorBlending.blendConstants[3] = 0.0f;
 
             var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
-            pipelineLayoutInfo.sType = VkStructureType.PipelineLayoutCreateInfo;
             pipelineLayoutInfo.setLayoutCount = 0;
             pipelineLayoutInfo.pushConstantRangeCount = 0;
 
@@ -569,7 +549,6 @@ void main() {
             fixed (VkPipelineShaderStageCreateInfo* shaderStagesPtr = &shaderStages[0])
             {
                 var pipelineInfo = new VkGraphicsPipelineCreateInfo();
-                pipelineInfo.sType = VkStructureType.GraphicsPipelineCreateInfo;
                 pipelineInfo.stageCount = 2;
                 pipelineInfo.pStages = shaderStagesPtr;
                 pipelineInfo.pVertexInputState = &vertexInputInfo;
@@ -661,7 +640,6 @@ void main() {
     private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
     {
         VkBufferCreateInfo bufferInfo;
-        bufferInfo.sType = VkStructureType.BufferCreateInfo;
         bufferInfo.size = size;
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VkSharingMode.Exclusive;
@@ -675,7 +653,6 @@ void main() {
         vkGetBufferMemoryRequirements(VkDevice, buffer, out memRequirements);
 
         VkMemoryAllocateInfo allocInfo;
-        allocInfo.sType = VkStructureType.MemoryAllocateInfo;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
@@ -690,7 +667,6 @@ void main() {
     void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, ulong size)
     {
         VkCommandBufferAllocateInfo allocInfo;
-        allocInfo.sType = VkStructureType.CommandBufferAllocateInfo;
         allocInfo.level = VkCommandBufferLevel.Primary;
         allocInfo.commandPool = CommandPool;
         allocInfo.commandBufferCount = 1;
@@ -699,7 +675,6 @@ void main() {
         vkAllocateCommandBuffer(VkDevice, &allocInfo, out commandBuffer);
 
         VkCommandBufferBeginInfo beginInfo;
-        beginInfo.sType = VkStructureType.CommandBufferBeginInfo;
         beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmit;
 
         vkBeginCommandBuffer(commandBuffer, &beginInfo);
@@ -711,7 +686,6 @@ void main() {
         vkEndCommandBuffer(commandBuffer);
 
         VkSubmitInfo submitInfo;
-        submitInfo.sType = VkStructureType.SubmitInfo;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
@@ -726,7 +700,6 @@ void main() {
         // General Pool
         VkCommandPoolCreateInfo poolCreateInfo = new VkCommandPoolCreateInfo
         {
-            sType = VkStructureType.CommandPoolCreateInfo,
             flags = VkCommandPoolCreateFlags.Transient,
             queueFamilyIndex = queueFamilies.graphicsFamily,
         };
@@ -737,7 +710,6 @@ void main() {
         {
             poolCreateInfo = new VkCommandPoolCreateInfo
             {
-                sType = VkStructureType.CommandPoolCreateInfo,
                 flags = VkCommandPoolCreateFlags.Transient,
                 queueFamilyIndex = queueFamilies.graphicsFamily,
             };
@@ -847,7 +819,6 @@ void main() {
 
         VkCommandBufferBeginInfo beginInfo = new VkCommandBufferBeginInfo
         {
-            sType = VkStructureType.CommandBufferBeginInfo,
             flags = VkCommandBufferUsageFlags.OneTimeSubmit
         };
         vkBeginCommandBuffer(cmd, &beginInfo).CheckResult();
@@ -868,7 +839,6 @@ void main() {
 
         VkSubmitInfo submitInfo = new VkSubmitInfo
         {
-            sType = VkStructureType.SubmitInfo,
             commandBufferCount = 1u,
             pCommandBuffers = &cmd,
             waitSemaphoreCount = 1u,

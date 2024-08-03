@@ -48,7 +48,6 @@ public unsafe class TestApp : Application
         // Begin the render pass.
         VkRenderPassBeginInfo renderPassBeginInfo = new VkRenderPassBeginInfo
         {
-            sType = VkStructureType.RenderPassBeginInfo,
             renderPass = _graphicsDevice.RenderPass,
             framebuffer = framebuffer,
             renderArea = new VkRect2D(size),
