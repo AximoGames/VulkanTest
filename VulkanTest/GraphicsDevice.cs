@@ -481,8 +481,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         VkShaderModule vertShaderModule = CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
         VkShaderModule fragShaderModule = CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
 
-        // using var name = new VkString("main");
-        var name = VkStringInterop.ConvertToUnmanaged("main");
+        var name = "main".ToVkUtf8ReadOnlyString();
 
         var vertShaderStageInfo = new VkPipelineShaderStageCreateInfo();
         vertShaderStageInfo.stage = VkShaderStageFlags.Vertex;
