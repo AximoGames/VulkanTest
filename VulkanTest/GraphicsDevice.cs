@@ -391,7 +391,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
     private VkShaderModule CreateShaderModuleFromCode(string shaderCode, ShaderKind shaderKind)
     {
         using Compiler compiler = new Compiler();
-        using (var compilationResult = compiler.Compile(shaderCode, string.Empty, shaderKind))
+        using (var compilationResult = compiler.Compile(shaderCode, "main", shaderKind))
         {
             vkCreateShaderModule(VkDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
             return module;
@@ -448,27 +448,35 @@ public unsafe sealed class GraphicsDevice : IDisposable
         //auto vertShaderCode = readFile("shaders/vert.spv");
         //auto fragShaderCode = readFile("shaders/frag.spv");
 
-        string vertexShaderCode = @"#version 450
+        // language=glsl
+        string vertexShaderCode =
+            """
+            #version 450
 
-layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec3 inColor;
+            layout(location = 0) in vec2 inPosition;
+            layout(location = 1) in vec3 inColor;
 
-layout(location = 0) out vec3 fragColor;
+            layout(location = 0) out vec3 fragColor;
 
-void main() {
-    gl_Position = vec4(inPosition, 0.0, 1.0);
-    fragColor = inColor;
-}";
+            void main() {
+                gl_Position = vec4(inPosition, 0.0, 1.0);
+                fragColor = inColor;
+            }
+            """;
 
-        string fragShaderCode = @"#version 450
+        // language=glsl
+        string fragShaderCode =
+            """
+            #version 450
 
-layout(location = 0) in vec3 fragColor;
+            layout(location = 0) in vec3 fragColor;
 
-layout(location = 0) out vec4 outColor;
+            layout(location = 0) out vec4 outColor;
 
-void main() {
-    outColor = vec4(fragColor, 1.0);
-}";
+            void main() {
+                outColor = vec4(fragColor, 1.0);
+            }
+            """;
 
         VkShaderModule vertShaderModule = CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
         VkShaderModule fragShaderModule = CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
