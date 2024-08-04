@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 using System.Collections.Generic;
+using System.Text;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
 using Vortice.ShaderCompiler;
@@ -14,7 +15,7 @@ namespace Vortice;
 
 public unsafe sealed class GraphicsDevice : IDisposable
 {
-    private static readonly VkString s_EngineName = new VkString("Vortice");
+    private static readonly string s_EngineName = "Vortice";
     private static readonly string[] s_RequestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
 
     public readonly VkInstance VkInstance;
@@ -70,12 +71,11 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     private void CreateInstance(string applicationName, bool enableValidation, out VkInstance instance, out VkDebugUtilsMessengerEXT _debugMessenger)
     {
-        using VkString name = applicationName;
         var appInfo = new VkApplicationInfo
         {
-            pApplicationName = name,
+            pApplicationName = applicationName.ToVkUtf8ReadOnlyString(),
             applicationVersion = new VkVersion(1, 0, 0),
-            pEngineName = s_EngineName,
+            pEngineName = s_EngineName.ToVkUtf8ReadOnlyString(),
             engineVersion = new VkVersion(1, 0, 0),
             apiVersion = vkEnumerateInstanceVersion()
         };
@@ -102,7 +102,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         if (instanceLayers.Count > 0)
         {
-            instanceExtensions.Add(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            instanceExtensions.Add(VK_EXT_DEBUG_UTILS_EXTENSION_NAME.GetStringFromUtf8Buffer());
         }
 
         //instanceExtensions.Add("VK_KHR_buffer_device_address");
@@ -199,7 +199,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         List<string> enabledExtensions = new List<string>
         {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME.GetStringFromUtf8Buffer()
         };
 
         VkPhysicalDeviceVulkan11Features features_1_1 = new VkPhysicalDeviceVulkan11Features
@@ -222,42 +222,42 @@ public unsafe sealed class GraphicsDevice : IDisposable
         VkPhysicalDevice8BitStorageFeatures storage_8bit_features = default;
         if (properties.apiVersion <= VkVersion.Version_1_2)
         {
-            if (CheckDeviceExtensionSupport(VK_KHR_8BIT_STORAGE_EXTENSION_NAME, availableDeviceExtensions))
+            if (CheckDeviceExtensionSupport(VK_KHR_8BIT_STORAGE_EXTENSION_NAME.GetStringFromUtf8Buffer(), availableDeviceExtensions))
             {
-                enabledExtensions.Add(VK_KHR_8BIT_STORAGE_EXTENSION_NAME);
+                enabledExtensions.Add(VK_KHR_8BIT_STORAGE_EXTENSION_NAME.GetStringFromUtf8Buffer());
                 *features_chain = &storage_8bit_features;
                 features_chain = &storage_8bit_features.pNext;
             }
         }
 
-        if (CheckDeviceExtensionSupport(VK_KHR_SPIRV_1_4_EXTENSION_NAME, availableDeviceExtensions))
+        if (CheckDeviceExtensionSupport(VK_KHR_SPIRV_1_4_EXTENSION_NAME.GetStringFromUtf8Buffer(), availableDeviceExtensions))
         {
             // Required for VK_KHR_ray_tracing_pipeline
-            enabledExtensions.Add(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+            enabledExtensions.Add(VK_KHR_SPIRV_1_4_EXTENSION_NAME.GetStringFromUtf8Buffer());
 
             // Required by VK_KHR_spirv_1_4
-            enabledExtensions.Add(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+            enabledExtensions.Add(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME.GetStringFromUtf8Buffer());
         }
 
-        if (CheckDeviceExtensionSupport(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, availableDeviceExtensions))
+        if (CheckDeviceExtensionSupport(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME.GetStringFromUtf8Buffer(), availableDeviceExtensions))
         {
             // Required by VK_KHR_acceleration_structure
-            enabledExtensions.Add(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+            enabledExtensions.Add(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME.GetStringFromUtf8Buffer());
         }
 
-        if (CheckDeviceExtensionSupport(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, availableDeviceExtensions))
+        if (CheckDeviceExtensionSupport(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME.GetStringFromUtf8Buffer(), availableDeviceExtensions))
         {
             // Required by VK_KHR_acceleration_structure
-            enabledExtensions.Add(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+            enabledExtensions.Add(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME.GetStringFromUtf8Buffer());
         }
 
         VkPhysicalDeviceAccelerationStructureFeaturesKHR acceleration_structure_features = default;
-        if (CheckDeviceExtensionSupport(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, availableDeviceExtensions))
+        if (CheckDeviceExtensionSupport(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME.GetStringFromUtf8Buffer(), availableDeviceExtensions))
         {
             // Required by VK_KHR_acceleration_structure
-            enabledExtensions.Add(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+            enabledExtensions.Add(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME.GetStringFromUtf8Buffer());
 
-            enabledExtensions.Add(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+            enabledExtensions.Add(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME.GetStringFromUtf8Buffer());
             *features_chain = &acceleration_structure_features;
             features_chain = &acceleration_structure_features.pNext;
         }
@@ -286,7 +286,16 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     private void GetAvailabeExtensions()
     {
-        var properties = vkEnumerateInstanceExtensionProperties(null);
+        uint count;
+        var result = vkEnumerateInstanceExtensionProperties(&count, null);
+        if (result != VkResult.Success)
+            throw new Exception($"Failed to enumerate instance extensions, {result}");
+
+        var properties = new VkExtensionProperties[count];
+        result = vkEnumerateInstanceExtensionProperties(properties);
+        if (result != VkResult.Success)
+            throw new Exception($"Failed to enumerate instance extensions, {result}");
+
         foreach (var prop in properties)
         {
             var name = prop.GetExtensionName();
@@ -464,17 +473,18 @@ void main() {
         VkShaderModule vertShaderModule = CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
         VkShaderModule fragShaderModule = CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
 
-        using var name = new VkString("main");
+        // using var name = new VkString("main");
+        var name = VkStringInterop.ConvertToUnmanaged("main");
 
         var vertShaderStageInfo = new VkPipelineShaderStageCreateInfo();
         vertShaderStageInfo.stage = VkShaderStageFlags.Vertex;
         vertShaderStageInfo.module = vertShaderModule;
-        vertShaderStageInfo.pName = name.Pointer;
+        vertShaderStageInfo.pName = name;
 
         var fragShaderStageInfo = new VkPipelineShaderStageCreateInfo();
         fragShaderStageInfo.stage = VkShaderStageFlags.Fragment;
         fragShaderStageInfo.module = fragShaderModule;
-        fragShaderStageInfo.pName = name.Pointer;
+        fragShaderStageInfo.pName = name;
 
         var bindingDescription = Vertex.getBindingDescription();
         var attributeDescriptions = Vertex.getAttributeDescriptions();
@@ -930,7 +940,7 @@ void main() {
         VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* userData)
     {
-        string? message = new(pCallbackData->pMessage);
+        string? message = VkStringInterop.ConvertToManaged(pCallbackData->pMessage);
         if (messageTypes == VkDebugUtilsMessageTypeFlagsEXT.Validation)
         {
             if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Error)
