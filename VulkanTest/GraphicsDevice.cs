@@ -186,7 +186,13 @@ public unsafe sealed class GraphicsDevice : IDisposable
         queueFamilies = FindQueueFamilies(physicalDevice, _surface);
 
         var availableDeviceExtensions = vkEnumerateDeviceExtensionProperties(physicalDevice);
-
+        Log.Verbose($"Found {availableDeviceExtensions.Length} device extensions:");
+        foreach (var extension in availableDeviceExtensions)
+        {
+            var name = extension.GetExtensionName();
+            Log.Verbose(name);
+        }
+        
         // var supportPresent = vkGetPhysicalDeviceWin32PresentationSupportKHR(PhysicalDevice, queueFamilies.graphicsFamily);
 
         float priority = 1.0f;
@@ -296,6 +302,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         if (result != VkResult.Success)
             throw new Exception($"Failed to enumerate instance extensions, {result}");
 
+        Log.Verbose($"Found {count} instance extensions:");
         foreach (var prop in properties)
         {
             var name = prop.GetExtensionName();
