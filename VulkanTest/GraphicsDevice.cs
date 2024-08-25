@@ -36,6 +36,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public uint CurrentSwapchainImageIndex;
 
+    public ShaderManager ShaderManager { get; private set; }
+
     public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
     {
         CreateInstance(applicationName, enableValidation, out VkInstance, out _debugMessenger);
@@ -43,6 +45,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
         _surface = CreateSurface(window);
 
         CreateDevice(out PhysicalDevice, out VkDevice, out GraphicsQueue, out PresentQueue);
+
+        ShaderManager = new ShaderManager(VkDevice);
 
         // Create swap chain
         Swapchain = new Swapchain(this, window);
@@ -314,16 +318,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         }
     }
 
-    private VkShaderModule CreateShaderModuleFromCode(string shaderCode, ShaderKind shaderKind)
-    {
-        using Compiler compiler = new Compiler();
-        using (var compilationResult = compiler.Compile(shaderCode, "main", shaderKind))
-        {
-            vkCreateShaderModule(VkDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
-            return module;
-        }
-    }
-
     public struct Vertex
     {
         public Vector2 pos;
@@ -404,8 +398,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
             }
             """;
 
-        VkShaderModule vertShaderModule = CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
-        VkShaderModule fragShaderModule = CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
+        VkShaderModule vertShaderModule = ShaderManager.CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
+        VkShaderModule fragShaderModule = ShaderManager.CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
 
         var name = "main".ToVkUtf8ReadOnlyString();
 
