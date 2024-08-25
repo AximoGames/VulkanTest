@@ -27,9 +27,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
     public readonly VkQueue GraphicsQueue;
     public readonly VkQueue PresentQueue;
     public readonly Swapchain Swapchain;
-    public readonly VkPipeline Pipelne;
+    public readonly VkPipeline Pipeline;
     private PerFrame[] _perFrame; // TODO: Pin during init?
-    public VkRenderPass RenderPass;
     public VkBuffer VertexBuffer;
     public VkBuffer IndexBuffer;
     public VkDeviceMemory IndexBufferMemory;
@@ -37,6 +36,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
     public VkCommandPool CommandPool;
 
     private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
+
+    public uint CurrentSwapchainImageIndex;
 
     public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
     {
@@ -51,11 +52,9 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         GetImages();
         CreateImageView();
-        CreateRenderPass(Swapchain.SurfaceFormat.format);
-        CreateGraphicsPipeline(out Pipelne);
+        CreateGraphicsPipeline(out Pipeline);
 
         CreateCommandPool();
-        CreateFrameBuffers();
 
         CreateVertexBuffer();
         CreateIndexBuffer();
@@ -220,8 +219,14 @@ public unsafe sealed class GraphicsDevice : IDisposable
         {
         };
 
+        VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures = new VkPhysicalDeviceDynamicRenderingFeatures
+        {
+            dynamicRendering = VkBool32.True
+        };
+
         deviceFeatures2.pNext = &features_1_1;
         features_1_1.pNext = &features_1_2;
+        features_1_2.pNext = &dynamicRenderingFeatures;
 
         void** features_chain = &features_1_2.pNext;
 
@@ -333,65 +338,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
             );
 
             vkCreateImageView(VkDevice, &viewCreateInfo, null, out _perFrame[i].ImageView).CheckResult();
-        }
-    }
-
-    private void CreateRenderPass(VkFormat colorFormat)
-    {
-        VkAttachmentDescription attachment = new VkAttachmentDescription(
-            colorFormat,
-            VkSampleCountFlags.Count1,
-            VkAttachmentLoadOp.Clear, VkAttachmentStoreOp.Store,
-            VkAttachmentLoadOp.DontCare, VkAttachmentStoreOp.DontCare,
-            VkImageLayout.Undefined, VkImageLayout.PresentSrcKHR
-        );
-
-        VkAttachmentReference colorAttachmentRef = new VkAttachmentReference(0, VkImageLayout.ColorAttachmentOptimal);
-
-        VkSubpassDescription subpass = new VkSubpassDescription
-        {
-            pipelineBindPoint = VkPipelineBindPoint.Graphics,
-            colorAttachmentCount = 1,
-            pColorAttachments = &colorAttachmentRef
-        };
-
-        VkSubpassDependency[] dependencies = new VkSubpassDependency[2];
-
-        dependencies[0] = new VkSubpassDependency
-        {
-            srcSubpass = VK_SUBPASS_EXTERNAL,
-            dstSubpass = 0,
-            srcStageMask = VkPipelineStageFlags.BottomOfPipe,
-            dstStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
-            srcAccessMask = VkAccessFlags.MemoryRead,
-            dstAccessMask = VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
-            dependencyFlags = VkDependencyFlags.ByRegion
-        };
-
-        dependencies[1] = new VkSubpassDependency
-        {
-            srcSubpass = 0,
-            dstSubpass = VK_SUBPASS_EXTERNAL,
-            srcStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
-            dstStageMask = VkPipelineStageFlags.BottomOfPipe,
-            srcAccessMask = VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
-            dstAccessMask = VkAccessFlags.MemoryRead,
-            dependencyFlags = VkDependencyFlags.ByRegion
-        };
-
-        fixed (VkSubpassDependency* dependenciesPtr = &dependencies[0])
-        {
-            VkRenderPassCreateInfo createInfo = new VkRenderPassCreateInfo
-            {
-                attachmentCount = 1,
-                pAttachments = &attachment,
-                subpassCount = 1,
-                pSubpasses = &subpass,
-                dependencyCount = 2,
-                pDependencies = dependenciesPtr
-            };
-
-            vkCreateRenderPass(VkDevice, &createInfo, null, out RenderPass).CheckResult();
         }
     }
 
@@ -572,23 +518,32 @@ public unsafe sealed class GraphicsDevice : IDisposable
             VkPipelineShaderStageCreateInfo[] shaderStages = new VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
             fixed (VkPipelineShaderStageCreateInfo* shaderStagesPtr = &shaderStages[0])
             {
-                var pipelineInfo = new VkGraphicsPipelineCreateInfo();
-                pipelineInfo.stageCount = 2;
-                pipelineInfo.pStages = shaderStagesPtr;
-                pipelineInfo.pVertexInputState = &vertexInputInfo;
-                pipelineInfo.pInputAssemblyState = &inputAssembly;
-                pipelineInfo.pViewportState = &viewportState;
-                pipelineInfo.pRasterizationState = &rasterizer;
-                pipelineInfo.pMultisampleState = &multisampling;
-                pipelineInfo.pColorBlendState = &colorBlending;
-                pipelineInfo.layout = pipelineLayout;
-                pipelineInfo.renderPass = RenderPass;
-                pipelineInfo.subpass = 0;
-                pipelineInfo.basePipelineHandle = VkPipeline.Null;
+                fixed (VkFormat* pColorAttachmentFormat = &Swapchain.SurfaceFormat.format)
+                {
+                    VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
+                    {
+                        colorAttachmentCount = 1,
+                        pColorAttachmentFormats = pColorAttachmentFormat
+                    };
 
-                VkPipeline graphicsPipeline;
-                vkCreateGraphicsPipelines(VkDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
-                pipeline = graphicsPipeline;
+                    var pipelineInfo = new VkGraphicsPipelineCreateInfo();
+                    pipelineInfo.pNext = &pipelineRenderingCreateInfo;
+                    pipelineInfo.stageCount = 2;
+                    pipelineInfo.pStages = shaderStagesPtr;
+                    pipelineInfo.pVertexInputState = &vertexInputInfo;
+                    pipelineInfo.pInputAssemblyState = &inputAssembly;
+                    pipelineInfo.pViewportState = &viewportState;
+                    pipelineInfo.pRasterizationState = &rasterizer;
+                    pipelineInfo.pMultisampleState = &multisampling;
+                    pipelineInfo.pColorBlendState = &colorBlending;
+                    pipelineInfo.layout = pipelineLayout;
+                    pipelineInfo.subpass = 0;
+                    pipelineInfo.basePipelineHandle = VkPipeline.Null;
+
+                    VkPipeline graphicsPipeline;
+                    vkCreateGraphicsPipelines(VkDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
+                    pipeline = graphicsPipeline;
+                }
             }
         }
 
@@ -752,14 +707,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         return false;
     }
 
-    private void CreateFrameBuffers()
-    {
-        for (var i = 0; i < _perFrame.Length; i++)
-        {
-            vkCreateFramebuffer(VkDevice, RenderPass, new[] { _perFrame[i].ImageView }, Swapchain.Extent, 1u, out _perFrame[i].Framebuffer);
-        }
-    }
-
     public void Dispose()
     {
         // Don't release anything until the GPU is completely idle.
@@ -821,15 +768,14 @@ public unsafe sealed class GraphicsDevice : IDisposable
         }
     }
 
-    public void RenderFrame(Action<VkCommandBuffer, VkFramebuffer, VkExtent2D, VkPipeline> draw, [CallerMemberName] string? frameName = null)
+    public void RenderFrame(Action<VkCommandBuffer, VkExtent2D> draw, [CallerMemberName] string? frameName = null)
     {
-        VkResult result = AcquireNextImage(out uint swapchainIndex);
+        VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
 
         // Handle outdated error in acquire.
         if (result == VkResult.SuboptimalKHR || result == VkResult.ErrorOutOfDateKHR)
         {
-            //Resize(context.swapchain_dimensions.width, context.swapchain_dimensions.height);
-            result = AcquireNextImage(out swapchainIndex);
+            result = AcquireNextImage(out CurrentSwapchainImageIndex);
         }
 
         if (result != VkResult.Success)
@@ -839,7 +785,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         }
 
         // Begin command recording
-        VkCommandBuffer cmd = _perFrame[swapchainIndex].PrimaryCommandBuffer;
+        VkCommandBuffer cmd = _perFrame[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
         VkCommandBufferBeginInfo beginInfo = new VkCommandBufferBeginInfo
         {
@@ -847,19 +793,19 @@ public unsafe sealed class GraphicsDevice : IDisposable
         };
         vkBeginCommandBuffer(cmd, &beginInfo).CheckResult();
 
-        draw(cmd, _perFrame[swapchainIndex].Framebuffer, Swapchain.Extent, Pipelne);
+        draw(cmd, Swapchain.Extent);
 
         // Complete the command buffer.
         vkEndCommandBuffer(cmd).CheckResult();
 
-        if (_perFrame[swapchainIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
+        if (_perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
         {
-            vkCreateSemaphore(VkDevice, out _perFrame[swapchainIndex].SwapchainReleaseSemaphore).CheckResult();
+            vkCreateSemaphore(VkDevice, out _perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore).CheckResult();
         }
 
         VkPipelineStageFlags wait_stage = VkPipelineStageFlags.ColorAttachmentOutput;
-        VkSemaphore waitSemaphore = _perFrame[swapchainIndex].SwapchainAcquireSemaphore;
-        VkSemaphore signalSemaphore = _perFrame[swapchainIndex].SwapchainReleaseSemaphore;
+        VkSemaphore waitSemaphore = _perFrame[CurrentSwapchainImageIndex].SwapchainAcquireSemaphore;
+        VkSemaphore signalSemaphore = _perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore;
 
         VkSubmitInfo submitInfo = new VkSubmitInfo
         {
@@ -873,14 +819,14 @@ public unsafe sealed class GraphicsDevice : IDisposable
         };
 
         // Submit command buffer to graphics queue
-        vkQueueSubmit(GraphicsQueue, submitInfo, _perFrame[swapchainIndex].QueueSubmitFence);
+        vkQueueSubmit(GraphicsQueue, submitInfo, _perFrame[CurrentSwapchainImageIndex].QueueSubmitFence);
 
-        result = PresentImage(swapchainIndex);
+        result = PresentImage(CurrentSwapchainImageIndex);
 
         // Handle Outdated error in present.
         if (result == VkResult.SuboptimalKHR || result == VkResult.ErrorOutOfDateKHR)
         {
-            //Resize(context.swapchain_dimensions.width, context.swapchain_dimensions.height);
+            // Handle resize if needed
         }
         else if (result != VkResult.Success)
         {
@@ -1076,7 +1022,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
     {
         public VkImage Image;
         public VkImageView ImageView;
-        public VkFramebuffer Framebuffer;
         public VkFence QueueSubmitFence;
         public VkCommandPool PrimaryCommandPool;
         public VkCommandBuffer PrimaryCommandBuffer;

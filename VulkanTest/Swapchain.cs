@@ -18,6 +18,8 @@ public sealed unsafe class Swapchain : IDisposable
 
     public VkSurfaceFormatKHR SurfaceFormat;
 
+    private VkImageView[] _imageViews;
+
     public Swapchain(GraphicsDevice device, GameWindow? window)
     {
         Device = device;
@@ -54,6 +56,32 @@ public sealed unsafe class Swapchain : IDisposable
         };
 
         vkCreateSwapchainKHR(device.VkDevice, &createInfo, null, out Handle).CheckResult();
+
+        CreateImageViews();
+    }
+
+    private void CreateImageViews()
+    {
+        var swapChainImages = vkGetSwapchainImagesKHR(Device.VkDevice, Handle);
+        _imageViews = new VkImageView[swapChainImages.Length];
+
+        for (int i = 0; i < swapChainImages.Length; i++)
+        {
+            var viewCreateInfo = new VkImageViewCreateInfo(
+                swapChainImages[i],
+                VkImageViewType.Image2D,
+                SurfaceFormat.format,
+                VkComponentMapping.Rgba,
+                new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
+            );
+
+            vkCreateImageView(Device.VkDevice, &viewCreateInfo, null, out _imageViews[i]).CheckResult();
+        }
+    }
+
+    public VkImageView GetImageView(uint index)
+    {
+        return _imageViews[index];
     }
 
     public void Dispose()

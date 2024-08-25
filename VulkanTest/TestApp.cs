@@ -36,7 +36,7 @@ public unsafe class TestApp : Application
         _graphicsDevice.RenderFrame(OnDraw);
     }
 
-    private void OnDraw(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, VkExtent2D size, VkPipeline pipeline)
+    private void OnDraw(VkCommandBuffer commandBuffer, VkExtent2D size)
     {
         float g = _green + 0.01f;
         if (g > 1.0f)
@@ -45,26 +45,34 @@ public unsafe class TestApp : Application
 
         VkClearValue clearValue = new VkClearValue(1.0f, _green, 0.0f, 1.0f);
 
-        // Begin the render pass.
-        VkRenderPassBeginInfo renderPassBeginInfo = new VkRenderPassBeginInfo
+        VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
-            renderPass = _graphicsDevice.RenderPass,
-            framebuffer = framebuffer,
-            renderArea = new VkRect2D(VkOffset2D.Zero, size),
-            clearValueCount = 1,
-            pClearValues = &clearValue
+            imageView = _graphicsDevice.Swapchain.GetImageView(_graphicsDevice.CurrentSwapchainImageIndex),
+            imageLayout = VkImageLayout.ColorAttachmentOptimal,
+            loadOp = VkAttachmentLoadOp.Clear,
+            storeOp = VkAttachmentStoreOp.Store,
+            clearValue = clearValue
         };
-        vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VkSubpassContents.Inline);
-        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
-        //vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+        VkRenderingInfo renderingInfo = new VkRenderingInfo
+        {
+            renderArea = new VkRect2D(VkOffset2D.Zero, size),
+            layerCount = 1,
+            colorAttachmentCount = 1,
+            pColorAttachments = &colorAttachmentInfo
+        };
+
+        vkCmdBeginRendering(commandBuffer, &renderingInfo);
+
+        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline);
 
         vkCmdBindVertexBuffer(commandBuffer, 0, _graphicsDevice.VertexBuffer);
         vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.IndexBuffer, 0, VkIndexType.Uint16);
 
-        //vkCmdDraw(commandBuffer, (uint)_graphicsDevice.Vertices.Length, 1, 0, 0);
         vkCmdDrawIndexed(commandBuffer, (uint)_graphicsDevice.Indices.Length, 1, 0, 0, 0);
 
         vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-        vkCmdEndRenderPass(commandBuffer);
+
+        vkCmdEndRendering(commandBuffer);
     }
 }
