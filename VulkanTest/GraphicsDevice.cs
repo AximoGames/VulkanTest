@@ -29,10 +29,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
     public readonly Swapchain Swapchain;
     public readonly VkPipeline Pipeline;
     private PerFrame[] _perFrame; // TODO: Pin during init?
-    public VkBuffer VertexBuffer;
-    public VkBuffer IndexBuffer;
-    public VkDeviceMemory IndexBufferMemory;
-    public VkDeviceMemory VertexBufferMemory;
+    public readonly BufferManager BufferManager;
     public VkCommandPool CommandPool;
 
     private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
@@ -57,8 +54,9 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         CreateCommandPool();
 
-        CreateVertexBuffer();
-        CreateIndexBuffer();
+        BufferManager = new BufferManager(this);
+        BufferManager.CreateVertexBuffer(Vertices);
+        BufferManager.CreateIndexBuffer(Indices);
 
         for (var i = 0; i < _perFrame.Length; i++)
         {
@@ -526,129 +524,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         vkDestroyShaderModule(VkDevice, vertShaderModule, null);
     }
 
-    uint findMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
-    {
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, out memProperties);
-
-        for (int i = 0; i < memProperties.memoryTypeCount; i++)
-        {
-            if ((typeFilter & (1 << i)) != 0 && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-            {
-                return (uint)i;
-            }
-        }
-
-        throw new Exception("failed to find suitable memory type!");
-    }
-
-    private void CreateVertexBuffer()
-    {
-        var bufferSize = (uint)(Marshal.SizeOf<Vertex>() * Vertices.Length);
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
-
-        fixed (void* verticesPtr = &Vertices[0])
-        {
-            void* data;
-            vkMapMemory(VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-            Unsafe.CopyBlock(data, verticesPtr, bufferSize);
-            //memcpy(data, vertices.data(), (size_t)bufferSize);
-            vkUnmapMemory(VkDevice, stagingBufferMemory);
-        }
-
-        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.VertexBuffer, VkMemoryPropertyFlags.DeviceLocal, out VertexBuffer, out VertexBufferMemory);
-
-        CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
-
-        vkDestroyBuffer(VkDevice, stagingBuffer, null);
-        vkFreeMemory(VkDevice, stagingBufferMemory, null);
-    }
-
-    void CreateIndexBuffer()
-    {
-        uint bufferSize = (uint)(Marshal.SizeOf<short>() * Indices.Length);
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
-
-        fixed (ushort* indiciesPtr = &Indices[0])
-        {
-            void* data;
-            vkMapMemory(VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-            Unsafe.CopyBlock(data, indiciesPtr, bufferSize);
-            vkUnmapMemory(VkDevice, stagingBufferMemory);
-        }
-
-        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.IndexBuffer, VkMemoryPropertyFlags.DeviceLocal, out IndexBuffer, out IndexBufferMemory);
-
-        CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
-
-        vkDestroyBuffer(VkDevice, stagingBuffer, null);
-        vkFreeMemory(VkDevice, stagingBufferMemory, null);
-    }
-
-    private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
-    {
-        VkBufferCreateInfo bufferInfo;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VkSharingMode.Exclusive;
-
-        if (vkCreateBuffer(VkDevice, &bufferInfo, null, out buffer) != VkResult.Success)
-        {
-            throw new Exception("failed to create buffer!");
-        }
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(VkDevice, buffer, out memRequirements);
-
-        VkMemoryAllocateInfo allocInfo;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-        if (vkAllocateMemory(VkDevice, &allocInfo, null, out bufferMemory) != VkResult.Success)
-        {
-            throw new Exception("failed to allocate buffer memory!");
-        }
-
-        vkBindBufferMemory(VkDevice, buffer, bufferMemory, 0);
-    }
-
-    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, ulong size)
-    {
-        VkCommandBufferAllocateInfo allocInfo;
-        allocInfo.level = VkCommandBufferLevel.Primary;
-        allocInfo.commandPool = CommandPool;
-        allocInfo.commandBufferCount = 1;
-
-        VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffer(VkDevice, &allocInfo, out commandBuffer);
-
-        VkCommandBufferBeginInfo beginInfo;
-        beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmit;
-
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-        VkBufferCopy copyRegion;
-        copyRegion.size = size;
-        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-        vkEndCommandBuffer(commandBuffer);
-
-        VkSubmitInfo submitInfo;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-
-        vkQueueSubmit(GraphicsQueue, 1, &submitInfo, VkFence.Null);
-        vkQueueWaitIdle(GraphicsQueue);
-
-        vkFreeCommandBuffers(VkDevice, CommandPool, 1, &commandBuffer);
-    }
-
     private void CreateCommandPool()
     {
         // General Pool
@@ -686,6 +561,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
     {
         // Don't release anything until the GPU is completely idle.
         vkDeviceWaitIdle(VkDevice);
+
+        BufferManager.Dispose();
 
         Swapchain.Dispose();
 

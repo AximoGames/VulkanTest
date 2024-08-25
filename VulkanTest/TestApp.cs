@@ -66,8 +66,8 @@ public unsafe class TestApp : Application
 
         vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline);
 
-        vkCmdBindVertexBuffer(commandBuffer, 0, _graphicsDevice.VertexBuffer);
-        vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.IndexBuffer, 0, VkIndexType.Uint16);
+        vkCmdBindVertexBuffer(commandBuffer, 0, _graphicsDevice.BufferManager.VertexBuffer);
+        vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.BufferManager.IndexBuffer, 0, VkIndexType.Uint16);
 
         vkCmdDrawIndexed(commandBuffer, (uint)_graphicsDevice.Indices.Length, 1, 0, 0, 0);
 
