@@ -86,22 +86,15 @@ public sealed unsafe class Swapchain : IDisposable
 
     public void Dispose()
     {
-        //for (int i = 0; i < _swapChainImageViews.Length; i++)
-        //{
-        //    vkDestroyImageView(Device, _swapChainImageViews[i], null);
-        //}
+        for (int i = 0; i < _imageViews.Length; i++)
+        {
+            vkDestroyImageView(Device.VkDevice, _imageViews[i], null);
+        }
 
-        //for (int i = 0; i < Framebuffers.Length; i++)
-        //{
-        //    vkDestroyFramebuffer(Device, Framebuffers[i], null);
-        //}
-
-        //vkDestroyRenderPass(Device, RenderPass, null);
-
-        //if (Handle != VkSwapchainKHR.Null)
-        //{
-        //    vkDestroySwapchainKHR(Device, Handle, null);
-        //}
+        if (Handle != VkSwapchainKHR.Null)
+        {
+            vkDestroySwapchainKHR(Device.VkDevice, Handle, null);
+        }
     }
 
     private ref struct SwapChainSupportDetails

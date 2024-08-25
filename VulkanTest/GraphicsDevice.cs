@@ -191,7 +191,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
             var name = extension.GetExtensionName();
             Log.Verbose(name);
         }
-        
+
         // var supportPresent = vkGetPhysicalDeviceWin32PresentationSupportKHR(PhysicalDevice, queueFamilies.graphicsFamily);
 
         float priority = 1.0f;
@@ -901,49 +901,30 @@ public unsafe sealed class GraphicsDevice : IDisposable
         void* userData)
     {
         string? message = VkStringInterop.ConvertToManaged(pCallbackData->pMessage);
-        if (messageTypes == VkDebugUtilsMessageTypeFlagsEXT.Validation)
-        {
-            if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Error)
-            {
-                Log.Error($"[Vulkan]: Validation: {messageSeverity} - {message}");
-                throw new Exception(message);
-            }
-            else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Warning)
-            {
-                Log.Warn($"[Vulkan]: Validation: {messageSeverity} - {message}");
-            }
-            else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Info)
-            {
-                Log.Info($"[Vulkan]: Validation: {messageSeverity} - {message}");
-            }
-            else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Verbose)
-            {
-                Log.Verbose($"[Vulkan]: Validation: {messageSeverity} - {message}");
-            }
+        string prefix = messageTypes == VkDebugUtilsMessageTypeFlagsEXT.Validation ? "[Vulkan]: Validation: " : "[Vulkan]: ";
 
-            Debug.WriteLine($"[Vulkan]: Validation: {messageSeverity} - {message}");
-        }
-        else
+        switch (messageSeverity)
         {
-            if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Error)
-            {
-                Log.Error($"[Vulkan]: {messageSeverity} - {message}");
-            }
-            else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Warning)
-            {
-                Log.Warn($"[Vulkan]: {messageSeverity} - {message}");
-            }
-            else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Info)
-            {
-                Log.Info($"[Vulkan]: {messageSeverity} - {message}");
-            }
-            else if (messageSeverity == VkDebugUtilsMessageSeverityFlagsEXT.Verbose)
-            {
-                Log.Verbose($"[Vulkan]: {messageSeverity} - {message}");
-            }
+            case VkDebugUtilsMessageSeverityFlagsEXT.Error:
+                Log.Error($"{prefix}{messageSeverity} - {message}");
+                if (messageTypes == VkDebugUtilsMessageTypeFlagsEXT.Validation)
+                {
+                    throw new Exception(message);
+                }
 
-            Debug.WriteLine($"[Vulkan]: {messageSeverity} - {message}");
+                break;
+            case VkDebugUtilsMessageSeverityFlagsEXT.Warning:
+                Log.Warn($"{prefix}{messageSeverity} - {message}");
+                break;
+            case VkDebugUtilsMessageSeverityFlagsEXT.Info:
+                Log.Info($"{prefix}{messageSeverity} - {message}");
+                break;
+            case VkDebugUtilsMessageSeverityFlagsEXT.Verbose:
+                Log.Verbose($"{prefix}{messageSeverity} - {message}");
+                break;
         }
+
+        Debug.WriteLine($"{prefix}{messageSeverity} - {message}");
 
         return VK_FALSE;
     }
