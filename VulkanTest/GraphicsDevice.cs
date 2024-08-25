@@ -50,8 +50,9 @@ public unsafe sealed class GraphicsDevice : IDisposable
         // Create swap chain
         Swapchain = new Swapchain(this, window);
 
-        GetImages();
-        CreateImageView();
+        // Initialize _perFrame array
+        _perFrame = new PerFrame[Swapchain.ImageCount];
+
         CreateGraphicsPipeline(out Pipeline);
 
         CreateCommandPool();
@@ -312,32 +313,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         {
             var name = prop.GetExtensionName();
             Log.Verbose(name);
-        }
-    }
-
-    private void GetImages()
-    {
-        ReadOnlySpan<VkImage> swapChainImages = vkGetSwapchainImagesKHR(VkDevice, Swapchain.Handle);
-        _perFrame = new PerFrame[swapChainImages.Length];
-        for (var i = 0; i < swapChainImages.Length; i++)
-        {
-            _perFrame[i].Image = swapChainImages[i];
-        }
-    }
-
-    private void CreateImageView()
-    {
-        for (int i = 0; i < _perFrame.Length; i++)
-        {
-            var viewCreateInfo = new VkImageViewCreateInfo(
-                _perFrame[i].Image,
-                VkImageViewType.Image2D,
-                Swapchain.SurfaceFormat.format,
-                VkComponentMapping.Rgba,
-                new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
-            );
-
-            vkCreateImageView(VkDevice, &viewCreateInfo, null, out _perFrame[i].ImageView).CheckResult();
         }
     }
 

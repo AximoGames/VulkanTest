@@ -15,10 +15,10 @@ public sealed unsafe class Swapchain : IDisposable
 
     public VkSwapchainKHR Handle;
     public VkExtent2D Extent { get; }
-
     public VkSurfaceFormatKHR SurfaceFormat;
-
+    public int ImageCount => _images.Length;
     private VkImageView[] _imageViews;
+    private VkImage[] _images;
 
     public Swapchain(GraphicsDevice device, GameWindow? window)
     {
@@ -57,18 +57,24 @@ public sealed unsafe class Swapchain : IDisposable
 
         vkCreateSwapchainKHR(device.VkDevice, &createInfo, null, out Handle).CheckResult();
 
+        GetImages();
         CreateImageViews();
+    }
+
+    private void GetImages()
+    {
+        ReadOnlySpan<VkImage> imagesSpan = vkGetSwapchainImagesKHR(Device.VkDevice, Handle);
+        _images = imagesSpan.ToArray();
     }
 
     private void CreateImageViews()
     {
-        var swapChainImages = vkGetSwapchainImagesKHR(Device.VkDevice, Handle);
-        _imageViews = new VkImageView[swapChainImages.Length];
+        _imageViews = new VkImageView[_images.Length];
 
-        for (int i = 0; i < swapChainImages.Length; i++)
+        for (int i = 0; i < _images.Length; i++)
         {
             var viewCreateInfo = new VkImageViewCreateInfo(
-                swapChainImages[i],
+                _images[i],
                 VkImageViewType.Image2D,
                 SurfaceFormat.format,
                 VkComponentMapping.Rgba,
