@@ -26,8 +26,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
     private PerFrame[] _perFrame; // TODO: Pin during init?
     public readonly BufferManager BufferManager;
     public VulkanCommandPool CommandPool;
-
-    private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
+    public VulkanSynchronization Synchronization;
 
     public uint CurrentSwapchainImageIndex;
 
@@ -52,6 +51,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         Pipeline = new VulkanPipeline(VulkanDevice, Swapchain, ShaderManager);
 
         CommandPool = new VulkanCommandPool(VulkanDevice);
+        Synchronization = new VulkanSynchronization(VulkanDevice);
 
         BufferManager = new BufferManager(VulkanDevice, CommandPool);
         BufferManager.CreateVertexBuffer(Vertices);
@@ -59,8 +59,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         for (var i = 0; i < _perFrame.Length; i++)
         {
-            VkFenceCreateInfo fenceCreateInfo = new VkFenceCreateInfo(VkFenceCreateFlags.Signaled);
-            vkCreateFence(VulkanDevice.LogicalDevice, &fenceCreateInfo, null, out _perFrame[i].QueueSubmitFence).CheckResult();
+            _perFrame[i].QueueSubmitFence = Synchronization.CreateFence();
 
             _perFrame[i].PrimaryCommandPool = new VulkanCommandPool(VulkanDevice);
             _perFrame[i].PrimaryCommandBuffer = _perFrame[i].PrimaryCommandPool.AllocateCommandBuffer();
@@ -114,12 +113,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
             }
         }
 
-        foreach (VkSemaphore semaphore in _recycledSemaphores)
-        {
-            vkDestroySemaphore(VulkanDevice.LogicalDevice, semaphore, null);
-        }
-
-        _recycledSemaphores.Clear();
+        Synchronization.Dispose();
 
         Pipeline.Dispose();
 
@@ -167,7 +161,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         if (_perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
         {
-            vkCreateSemaphore(VulkanDevice.LogicalDevice, out _perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore).CheckResult();
+            _perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore = Synchronization.CreateSemaphore();
         }
 
         VkPipelineStageFlags wait_stage = VkPipelineStageFlags.ColorAttachmentOutput;
@@ -203,29 +197,20 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     private VkResult AcquireNextImage(out uint imageIndex)
     {
-        VkSemaphore acquireSemaphore;
-        if (_recycledSemaphores.Count == 0)
-        {
-            vkCreateSemaphore(VulkanDevice.LogicalDevice, out acquireSemaphore).CheckResult();
-        }
-        else
-        {
-            acquireSemaphore = _recycledSemaphores[_recycledSemaphores.Count - 1];
-            _recycledSemaphores.RemoveAt(_recycledSemaphores.Count - 1);
-        }
+        VkSemaphore acquireSemaphore = Synchronization.AcquireSemaphore();
 
         VkResult result = vkAcquireNextImageKHR(VulkanDevice.LogicalDevice, Swapchain.Handle, ulong.MaxValue, acquireSemaphore, VkFence.Null, out imageIndex);
 
         if (result != VkResult.Success)
         {
-            _recycledSemaphores.Add(acquireSemaphore);
+            Synchronization.RecycleSemaphore(acquireSemaphore);
             return result;
         }
 
         if (_perFrame[imageIndex].QueueSubmitFence != VkFence.Null)
         {
-            vkWaitForFences(VulkanDevice.LogicalDevice, _perFrame[imageIndex].QueueSubmitFence, true, ulong.MaxValue);
-            vkResetFences(VulkanDevice.LogicalDevice, _perFrame[imageIndex].QueueSubmitFence);
+            Synchronization.WaitForFence(_perFrame[imageIndex].QueueSubmitFence);
+            Synchronization.ResetFence(_perFrame[imageIndex].QueueSubmitFence);
         }
 
         if (_perFrame[imageIndex].PrimaryCommandPool.Handle != VkCommandPool.Null)
@@ -234,12 +219,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         }
 
         // Recycle the old semaphore back into the semaphore manager.
-        VkSemaphore old_semaphore = _perFrame[imageIndex].SwapchainAcquireSemaphore;
-
-        if (old_semaphore != VkSemaphore.Null)
-        {
-            _recycledSemaphores.Add(old_semaphore);
-        }
+        Synchronization.RecycleSemaphore(_perFrame[imageIndex].SwapchainAcquireSemaphore);
 
         _perFrame[imageIndex].SwapchainAcquireSemaphore = acquireSemaphore;
 
