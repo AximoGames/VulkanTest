@@ -73,10 +73,7 @@ public unsafe class VulkanInstance : IDisposable
         }
 
         VkResult result = vkCreateInstance(&instanceCreateInfo, null, out Instance);
-        if (result != VkResult.Success)
-        {
-            throw new InvalidOperationException($"Failed to create vulkan instance: {result}");
-        }
+result.CheckResult("Failed to create Vulkan instance");
 
         vkLoadInstance(Instance);
 

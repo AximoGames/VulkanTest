@@ -20,4 +20,10 @@ public static class NativeExtensions
 
     public static VkUtf8ReadOnlyString ToVkUtf8ReadOnlyString(this string stringBuffer)
         => new((ReadOnlySpan<byte>)Encoding.UTF8.GetBytes(stringBuffer));
+
+    // public static void CheckResult(this VkResult result, string message = "Vulkan operation failed")
+    // {
+    //     if (result != VkResult.Success)
+    //         throw new VulkanException(message, result);
+    // }
 }

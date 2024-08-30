@@ -33,7 +33,18 @@ public unsafe class TestApp : Application
 
     protected override void OnRenderFrame()
     {
-        _graphicsDevice.RenderFrame(OnDraw);
+        try
+        {
+            _graphicsDevice.RenderFrame(OnDraw);
+        }
+        catch (VkException ex)
+        {
+            Log.Error($"Vulkan error occurred: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Unexpected error occurred: {ex.Message}");
+        }
     }
 
     private void OnDraw(VkCommandBuffer commandBuffer, VkExtent2D size)

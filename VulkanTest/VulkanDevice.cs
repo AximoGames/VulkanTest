@@ -11,7 +11,7 @@ public unsafe class VulkanDevice : IDisposable
     public VkDevice LogicalDevice;
     public VkQueue GraphicsQueue;
     public VkQueue PresentQueue;
-    
+
     public (uint GraphicsFamily, uint PresentFamily) QueueFamilies { get; private set; }
 
     private readonly VulkanInstance _instance;
@@ -69,9 +69,8 @@ public unsafe class VulkanDevice : IDisposable
             pEnabledFeatures = &deviceFeatures,
         };
 
-        var result = vkCreateDevice(PhysicalDevice, &deviceCreateInfo, null, out LogicalDevice);
-        if (result != VkResult.Success)
-            throw new Exception($"Failed to create Vulkan Logical Device, {result}");
+        vkCreateDevice(PhysicalDevice, &deviceCreateInfo, null, out LogicalDevice)
+            .CheckResult("Failed to create Vulkan Logical Device");
 
         vkGetDeviceQueue(LogicalDevice, QueueFamilies.GraphicsFamily, 0, out GraphicsQueue);
         vkGetDeviceQueue(LogicalDevice, QueueFamilies.PresentFamily, 0, out PresentQueue);
