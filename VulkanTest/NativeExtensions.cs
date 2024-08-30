@@ -9,6 +9,9 @@ public static class NativeExtensions
     public static unsafe string GetLayerName(this VkLayerProperties properties)
         => VkStringInterop.ConvertToManaged(properties.layerName) ?? throw new InvalidOperationException();
 
+    public static unsafe string GetDeviceName(this VkPhysicalDeviceProperties properties)
+        => VkStringInterop.ConvertToManaged(properties.deviceName) ?? throw new InvalidOperationException();
+
     public static unsafe string GetExtensionName(this VkExtensionProperties properties)
         => VkStringInterop.ConvertToManaged(properties.extensionName) ?? throw new InvalidOperationException();
 

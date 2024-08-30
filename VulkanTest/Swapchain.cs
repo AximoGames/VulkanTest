@@ -8,7 +8,7 @@ namespace Vortice;
 
 public sealed unsafe class Swapchain : IDisposable
 {
-    public readonly GraphicsDevice Device;
+    public readonly VulkanDevice Device;
 
     [NotNull]
     public readonly GameWindow? Window = default!;
@@ -19,13 +19,15 @@ public sealed unsafe class Swapchain : IDisposable
     public int ImageCount => _images.Length;
     private VkImageView[] _imageViews;
     private VkImage[] _images;
+    private readonly VkSurfaceKHR _surface;
 
-    public Swapchain(GraphicsDevice device, GameWindow? window)
+    public Swapchain(VulkanDevice device, GameWindow? window, VkSurfaceKHR surface)
     {
         Device = device;
         Window = window;
+        _surface = surface;
 
-        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.PhysicalDevice, device._surface);
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.PhysicalDevice, _surface);
 
         SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.Formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.PresentModes);
@@ -40,7 +42,7 @@ public sealed unsafe class Swapchain : IDisposable
 
         var createInfo = new VkSwapchainCreateInfoKHR
         {
-            surface = device._surface,
+            surface = _surface,
             minImageCount = imageCount,
             imageFormat = SurfaceFormat.format,
             imageColorSpace = SurfaceFormat.colorSpace,
@@ -55,7 +57,7 @@ public sealed unsafe class Swapchain : IDisposable
             oldSwapchain = VkSwapchainKHR.Null
         };
 
-        vkCreateSwapchainKHR(device.VkDevice, &createInfo, null, out Handle).CheckResult();
+        vkCreateSwapchainKHR(Device.LogicalDevice, &createInfo, null, out Handle).CheckResult();
 
         GetImages();
         CreateImageViews();
@@ -63,7 +65,7 @@ public sealed unsafe class Swapchain : IDisposable
 
     private void GetImages()
     {
-        ReadOnlySpan<VkImage> imagesSpan = vkGetSwapchainImagesKHR(Device.VkDevice, Handle);
+        ReadOnlySpan<VkImage> imagesSpan = vkGetSwapchainImagesKHR(Device.LogicalDevice, Handle);
         _images = imagesSpan.ToArray();
     }
 
@@ -81,7 +83,7 @@ public sealed unsafe class Swapchain : IDisposable
                 new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
             );
 
-            vkCreateImageView(Device.VkDevice, &viewCreateInfo, null, out _imageViews[i]).CheckResult();
+            vkCreateImageView(Device.LogicalDevice, &viewCreateInfo, null, out _imageViews[i]).CheckResult();
         }
     }
 
@@ -94,12 +96,12 @@ public sealed unsafe class Swapchain : IDisposable
     {
         for (int i = 0; i < _imageViews.Length; i++)
         {
-            vkDestroyImageView(Device.VkDevice, _imageViews[i], null);
+            vkDestroyImageView(Device.LogicalDevice, _imageViews[i], null);
         }
 
         if (Handle != VkSwapchainKHR.Null)
         {
-            vkDestroySwapchainKHR(Device.VkDevice, Handle, null);
+            vkDestroySwapchainKHR(Device.LogicalDevice, Handle, null);
         }
     }
 

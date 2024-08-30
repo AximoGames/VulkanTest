@@ -8,16 +8,18 @@ namespace Vortice;
 
 public unsafe class BufferManager : IDisposable
 {
-    private readonly GraphicsDevice _device;
+    private readonly VulkanDevice _device;
+    private readonly VkCommandPool _commandPool;
 
     public VkBuffer VertexBuffer;
     public VkDeviceMemory VertexBufferMemory;
     public VkBuffer IndexBuffer;
     public VkDeviceMemory IndexBufferMemory;
 
-    public BufferManager(GraphicsDevice device)
+    public BufferManager(VulkanDevice device, VkCommandPool commandPool)
     {
         _device = device;
+        _commandPool = commandPool;
     }
 
     public void CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
@@ -31,17 +33,17 @@ public unsafe class BufferManager : IDisposable
         fixed (void* verticesPtr = &vertices[0])
         {
             void* data;
-            vkMapMemory(_device.VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+            vkMapMemory(_device.LogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
             Unsafe.CopyBlock(data, verticesPtr, bufferSize);
-            vkUnmapMemory(_device.VkDevice, stagingBufferMemory);
+            vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
         }
 
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.VertexBuffer, VkMemoryPropertyFlags.DeviceLocal, out VertexBuffer, out VertexBufferMemory);
 
         CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
 
-        vkDestroyBuffer(_device.VkDevice, stagingBuffer, null);
-        vkFreeMemory(_device.VkDevice, stagingBufferMemory, null);
+        vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
+        vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
     }
 
     public void CreateIndexBuffer(ushort[] indices)
@@ -55,17 +57,17 @@ public unsafe class BufferManager : IDisposable
         fixed (ushort* indiciesPtr = &indices[0])
         {
             void* data;
-            vkMapMemory(_device.VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+            vkMapMemory(_device.LogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
             Unsafe.CopyBlock(data, indiciesPtr, bufferSize);
-            vkUnmapMemory(_device.VkDevice, stagingBufferMemory);
+            vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
         }
 
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.IndexBuffer, VkMemoryPropertyFlags.DeviceLocal, out IndexBuffer, out IndexBufferMemory);
 
         CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
 
-        vkDestroyBuffer(_device.VkDevice, stagingBuffer, null);
-        vkFreeMemory(_device.VkDevice, stagingBufferMemory, null);
+        vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
+        vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
     }
 
     private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
@@ -75,35 +77,35 @@ public unsafe class BufferManager : IDisposable
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VkSharingMode.Exclusive;
 
-        if (vkCreateBuffer(_device.VkDevice, &bufferInfo, null, out buffer) != VkResult.Success)
+        if (vkCreateBuffer(_device.LogicalDevice, &bufferInfo, null, out buffer) != VkResult.Success)
         {
             throw new Exception("failed to create buffer!");
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(_device.VkDevice, buffer, out memRequirements);
+        vkGetBufferMemoryRequirements(_device.LogicalDevice, buffer, out memRequirements);
 
         VkMemoryAllocateInfo allocInfo;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(_device.VkDevice, &allocInfo, null, out bufferMemory) != VkResult.Success)
+        if (vkAllocateMemory(_device.LogicalDevice, &allocInfo, null, out bufferMemory) != VkResult.Success)
         {
             throw new Exception("failed to allocate buffer memory!");
         }
 
-        vkBindBufferMemory(_device.VkDevice, buffer, bufferMemory, 0);
+        vkBindBufferMemory(_device.LogicalDevice, buffer, bufferMemory, 0);
     }
 
     private void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, ulong size)
     {
         VkCommandBufferAllocateInfo allocInfo;
         allocInfo.level = VkCommandBufferLevel.Primary;
-        allocInfo.commandPool = _device.CommandPool;
+        allocInfo.commandPool = _commandPool;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(_device.VkDevice, &allocInfo, &commandBuffer);
+        vkAllocateCommandBuffers(_device.LogicalDevice, &allocInfo, &commandBuffer);
 
         VkCommandBufferBeginInfo beginInfo;
         beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmit;
@@ -123,7 +125,7 @@ public unsafe class BufferManager : IDisposable
         vkQueueSubmit(_device.GraphicsQueue, 1, &submitInfo, VkFence.Null);
         vkQueueWaitIdle(_device.GraphicsQueue);
 
-        vkFreeCommandBuffers(_device.VkDevice, _device.CommandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(_device.LogicalDevice, _commandPool, 1, &commandBuffer);
     }
 
     private uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
@@ -144,9 +146,9 @@ public unsafe class BufferManager : IDisposable
 
     public void Dispose()
     {
-        vkDestroyBuffer(_device.VkDevice, VertexBuffer, null);
-        vkFreeMemory(_device.VkDevice, VertexBufferMemory, null);
-        vkDestroyBuffer(_device.VkDevice, IndexBuffer, null);
-        vkFreeMemory(_device.VkDevice, IndexBufferMemory, null);
+        vkDestroyBuffer(_device.LogicalDevice, VertexBuffer, null);
+        vkFreeMemory(_device.LogicalDevice, VertexBufferMemory, null);
+        vkDestroyBuffer(_device.LogicalDevice, IndexBuffer, null);
+        vkFreeMemory(_device.LogicalDevice, IndexBufferMemory, null);
     }
 }
