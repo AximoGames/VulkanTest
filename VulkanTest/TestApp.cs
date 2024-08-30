@@ -77,12 +77,8 @@ public unsafe class TestApp : Application
 
         vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline.PipelineHandle);
 
-        vkCmdBindVertexBuffer(commandBuffer, 0, _graphicsDevice.BufferManager.VertexBuffer);
-        vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.BufferManager.IndexBuffer, 0, VkIndexType.Uint16);
-
-        vkCmdDrawIndexed(commandBuffer, (uint)_graphicsDevice.Indices.Length, 1, 0, 0, 0);
-
-        vkCmdSetBlendConstants(commandBuffer, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+        var renderContext = new RenderContext(_graphicsDevice.VulkanDevice, _graphicsDevice.BufferManager, commandBuffer, size);
+        renderContext.Draw();
 
         vkCmdEndRendering(commandBuffer);
     }
