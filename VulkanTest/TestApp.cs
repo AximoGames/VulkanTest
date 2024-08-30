@@ -38,7 +38,7 @@ public unsafe class TestApp : Application
 
     private void OnDraw(VkCommandBuffer commandBuffer, VkExtent2D size)
     {
-        float g = _green + 0.01f;
+        float g = _green + 0.0003f;
         if (g > 1.0f)
             g = 0.0f;
         _green = g;

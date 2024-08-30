@@ -32,6 +32,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public ShaderManager ShaderManager { get; private set; }
 
+    public VulkanCommandBufferManager CommandBufferManager;
+
     public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
     {
         VulkanInstance = new VulkanInstance(applicationName, enableValidation);
@@ -56,6 +58,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
         BufferManager = new BufferManager(VulkanDevice, CommandPool);
         BufferManager.CreateVertexBuffer(Vertices);
         BufferManager.CreateIndexBuffer(Indices);
+
+        CommandBufferManager = new VulkanCommandBufferManager(VulkanDevice, CommandPool);
 
         for (var i = 0; i < _perFrame.Length; i++)
         {
@@ -117,6 +121,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         Pipeline.Dispose();
 
+        CommandBufferManager.Dispose();
+
         CommandPool.Dispose();
 
         VulkanDevice.Dispose();
@@ -148,16 +154,12 @@ public unsafe sealed class GraphicsDevice : IDisposable
         // Begin command recording
         VkCommandBuffer cmd = _perFrame[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
-        VkCommandBufferBeginInfo beginInfo = new VkCommandBufferBeginInfo
-        {
-            flags = VkCommandBufferUsageFlags.OneTimeSubmit
-        };
-        vkBeginCommandBuffer(cmd, &beginInfo).CheckResult();
+        CommandBufferManager.BeginCommandBuffer(cmd);
 
         draw(cmd, Swapchain.Extent);
 
         // Complete the command buffer.
-        vkEndCommandBuffer(cmd).CheckResult();
+        CommandBufferManager.EndCommandBuffer(cmd);
 
         if (_perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
         {
