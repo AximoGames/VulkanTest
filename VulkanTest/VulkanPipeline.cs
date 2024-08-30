@@ -158,38 +158,34 @@ public unsafe class VulkanPipeline : IDisposable
 
             vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
 
-            VkPipelineShaderStageCreateInfo[] shaderStages = new VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
-            fixed (VkPipelineShaderStageCreateInfo* shaderStagesPtr = &shaderStages[0])
+            VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
+
+            var colorAttachmentFormat = _swapchain.SurfaceFormat.format;
+            VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
             {
-                fixed (VkFormat* pColorAttachmentFormat = &_swapchain.SurfaceFormat.format)
-                {
-                    VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
-                    {
-                        colorAttachmentCount = 1,
-                        pColorAttachmentFormats = pColorAttachmentFormat
-                    };
+                colorAttachmentCount = 1,
+                pColorAttachmentFormats = &colorAttachmentFormat,
+            };
 
-                    var pipelineInfo = new VkGraphicsPipelineCreateInfo
-                    {
-                        pNext = &pipelineRenderingCreateInfo,
-                        stageCount = 2,
-                        pStages = shaderStagesPtr,
-                        pVertexInputState = &vertexInputInfo,
-                        pInputAssemblyState = &inputAssembly,
-                        pViewportState = &viewportState,
-                        pRasterizationState = &rasterizer,
-                        pMultisampleState = &multisampling,
-                        pColorBlendState = &colorBlending,
-                        layout = PipelineLayoutHandle,
-                        subpass = 0,
-                        basePipelineHandle = VkPipeline.Null
-                    };
+            var pipelineInfo = new VkGraphicsPipelineCreateInfo
+            {
+                pNext = &pipelineRenderingCreateInfo,
+                stageCount = 2,
+                pStages = shaderStages,
+                pVertexInputState = &vertexInputInfo,
+                pInputAssemblyState = &inputAssembly,
+                pViewportState = &viewportState,
+                pRasterizationState = &rasterizer,
+                pMultisampleState = &multisampling,
+                pColorBlendState = &colorBlending,
+                layout = PipelineLayoutHandle,
+                subpass = 0,
+                basePipelineHandle = VkPipeline.Null
+            };
 
-                    VkPipeline graphicsPipeline;
-                    vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
-                    PipelineHandle = graphicsPipeline;
-                }
-            }
+            VkPipeline graphicsPipeline;
+            vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
+            PipelineHandle = graphicsPipeline;
         }
 
         vkDestroyShaderModule(_device.LogicalDevice, fragShaderModule, null);
