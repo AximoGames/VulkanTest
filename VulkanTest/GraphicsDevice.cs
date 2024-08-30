@@ -34,6 +34,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public VulkanCommandBufferManager CommandBufferManager;
 
+    public VkClearColorValue ClearColor { get; set; } = new VkClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+
     public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
     {
         VulkanInstance = new VulkanInstance(applicationName, enableValidation);
@@ -156,9 +158,10 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 
+        BeginRenderPass(cmd, Swapchain.Extent);
         draw(cmd, Swapchain.Extent);
+        EndRenderPass(cmd);
 
-        // Complete the command buffer.
         CommandBufferManager.EndCommandBuffer(cmd);
 
         if (_perFrameData[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
@@ -254,5 +257,35 @@ public unsafe sealed class GraphicsDevice : IDisposable
         public VkCommandBuffer PrimaryCommandBuffer;
         public VkSemaphore SwapchainAcquireSemaphore;
         public VkSemaphore SwapchainReleaseSemaphore;
+    }
+
+    public void BeginRenderPass(VkCommandBuffer commandBuffer, VkExtent2D size)
+    {
+        VkClearValue clearValue = new VkClearValue { color = ClearColor };
+
+        VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
+        {
+            imageView = Swapchain.GetImageView(CurrentSwapchainImageIndex),
+            imageLayout = VkImageLayout.ColorAttachmentOptimal,
+            loadOp = VkAttachmentLoadOp.Clear,
+            storeOp = VkAttachmentStoreOp.Store,
+            clearValue = clearValue
+        };
+
+        VkRenderingInfo renderingInfo = new VkRenderingInfo
+        {
+            renderArea = new VkRect2D(VkOffset2D.Zero, size),
+            layerCount = 1,
+            colorAttachmentCount = 1,
+            pColorAttachments = &colorAttachmentInfo
+        };
+
+        vkCmdBeginRendering(commandBuffer, &renderingInfo);
+        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, Pipeline.PipelineHandle);
+    }
+
+    public void EndRenderPass(VkCommandBuffer commandBuffer)
+    {
+        vkCmdEndRendering(commandBuffer);
     }
 }

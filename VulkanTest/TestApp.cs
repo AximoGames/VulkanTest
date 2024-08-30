@@ -54,35 +54,12 @@ public unsafe class TestApp : Application
             g = 0.0f;
         _greenValue = g;
 
-        VkClearValue clearValue = new VkClearValue(1.0f, _greenValue, 0.0f, 1.0f);
-
-        VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
-        {
-            imageView = _graphicsDevice.Swapchain.GetImageView(_graphicsDevice.CurrentSwapchainImageIndex),
-            imageLayout = VkImageLayout.ColorAttachmentOptimal,
-            loadOp = VkAttachmentLoadOp.Clear,
-            storeOp = VkAttachmentStoreOp.Store,
-            clearValue = clearValue
-        };
-
-        VkRenderingInfo renderingInfo = new VkRenderingInfo
-        {
-            renderArea = new VkRect2D(VkOffset2D.Zero, size),
-            layerCount = 1,
-            colorAttachmentCount = 1,
-            pColorAttachments = &colorAttachmentInfo
-        };
-
-        vkCmdBeginRendering(commandBuffer, &renderingInfo);
-
-        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline.PipelineHandle);
+        _graphicsDevice.ClearColor = new VkClearColorValue(1.0f, _greenValue, 0.0f, 1.0f);
 
         var renderContext = new RenderContext(_graphicsDevice.VulkanDevice, _graphicsDevice.BufferManager, commandBuffer, size);
 
         renderContext.BindVertexBuffer();
         renderContext.BindIndexBuffer();
         renderContext.DrawIndexed(6);
-
-        vkCmdEndRendering(commandBuffer);
     }
 }
