@@ -5,7 +5,7 @@ using Vortice;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace DrawTriangle;
+namespace VulkanTest;
 
 public unsafe class TestApp : Application
 {
@@ -18,7 +18,7 @@ public unsafe class TestApp : Application
     [NotNull]
     private GraphicsDevice _graphicsDevice = default!;
 
-    private float _green = 0.0f;
+    private float _greenValue = 0.0f;
 
     public override string Name => "01-DrawTriangle";
 
@@ -38,12 +38,12 @@ public unsafe class TestApp : Application
 
     private void OnDraw(VkCommandBuffer commandBuffer, VkExtent2D size)
     {
-        float g = _green + 0.0003f;
+        float g = _greenValue + 0.0003f;
         if (g > 1.0f)
             g = 0.0f;
-        _green = g;
+        _greenValue = g;
 
-        VkClearValue clearValue = new VkClearValue(1.0f, _green, 0.0f, 1.0f);
+        VkClearValue clearValue = new VkClearValue(1.0f, _greenValue, 0.0f, 1.0f);
 
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {

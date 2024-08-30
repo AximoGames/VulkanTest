@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Vortice.Vulkan;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public static class NativeExtensions
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public static class Log
 {

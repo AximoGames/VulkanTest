@@ -2,7 +2,7 @@ using System;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public unsafe class VulkanCommandPool : IDisposable
 {
@@ -20,7 +20,7 @@ public unsafe class VulkanCommandPool : IDisposable
         VkCommandPoolCreateInfo poolCreateInfo = new VkCommandPoolCreateInfo
         {
             flags = flags,
-            queueFamilyIndex = _device.QueueFamilies.graphicsFamily,
+            queueFamilyIndex = _device.QueueFamilies.GraphicsFamily,
         };
         VkCommandPool vkCommandPool;
         vkCreateCommandPool(_device.LogicalDevice, &poolCreateInfo, null, &vkCommandPool).CheckResult();

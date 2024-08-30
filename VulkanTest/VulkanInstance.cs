@@ -5,11 +5,11 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public unsafe class VulkanInstance : IDisposable
 {
-    private static readonly string[] _RequestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
+    private static readonly string[] _requestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
 
     public VkInstance Instance;
     private VkDebugUtilsMessengerEXT _debugMessenger = VkDebugUtilsMessengerEXT.Null;
@@ -137,12 +137,12 @@ public unsafe class VulkanInstance : IDisposable
             Log.Info($"Found Layer: {name}");
         }
 
-        for (int i = 0; i < _RequestedValidationLayers.Length; i++)
+        for (int i = 0; i < _requestedValidationLayers.Length; i++)
         {
             bool hasLayer = false;
             for (int j = 0; j < availableLayers.Length; j++)
             {
-                if (_RequestedValidationLayers[i] == availableLayers[j].GetLayerName())
+                if (_requestedValidationLayers[i] == availableLayers[j].GetLayerName())
                 {
                     hasLayer = true;
                     break;
@@ -151,11 +151,11 @@ public unsafe class VulkanInstance : IDisposable
 
             if (hasLayer)
             {
-                appendTo.Add(_RequestedValidationLayers[i]);
+                appendTo.Add(_requestedValidationLayers[i]);
             }
             else
             {
-                Log.Warn($"Validation layer '{_RequestedValidationLayers[i]}' not found.");
+                Log.Warn($"Validation layer '{_requestedValidationLayers[i]}' not found.");
             }
         }
     }

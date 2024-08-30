@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public unsafe class BufferManager : IDisposable
 {

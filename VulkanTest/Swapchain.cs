@@ -4,7 +4,7 @@ using OpenTK.Windowing.Desktop;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public sealed unsafe class Swapchain : IDisposable
 {
@@ -27,7 +27,7 @@ public sealed unsafe class Swapchain : IDisposable
         Window = window;
         _surface = surface;
 
-        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.PhysicalDevice, _surface);
+        SwapchainSupportDetails swapChainSupport = QuerySwapchainSupport(device.PhysicalDevice, _surface);
 
         SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.Formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.PresentModes);
@@ -105,7 +105,7 @@ public sealed unsafe class Swapchain : IDisposable
         }
     }
 
-    private ref struct SwapChainSupportDetails
+    private ref struct SwapchainSupportDetails
     {
         public VkSurfaceCapabilitiesKHR Capabilities;
         public ReadOnlySpan<VkSurfaceFormatKHR> Formats;
@@ -131,9 +131,9 @@ public sealed unsafe class Swapchain : IDisposable
         }
     }
 
-    private static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
+    private static SwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
     {
-        SwapChainSupportDetails details = new SwapChainSupportDetails();
+        SwapchainSupportDetails details = new SwapchainSupportDetails();
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, out details.Capabilities).CheckResult();
 
         details.Formats = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface);

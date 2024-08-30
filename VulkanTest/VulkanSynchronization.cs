@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public unsafe class VulkanSynchronization : IDisposable
 {

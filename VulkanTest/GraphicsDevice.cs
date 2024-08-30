@@ -11,16 +11,16 @@ using OpenTK.Windowing.Desktop;
 using Vortice.ShaderCompiler;
 using OpenTK.Mathematics;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public unsafe sealed class GraphicsDevice : IDisposable
 {
-    private static readonly string s_EngineName = "Vortice";
+    private static readonly string _engineName = "Vortice";
 
     public readonly VulkanInstance VulkanInstance;
     public readonly VulkanDevice VulkanDevice;
 
-    internal readonly VkSurfaceKHR _surface;
+    private readonly VkSurfaceKHR _surface;
     public readonly Swapchain Swapchain;
     public readonly VulkanPipeline Pipeline;
     private PerFrame[] _perFrameData; // TODO: Pin during init?

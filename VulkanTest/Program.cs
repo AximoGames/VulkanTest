@@ -3,7 +3,7 @@ using Vortice.ShaderCompiler;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace DrawTriangle;
+namespace VulkanTest;
 
 public static unsafe partial class Program
 {

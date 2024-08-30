@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public unsafe class VulkanDevice : IDisposable
 {
@@ -12,7 +12,7 @@ public unsafe class VulkanDevice : IDisposable
     public VkQueue GraphicsQueue;
     public VkQueue PresentQueue;
     
-    public (uint graphicsFamily, uint presentFamily) QueueFamilies { get; private set; }
+    public (uint GraphicsFamily, uint PresentFamily) QueueFamilies { get; private set; }
 
     private readonly VulkanInstance _instance;
     private readonly VkSurfaceKHR _surface;
@@ -46,7 +46,7 @@ public unsafe class VulkanDevice : IDisposable
         float priority = 1.0f;
         VkDeviceQueueCreateInfo queueCreateInfo = new VkDeviceQueueCreateInfo
         {
-            queueFamilyIndex = QueueFamilies.graphicsFamily,
+            queueFamilyIndex = QueueFamilies.GraphicsFamily,
             queueCount = 1,
             pQueuePriorities = &priority
         };
@@ -73,13 +73,13 @@ public unsafe class VulkanDevice : IDisposable
         if (result != VkResult.Success)
             throw new Exception($"Failed to create Vulkan Logical Device, {result}");
 
-        vkGetDeviceQueue(LogicalDevice, QueueFamilies.graphicsFamily, 0, out GraphicsQueue);
-        vkGetDeviceQueue(LogicalDevice, QueueFamilies.presentFamily, 0, out PresentQueue);
+        vkGetDeviceQueue(LogicalDevice, QueueFamilies.GraphicsFamily, 0, out GraphicsQueue);
+        vkGetDeviceQueue(LogicalDevice, QueueFamilies.PresentFamily, 0, out PresentQueue);
 
         Log.Info("Logical device created successfully");
     }
 
-    private static (uint graphicsFamily, uint presentFamily) FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
+    private static (uint GraphicsFamily, uint PresentFamily) FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
     {
         ReadOnlySpan<VkQueueFamilyProperties> queueFamilies = vkGetPhysicalDeviceQueueFamilyProperties(device);
 

@@ -1,7 +1,7 @@
 ﻿using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.Common;
 
-namespace Vortice;
+namespace VulkanTest;
 
 public class MyGameWindow : GameWindow
 {
