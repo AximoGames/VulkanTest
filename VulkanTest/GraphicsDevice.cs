@@ -22,7 +22,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     private readonly VkSurfaceKHR _surface;
     public readonly Swapchain Swapchain;
-    public readonly VulkanPipeline Pipeline;
+    public VulkanPipeline Pipeline;
     private PerFrame[] _perFrameData; // TODO: Pin during init?
     public readonly BufferManager BufferManager;
     public VulkanCommandPool CommandPool;
@@ -54,9 +54,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         // Initialize _perFrame array
         _perFrameData = new PerFrame[Swapchain.ImageCount];
-
-        Pipeline = new VulkanPipeline(VulkanDevice, Swapchain, ShaderManager);
-
+        
         CommandPool = new VulkanCommandPool(VulkanDevice);
         Synchronization = new VulkanSynchronization(VulkanDevice);
 
@@ -140,6 +138,13 @@ public unsafe sealed class GraphicsDevice : IDisposable
         VulkanInstance.Dispose();
     }
 
+    public void InitializePipeline(Action<PipeLineBuilder> callback)
+    {
+        var builder = new PipeLineBuilder(VulkanDevice, Swapchain, ShaderManager);
+        callback(builder);
+        Pipeline = builder.Build();
+    }
+
     public void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
@@ -160,7 +165,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
         var renderContext = new RenderContext(VulkanDevice, BufferManager, cmd, Swapchain.Extent);
-        
+
         CommandBufferManager.BeginCommandBuffer(cmd);
 
         BeginRenderPass(cmd, Swapchain.Extent);

@@ -26,6 +26,12 @@ public unsafe class TestApp : Application
     {
         base.Initialize();
         _graphicsDevice = new GraphicsDevice(Name, EnableValidationLayers, MainWindow);
+        _graphicsDevice.InitializePipeline(InitializePipeline);
+    }
+
+    protected void InitializePipeline(PipeLineBuilder builder)
+    {
+        builder.CreateGraphicsPipeline();
     }
 
     protected override void OnRenderFrame()
