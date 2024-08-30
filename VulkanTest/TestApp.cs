@@ -47,14 +47,13 @@ public unsafe class TestApp : Application
         }
     }
 
-    private void OnDraw(VkCommandBuffer commandBuffer, VkExtent2D size)
+    private void OnDraw(RenderContext renderContext)
     {
         float g = _greenValue + 0.0003f;
         if (g > 1.0f)
             g = 0.0f;
         _greenValue = g;
 
-        var renderContext = new RenderContext(_graphicsDevice.VulkanDevice, _graphicsDevice.BufferManager, commandBuffer, size);
         renderContext.Clear(new VkClearColorValue(0, 0, _greenValue));
         renderContext.BindVertexBuffer();
         renderContext.BindIndexBuffer();

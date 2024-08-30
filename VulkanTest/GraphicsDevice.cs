@@ -137,7 +137,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         VulkanInstance.Dispose();
     }
 
-    public void RenderFrame(Action<VkCommandBuffer, VkExtent2D> draw, [CallerMemberName] string? frameName = null)
+    public void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
 
@@ -156,10 +156,12 @@ public unsafe sealed class GraphicsDevice : IDisposable
         // Begin command recording
         VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
+        var renderContext = new RenderContext(VulkanDevice, BufferManager, cmd, Swapchain.Extent);
+        
         CommandBufferManager.BeginCommandBuffer(cmd);
 
         BeginRenderPass(cmd, Swapchain.Extent);
-        draw(cmd, Swapchain.Extent);
+        draw(renderContext);
         EndRenderPass(cmd);
 
         CommandBufferManager.EndCommandBuffer(cmd);
