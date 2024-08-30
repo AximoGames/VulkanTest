@@ -22,10 +22,10 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     internal readonly VkSurfaceKHR _surface;
     public readonly Swapchain Swapchain;
-    public readonly VkPipeline Pipeline;
+    public readonly VulkanPipeline Pipeline;
     private PerFrame[] _perFrame; // TODO: Pin during init?
     public readonly BufferManager BufferManager;
-    public VkCommandPool CommandPool;
+    public VulkanCommandPool CommandPool;
 
     private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();
 
@@ -49,9 +49,9 @@ public unsafe sealed class GraphicsDevice : IDisposable
         // Initialize _perFrame array
         _perFrame = new PerFrame[Swapchain.ImageCount];
 
-        CreateGraphicsPipeline(out Pipeline);
+        Pipeline = new VulkanPipeline(VulkanDevice, Swapchain, ShaderManager);
 
-        CreateCommandPool();
+        CommandPool = new VulkanCommandPool(VulkanDevice);
 
         BufferManager = new BufferManager(VulkanDevice, CommandPool);
         BufferManager.CreateVertexBuffer(Vertices);
@@ -62,7 +62,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
             VkFenceCreateInfo fenceCreateInfo = new VkFenceCreateInfo(VkFenceCreateFlags.Signaled);
             vkCreateFence(VulkanDevice.LogicalDevice, &fenceCreateInfo, null, out _perFrame[i].QueueSubmitFence).CheckResult();
 
-            vkAllocateCommandBuffer(VulkanDevice.LogicalDevice, _perFrame[i].PrimaryCommandPool, out _perFrame[i].PrimaryCommandBuffer).CheckResult();
+            _perFrame[i].PrimaryCommandPool = new VulkanCommandPool(VulkanDevice);
+            _perFrame[i].PrimaryCommandBuffer = _perFrame[i].PrimaryCommandPool.AllocateCommandBuffer();
         }
     }
 
@@ -79,183 +80,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         0, 1, 2, 2, 3, 0,
     };
 
-    private void CreateGraphicsPipeline(out VkPipeline pipeline)
-    {
-        //auto vertShaderCode = readFile("shaders/vert.spv");
-        //auto fragShaderCode = readFile("shaders/frag.spv");
-
-        // language=glsl
-        string vertexShaderCode =
-            """
-            #version 450
-
-            layout(location = 0) in vec2 inPosition;
-            layout(location = 1) in vec3 inColor;
-
-            layout(location = 0) out vec3 fragColor;
-
-            void main() {
-                gl_Position = vec4(inPosition, 0.0, 1.0);
-                fragColor = inColor;
-            }
-            """;
-
-        // language=glsl
-        string fragShaderCode =
-            """
-            #version 450
-
-            layout(location = 0) in vec3 fragColor;
-
-            layout(location = 0) out vec4 outColor;
-
-            void main() {
-                outColor = vec4(fragColor, 1.0);
-            }
-            """;
-
-        VkShaderModule vertShaderModule = ShaderManager.CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
-        VkShaderModule fragShaderModule = ShaderManager.CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
-
-        var name = "main".ToVkUtf8ReadOnlyString();
-
-        var vertShaderStageInfo = new VkPipelineShaderStageCreateInfo();
-        vertShaderStageInfo.stage = VkShaderStageFlags.Vertex;
-        vertShaderStageInfo.module = vertShaderModule;
-        vertShaderStageInfo.pName = name;
-
-        var fragShaderStageInfo = new VkPipelineShaderStageCreateInfo();
-        fragShaderStageInfo.stage = VkShaderStageFlags.Fragment;
-        fragShaderStageInfo.module = fragShaderModule;
-        fragShaderStageInfo.pName = name;
-
-        var bindingDescription = Vertex.getBindingDescription();
-        var attributeDescriptions = Vertex.getAttributeDescriptions();
-
-        fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
-        {
-            var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo();
-
-            vertexInputInfo.vertexBindingDescriptionCount = 1;
-            vertexInputInfo.vertexAttributeDescriptionCount = (uint)attributeDescriptions.Length;
-
-            vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-            vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptionsPtr;
-
-            var inputAssembly = new VkPipelineInputAssemblyStateCreateInfo();
-            inputAssembly.topology = VkPrimitiveTopology.TriangleList;
-            inputAssembly.primitiveRestartEnable = VkBool32.False;
-
-            var viewport = new VkViewport();
-            viewport.x = 0.0f;
-            viewport.y = 0.0f;
-            viewport.width = Swapchain.Extent.width;
-            viewport.height = Swapchain.Extent.height;
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
-
-            var scissor = new VkRect2D();
-            scissor.offset = new VkOffset2D(0, 0);
-            scissor.extent = Swapchain.Extent;
-
-            var viewportState = new VkPipelineViewportStateCreateInfo();
-            viewportState.viewportCount = 1;
-            viewportState.pViewports = &viewport;
-            viewportState.scissorCount = 1;
-            viewportState.pScissors = &scissor;
-
-            var rasterizer = new VkPipelineRasterizationStateCreateInfo();
-            rasterizer.depthClampEnable = VkBool32.False;
-            rasterizer.rasterizerDiscardEnable = VkBool32.False;
-            rasterizer.polygonMode = VkPolygonMode.Fill;
-            rasterizer.lineWidth = 1.0f;
-            rasterizer.cullMode = VkCullModeFlags.Back;
-            rasterizer.frontFace = VkFrontFace.Clockwise;
-            rasterizer.depthBiasEnable = VkBool32.False;
-
-            var multisampling = new VkPipelineMultisampleStateCreateInfo();
-            multisampling.sampleShadingEnable = VkBool32.False;
-            multisampling.rasterizationSamples = VkSampleCountFlags.Count1;
-
-            var colorBlendAttachment = new VkPipelineColorBlendAttachmentState();
-            colorBlendAttachment.colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A;
-            colorBlendAttachment.blendEnable = VkBool32.False;
-
-            var colorBlending = new VkPipelineColorBlendStateCreateInfo();
-            colorBlending.logicOpEnable = VkBool32.False;
-            colorBlending.logicOp = VkLogicOp.Copy;
-            colorBlending.attachmentCount = 1;
-            colorBlending.pAttachments = &colorBlendAttachment;
-            colorBlending.blendConstants[0] = 0.0f;
-            colorBlending.blendConstants[1] = 0.0f;
-            colorBlending.blendConstants[2] = 0.0f;
-            colorBlending.blendConstants[3] = 0.0f;
-
-            var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
-            pipelineLayoutInfo.setLayoutCount = 0;
-            pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-            VkPipelineLayout pipelineLayout;
-            vkCreatePipelineLayout(VulkanDevice.LogicalDevice, &pipelineLayoutInfo, null, out pipelineLayout).CheckResult();
-
-            VkPipelineShaderStageCreateInfo[] shaderStages = new VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
-            fixed (VkPipelineShaderStageCreateInfo* shaderStagesPtr = &shaderStages[0])
-            {
-                fixed (VkFormat* pColorAttachmentFormat = &Swapchain.SurfaceFormat.format)
-                {
-                    VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
-                    {
-                        colorAttachmentCount = 1,
-                        pColorAttachmentFormats = pColorAttachmentFormat
-                    };
-
-                    var pipelineInfo = new VkGraphicsPipelineCreateInfo();
-                    pipelineInfo.pNext = &pipelineRenderingCreateInfo;
-                    pipelineInfo.stageCount = 2;
-                    pipelineInfo.pStages = shaderStagesPtr;
-                    pipelineInfo.pVertexInputState = &vertexInputInfo;
-                    pipelineInfo.pInputAssemblyState = &inputAssembly;
-                    pipelineInfo.pViewportState = &viewportState;
-                    pipelineInfo.pRasterizationState = &rasterizer;
-                    pipelineInfo.pMultisampleState = &multisampling;
-                    pipelineInfo.pColorBlendState = &colorBlending;
-                    pipelineInfo.layout = pipelineLayout;
-                    pipelineInfo.subpass = 0;
-                    pipelineInfo.basePipelineHandle = VkPipeline.Null;
-
-                    VkPipeline graphicsPipeline;
-                    vkCreateGraphicsPipelines(VulkanDevice.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
-                    pipeline = graphicsPipeline;
-                }
-            }
-        }
-
-        vkDestroyShaderModule(VulkanDevice.LogicalDevice, fragShaderModule, null);
-        vkDestroyShaderModule(VulkanDevice.LogicalDevice, vertShaderModule, null);
-    }
-
-    private void CreateCommandPool()
-    {
-        // General Pool
-        VkCommandPoolCreateInfo poolCreateInfo = new VkCommandPoolCreateInfo
-        {
-            flags = VkCommandPoolCreateFlags.Transient,
-            queueFamilyIndex = VulkanDevice.QueueFamilies.graphicsFamily,
-        };
-        vkCreateCommandPool(VulkanDevice.LogicalDevice, &poolCreateInfo, null, out CommandPool).CheckResult();
-
-        // Per Frame Pools
-        for (var i = 0; i < _perFrame.Length; i++)
-        {
-            poolCreateInfo = new VkCommandPoolCreateInfo
-            {
-                flags = VkCommandPoolCreateFlags.Transient,
-                queueFamilyIndex = VulkanDevice.QueueFamilies.graphicsFamily,
-            };
-            vkCreateCommandPool(VulkanDevice.LogicalDevice, &poolCreateInfo, null, out _perFrame[i].PrimaryCommandPool).CheckResult();
-        }
-    }
-
     public void Dispose()
     {
         // Don't release anything until the GPU is completely idle.
@@ -271,12 +95,11 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
             if (_perFrame[i].PrimaryCommandBuffer != IntPtr.Zero)
             {
-                vkFreeCommandBuffers(VulkanDevice.LogicalDevice, _perFrame[i].PrimaryCommandPool, _perFrame[i].PrimaryCommandBuffer);
-
+                _perFrame[i].PrimaryCommandPool.FreeCommandBuffer(_perFrame[i].PrimaryCommandBuffer);
                 _perFrame[i].PrimaryCommandBuffer = IntPtr.Zero;
             }
 
-            vkDestroyCommandPool(VulkanDevice.LogicalDevice, _perFrame[i].PrimaryCommandPool, null);
+            _perFrame[i].PrimaryCommandPool.Dispose();
 
             if (_perFrame[i].SwapchainAcquireSemaphore != VkSemaphore.Null)
             {
@@ -297,6 +120,10 @@ public unsafe sealed class GraphicsDevice : IDisposable
         }
 
         _recycledSemaphores.Clear();
+
+        Pipeline.Dispose();
+
+        CommandPool.Dispose();
 
         VulkanDevice.Dispose();
 
@@ -401,9 +228,9 @@ public unsafe sealed class GraphicsDevice : IDisposable
             vkResetFences(VulkanDevice.LogicalDevice, _perFrame[imageIndex].QueueSubmitFence);
         }
 
-        if (_perFrame[imageIndex].PrimaryCommandPool != VkCommandPool.Null)
+        if (_perFrame[imageIndex].PrimaryCommandPool.Handle != VkCommandPool.Null)
         {
-            vkResetCommandPool(VulkanDevice.LogicalDevice, _perFrame[imageIndex].PrimaryCommandPool, VkCommandPoolResetFlags.None);
+            _perFrame[imageIndex].PrimaryCommandPool.Reset();
         }
 
         // Recycle the old semaphore back into the semaphore manager.
@@ -441,7 +268,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         public VkImage Image;
         public VkImageView ImageView;
         public VkFence QueueSubmitFence;
-        public VkCommandPool PrimaryCommandPool;
+        public VulkanCommandPool PrimaryCommandPool;
         public VkCommandBuffer PrimaryCommandBuffer;
         public VkSemaphore SwapchainAcquireSemaphore;
         public VkSemaphore SwapchainReleaseSemaphore;

@@ -9,14 +9,14 @@ namespace Vortice;
 public unsafe class BufferManager : IDisposable
 {
     private readonly VulkanDevice _device;
-    private readonly VkCommandPool _commandPool;
+    private readonly VulkanCommandPool _commandPool;
 
     public VkBuffer VertexBuffer;
     public VkDeviceMemory VertexBufferMemory;
     public VkBuffer IndexBuffer;
     public VkDeviceMemory IndexBufferMemory;
 
-    public BufferManager(VulkanDevice device, VkCommandPool commandPool)
+    public BufferManager(VulkanDevice device, VulkanCommandPool commandPool)
     {
         _device = device;
         _commandPool = commandPool;
@@ -101,7 +101,7 @@ public unsafe class BufferManager : IDisposable
     {
         VkCommandBufferAllocateInfo allocInfo;
         allocInfo.level = VkCommandBufferLevel.Primary;
-        allocInfo.commandPool = _commandPool;
+        allocInfo.commandPool = _commandPool.Handle;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -125,7 +125,7 @@ public unsafe class BufferManager : IDisposable
         vkQueueSubmit(_device.GraphicsQueue, 1, &submitInfo, VkFence.Null);
         vkQueueWaitIdle(_device.GraphicsQueue);
 
-        vkFreeCommandBuffers(_device.LogicalDevice, _commandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(_device.LogicalDevice, _commandPool.Handle, 1, &commandBuffer);
     }
 
     private uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)

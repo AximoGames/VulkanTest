@@ -64,7 +64,7 @@ public unsafe class TestApp : Application
 
         vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
-        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline);
+        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline.Handle);
 
         vkCmdBindVertexBuffer(commandBuffer, 0, _graphicsDevice.BufferManager.VertexBuffer);
         vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.BufferManager.IndexBuffer, 0, VkIndexType.Uint16);
