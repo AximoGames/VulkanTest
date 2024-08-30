@@ -78,7 +78,10 @@ public unsafe class TestApp : Application
         vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline.PipelineHandle);
 
         var renderContext = new RenderContext(_graphicsDevice.VulkanDevice, _graphicsDevice.BufferManager, commandBuffer, size);
-        renderContext.Draw();
+
+        renderContext.BindVertexBuffer();
+        renderContext.BindIndexBuffer();
+        renderContext.DrawIndexed(6);
 
         vkCmdEndRendering(commandBuffer);
     }

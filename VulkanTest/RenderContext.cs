@@ -18,11 +18,12 @@ public unsafe class RenderContext
         _extent = extent;
     }
 
-    public void Draw()
-    {
-        vkCmdBindVertexBuffer(_commandBuffer, 0, _bufferManager.VertexBuffer);
-        vkCmdBindIndexBuffer(_commandBuffer, _bufferManager.IndexBuffer, 0, VkIndexType.Uint16);
+    public void BindVertexBuffer(uint binding = 0)
+        => vkCmdBindVertexBuffer(_commandBuffer, binding, _bufferManager.VertexBuffer);
 
-        vkCmdDrawIndexed(_commandBuffer, 6, 1, 0, 0, 0);
-    }
+    public void BindIndexBuffer(VkIndexType indexType = VkIndexType.Uint16)
+        => vkCmdBindIndexBuffer(_commandBuffer, _bufferManager.IndexBuffer, 0, indexType);
+
+    public void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0)
+        => vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
