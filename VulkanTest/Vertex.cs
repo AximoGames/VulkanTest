@@ -6,10 +6,10 @@ namespace Vortice;
 
 public struct Vertex
 {
-    public Vector2 pos;
+    public Vector2 position;
     public Vector3 color;
 
-    public static VkVertexInputBindingDescription getBindingDescription()
+    public static VkVertexInputBindingDescription GetBindingDescription()
     {
         VkVertexInputBindingDescription bindingDescription;
         bindingDescription.binding = 0;
@@ -18,7 +18,7 @@ public struct Vertex
         return bindingDescription;
     }
 
-    public static VkVertexInputAttributeDescription[] getAttributeDescriptions()
+    public static VkVertexInputAttributeDescription[] GetAttributeDescriptions()
     {
         var attributeDescriptions = new VkVertexInputAttributeDescription[2];
 

@@ -9,7 +9,7 @@ public unsafe class VulkanCommandBufferManager : IDisposable
 {
     private readonly VulkanDevice _device;
     private readonly VulkanCommandPool _commandPool;
-    private readonly List<VkCommandBuffer> _commandBuffers = new List<VkCommandBuffer>();
+    private readonly List<VkCommandBuffer> _allocatedCommandBuffers = new List<VkCommandBuffer>();
 
     public VulkanCommandBufferManager(VulkanDevice device, VulkanCommandPool commandPool)
     {
@@ -20,7 +20,7 @@ public unsafe class VulkanCommandBufferManager : IDisposable
     public VkCommandBuffer AllocateCommandBuffer(VkCommandBufferLevel level = VkCommandBufferLevel.Primary)
     {
         VkCommandBuffer commandBuffer = _commandPool.AllocateCommandBuffer(level);
-        _commandBuffers.Add(commandBuffer);
+        _allocatedCommandBuffers.Add(commandBuffer);
         return commandBuffer;
     }
 
@@ -46,15 +46,15 @@ public unsafe class VulkanCommandBufferManager : IDisposable
     public void FreeCommandBuffer(VkCommandBuffer commandBuffer)
     {
         _commandPool.FreeCommandBuffer(commandBuffer);
-        _commandBuffers.Remove(commandBuffer);
+        _allocatedCommandBuffers.Remove(commandBuffer);
     }
 
     public void Dispose()
     {
-        foreach (var commandBuffer in _commandBuffers)
+        foreach (var commandBuffer in _allocatedCommandBuffers)
         {
             _commandPool.FreeCommandBuffer(commandBuffer);
         }
-        _commandBuffers.Clear();
+        _allocatedCommandBuffers.Clear();
     }
 }

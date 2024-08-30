@@ -9,7 +9,7 @@ namespace Vortice;
 
 public unsafe class VulkanInstance : IDisposable
 {
-    private static readonly string[] s_RequestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
+    private static readonly string[] _RequestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
 
     public VkInstance Instance;
     private VkDebugUtilsMessengerEXT _debugMessenger = VkDebugUtilsMessengerEXT.Null;
@@ -137,12 +137,12 @@ public unsafe class VulkanInstance : IDisposable
             Log.Info($"Found Layer: {name}");
         }
 
-        for (int i = 0; i < s_RequestedValidationLayers.Length; i++)
+        for (int i = 0; i < _RequestedValidationLayers.Length; i++)
         {
             bool hasLayer = false;
             for (int j = 0; j < availableLayers.Length; j++)
             {
-                if (s_RequestedValidationLayers[i] == availableLayers[j].GetLayerName())
+                if (_RequestedValidationLayers[i] == availableLayers[j].GetLayerName())
                 {
                     hasLayer = true;
                     break;
@@ -151,11 +151,11 @@ public unsafe class VulkanInstance : IDisposable
 
             if (hasLayer)
             {
-                appendTo.Add(s_RequestedValidationLayers[i]);
+                appendTo.Add(_RequestedValidationLayers[i]);
             }
             else
             {
-                Log.Warn($"Validation layer '{s_RequestedValidationLayers[i]}' not found.");
+                Log.Warn($"Validation layer '{_RequestedValidationLayers[i]}' not found.");
             }
         }
     }

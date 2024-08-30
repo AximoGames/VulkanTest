@@ -20,7 +20,7 @@ public unsafe class TestApp : Application
 
     private float _green = 0.0f;
 
-    public override string Name => "01-ClearScreen";
+    public override string Name => "01-DrawTriangle";
 
     protected override void Initialize()
     {
@@ -64,7 +64,7 @@ public unsafe class TestApp : Application
 
         vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
-        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline.Handle);
+        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, _graphicsDevice.Pipeline.PipelineHandle);
 
         vkCmdBindVertexBuffer(commandBuffer, 0, _graphicsDevice.BufferManager.VertexBuffer);
         vkCmdBindIndexBuffer(commandBuffer, _graphicsDevice.BufferManager.IndexBuffer, 0, VkIndexType.Uint16);

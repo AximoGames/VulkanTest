@@ -54,11 +54,11 @@ public unsafe class BufferManager : IDisposable
         VkDeviceMemory stagingBufferMemory;
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
 
-        fixed (ushort* indiciesPtr = &indices[0])
+        fixed (ushort* indicesPtr = &indices[0])
         {
             void* data;
             vkMapMemory(_device.LogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-            Unsafe.CopyBlock(data, indiciesPtr, bufferSize);
+            Unsafe.CopyBlock(data, indicesPtr, bufferSize);
             vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
         }
 

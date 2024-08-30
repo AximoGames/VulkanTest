@@ -12,8 +12,8 @@ public unsafe class VulkanPipeline : IDisposable
     private readonly Swapchain _swapchain;
     private readonly ShaderManager _shaderManager;
 
-    public VkPipeline Handle;
-    public VkPipelineLayout Layout;
+    public VkPipeline PipelineHandle;
+    public VkPipelineLayout PipelineLayoutHandle;
 
     public VulkanPipeline(VulkanDevice device, Swapchain swapchain, ShaderManager shaderManager)
     {
@@ -72,8 +72,8 @@ public unsafe class VulkanPipeline : IDisposable
             pName = name
         };
 
-        var bindingDescription = Vertex.getBindingDescription();
-        var attributeDescriptions = Vertex.getAttributeDescriptions();
+        var bindingDescription = Vertex.GetBindingDescription();
+        var attributeDescriptions = Vertex.GetAttributeDescriptions();
 
         fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
         {
@@ -156,7 +156,7 @@ public unsafe class VulkanPipeline : IDisposable
                 pushConstantRangeCount = 0
             };
 
-            vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out Layout).CheckResult();
+            vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
 
             VkPipelineShaderStageCreateInfo[] shaderStages = new VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
             fixed (VkPipelineShaderStageCreateInfo* shaderStagesPtr = &shaderStages[0])
@@ -180,14 +180,14 @@ public unsafe class VulkanPipeline : IDisposable
                         pRasterizationState = &rasterizer,
                         pMultisampleState = &multisampling,
                         pColorBlendState = &colorBlending,
-                        layout = Layout,
+                        layout = PipelineLayoutHandle,
                         subpass = 0,
                         basePipelineHandle = VkPipeline.Null
                     };
 
                     VkPipeline graphicsPipeline;
                     vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
-                    Handle = graphicsPipeline;
+                    PipelineHandle = graphicsPipeline;
                 }
             }
         }
@@ -198,14 +198,14 @@ public unsafe class VulkanPipeline : IDisposable
 
     public void Dispose()
     {
-        if (Handle != VkPipeline.Null)
+        if (PipelineHandle != VkPipeline.Null)
         {
-            vkDestroyPipeline(_device.LogicalDevice, Handle, null);
+            vkDestroyPipeline(_device.LogicalDevice, PipelineHandle, null);
         }
 
-        if (Layout != VkPipelineLayout.Null)
+        if (PipelineLayoutHandle != VkPipelineLayout.Null)
         {
-            vkDestroyPipelineLayout(_device.LogicalDevice, Layout, null);
+            vkDestroyPipelineLayout(_device.LogicalDevice, PipelineLayoutHandle, null);
         }
     }
 }

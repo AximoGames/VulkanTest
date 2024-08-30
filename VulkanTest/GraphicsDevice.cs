@@ -23,7 +23,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
     internal readonly VkSurfaceKHR _surface;
     public readonly Swapchain Swapchain;
     public readonly VulkanPipeline Pipeline;
-    private PerFrame[] _perFrame; // TODO: Pin during init?
+    private PerFrame[] _perFrameData; // TODO: Pin during init?
     public readonly BufferManager BufferManager;
     public VulkanCommandPool CommandPool;
     public VulkanSynchronization Synchronization;
@@ -48,7 +48,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         Swapchain = new Swapchain(VulkanDevice, window, _surface);
 
         // Initialize _perFrame array
-        _perFrame = new PerFrame[Swapchain.ImageCount];
+        _perFrameData = new PerFrame[Swapchain.ImageCount];
 
         Pipeline = new VulkanPipeline(VulkanDevice, Swapchain, ShaderManager);
 
@@ -61,21 +61,21 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         CommandBufferManager = new VulkanCommandBufferManager(VulkanDevice, CommandPool);
 
-        for (var i = 0; i < _perFrame.Length; i++)
+        for (var i = 0; i < _perFrameData.Length; i++)
         {
-            _perFrame[i].QueueSubmitFence = Synchronization.CreateFence();
+            _perFrameData[i].QueueSubmitFence = Synchronization.CreateFence();
 
-            _perFrame[i].PrimaryCommandPool = new VulkanCommandPool(VulkanDevice);
-            _perFrame[i].PrimaryCommandBuffer = _perFrame[i].PrimaryCommandPool.AllocateCommandBuffer();
+            _perFrameData[i].PrimaryCommandPool = new VulkanCommandPool(VulkanDevice);
+            _perFrameData[i].PrimaryCommandBuffer = _perFrameData[i].PrimaryCommandPool.AllocateCommandBuffer();
         }
     }
 
     public Vertex[] Vertices = new Vertex[]
     {
-        new Vertex { pos = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new Vertex { pos = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new Vertex { pos = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
-        new Vertex { pos = new Vector2(-0.5f, 0.5f), color = new Vector3(0.0f, 0.0f, 1.0f) }
+        new Vertex { position = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new Vertex { position = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new Vertex { position = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
+        new Vertex { position = new Vector2(-0.5f, 0.5f), color = new Vector3(0.0f, 0.0f, 1.0f) }
     };
 
     public ushort[] Indices =
@@ -92,28 +92,28 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         Swapchain.Dispose();
 
-        for (var i = 0; i < _perFrame.Length; i++)
+        for (var i = 0; i < _perFrameData.Length; i++)
         {
-            vkDestroyFence(VulkanDevice.LogicalDevice, _perFrame[i].QueueSubmitFence, null);
+            vkDestroyFence(VulkanDevice.LogicalDevice, _perFrameData[i].QueueSubmitFence, null);
 
-            if (_perFrame[i].PrimaryCommandBuffer != IntPtr.Zero)
+            if (_perFrameData[i].PrimaryCommandBuffer != IntPtr.Zero)
             {
-                _perFrame[i].PrimaryCommandPool.FreeCommandBuffer(_perFrame[i].PrimaryCommandBuffer);
-                _perFrame[i].PrimaryCommandBuffer = IntPtr.Zero;
+                _perFrameData[i].PrimaryCommandPool.FreeCommandBuffer(_perFrameData[i].PrimaryCommandBuffer);
+                _perFrameData[i].PrimaryCommandBuffer = IntPtr.Zero;
             }
 
-            _perFrame[i].PrimaryCommandPool.Dispose();
+            _perFrameData[i].PrimaryCommandPool.Dispose();
 
-            if (_perFrame[i].SwapchainAcquireSemaphore != VkSemaphore.Null)
+            if (_perFrameData[i].SwapchainAcquireSemaphore != VkSemaphore.Null)
             {
-                vkDestroySemaphore(VulkanDevice.LogicalDevice, _perFrame[i].SwapchainAcquireSemaphore, null);
-                _perFrame[i].SwapchainAcquireSemaphore = VkSemaphore.Null;
+                vkDestroySemaphore(VulkanDevice.LogicalDevice, _perFrameData[i].SwapchainAcquireSemaphore, null);
+                _perFrameData[i].SwapchainAcquireSemaphore = VkSemaphore.Null;
             }
 
-            if (_perFrame[i].SwapchainReleaseSemaphore != VkSemaphore.Null)
+            if (_perFrameData[i].SwapchainReleaseSemaphore != VkSemaphore.Null)
             {
-                vkDestroySemaphore(VulkanDevice.LogicalDevice, _perFrame[i].SwapchainReleaseSemaphore, null);
-                _perFrame[i].SwapchainReleaseSemaphore = VkSemaphore.Null;
+                vkDestroySemaphore(VulkanDevice.LogicalDevice, _perFrameData[i].SwapchainReleaseSemaphore, null);
+                _perFrameData[i].SwapchainReleaseSemaphore = VkSemaphore.Null;
             }
         }
 
@@ -152,7 +152,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         }
 
         // Begin command recording
-        VkCommandBuffer cmd = _perFrame[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
+        VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 
@@ -161,14 +161,14 @@ public unsafe sealed class GraphicsDevice : IDisposable
         // Complete the command buffer.
         CommandBufferManager.EndCommandBuffer(cmd);
 
-        if (_perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
+        if (_perFrameData[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
         {
-            _perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore = Synchronization.CreateSemaphore();
+            _perFrameData[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore = Synchronization.CreateSemaphore();
         }
 
         VkPipelineStageFlags wait_stage = VkPipelineStageFlags.ColorAttachmentOutput;
-        VkSemaphore waitSemaphore = _perFrame[CurrentSwapchainImageIndex].SwapchainAcquireSemaphore;
-        VkSemaphore signalSemaphore = _perFrame[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore;
+        VkSemaphore waitSemaphore = _perFrameData[CurrentSwapchainImageIndex].SwapchainAcquireSemaphore;
+        VkSemaphore signalSemaphore = _perFrameData[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore;
 
         VkSubmitInfo submitInfo = new VkSubmitInfo
         {
@@ -182,7 +182,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         };
 
         // Submit command buffer to graphics queue
-        vkQueueSubmit(VulkanDevice.GraphicsQueue, submitInfo, _perFrame[CurrentSwapchainImageIndex].QueueSubmitFence);
+        vkQueueSubmit(VulkanDevice.GraphicsQueue, submitInfo, _perFrameData[CurrentSwapchainImageIndex].QueueSubmitFence);
 
         result = PresentImage(CurrentSwapchainImageIndex);
 
@@ -209,28 +209,28 @@ public unsafe sealed class GraphicsDevice : IDisposable
             return result;
         }
 
-        if (_perFrame[imageIndex].QueueSubmitFence != VkFence.Null)
+        if (_perFrameData[imageIndex].QueueSubmitFence != VkFence.Null)
         {
-            Synchronization.WaitForFence(_perFrame[imageIndex].QueueSubmitFence);
-            Synchronization.ResetFence(_perFrame[imageIndex].QueueSubmitFence);
+            Synchronization.WaitForFence(_perFrameData[imageIndex].QueueSubmitFence);
+            Synchronization.ResetFence(_perFrameData[imageIndex].QueueSubmitFence);
         }
 
-        if (_perFrame[imageIndex].PrimaryCommandPool.Handle != VkCommandPool.Null)
+        if (_perFrameData[imageIndex].PrimaryCommandPool.Handle != VkCommandPool.Null)
         {
-            _perFrame[imageIndex].PrimaryCommandPool.Reset();
+            _perFrameData[imageIndex].PrimaryCommandPool.Reset();
         }
 
         // Recycle the old semaphore back into the semaphore manager.
-        Synchronization.RecycleSemaphore(_perFrame[imageIndex].SwapchainAcquireSemaphore);
+        Synchronization.RecycleSemaphore(_perFrameData[imageIndex].SwapchainAcquireSemaphore);
 
-        _perFrame[imageIndex].SwapchainAcquireSemaphore = acquireSemaphore;
+        _perFrameData[imageIndex].SwapchainAcquireSemaphore = acquireSemaphore;
 
         return VkResult.Success;
     }
 
     private VkResult PresentImage(uint imageIndex)
     {
-        return vkQueuePresentKHR(VulkanDevice.PresentQueue, _perFrame[imageIndex].SwapchainReleaseSemaphore, Swapchain.Handle, imageIndex);
+        return vkQueuePresentKHR(VulkanDevice.PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, Swapchain.Handle, imageIndex);
     }
 
     public static implicit operator VkDevice(GraphicsDevice device) => device.VulkanDevice.LogicalDevice;
