@@ -138,9 +138,9 @@ public unsafe sealed class GraphicsDevice : IDisposable
         VulkanInstance.Dispose();
     }
 
-    public void InitializePipeline(Action<PipeLineBuilder> callback)
+    public void InitializePipeline(Action<PipelineBuilder> callback)
     {
-        var builder = new PipeLineBuilder(VulkanDevice, Swapchain, ShaderManager);
+        var builder = new PipelineBuilder(VulkanDevice, Swapchain, ShaderManager);
         callback(builder);
         Pipeline = builder.Build();
     }

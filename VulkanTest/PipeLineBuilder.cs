@@ -1,4 +1,3 @@
-using System;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 using OpenTK.Mathematics;
@@ -6,7 +5,7 @@ using Vortice.ShaderCompiler;
 
 namespace VulkanTest;
 
-public unsafe class PipeLineBuilder
+public unsafe class PipelineBuilder
 {
     private readonly VulkanDevice _device;
     private readonly Swapchain _swapchain;
@@ -14,7 +13,7 @@ public unsafe class PipeLineBuilder
     private VkPipeline PipelineHandle;
     private VkPipelineLayout PipelineLayoutHandle;
 
-    internal PipeLineBuilder(VulkanDevice device, Swapchain swapchain, ShaderManager shaderManager)
+    internal PipelineBuilder(VulkanDevice device, Swapchain swapchain, ShaderManager shaderManager)
     {
         _device = device;
         _swapchain = swapchain;
@@ -26,36 +25,8 @@ public unsafe class PipeLineBuilder
         return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle);
     }
 
-    public void CreateGraphicsPipeline()
+    public void CreateGraphicsPipeline(string vertexShaderCode, string fragShaderCode)
     {
-        string vertexShaderCode =
-            """
-            #version 450
-
-            layout(location = 0) in vec2 inPosition;
-            layout(location = 1) in vec3 inColor;
-
-            layout(location = 0) out vec3 fragColor;
-
-            void main() {
-                gl_Position = vec4(inPosition, 0.0, 1.0);
-                fragColor = inColor;
-            }
-            """;
-
-        string fragShaderCode =
-            """
-            #version 450
-
-            layout(location = 0) in vec3 fragColor;
-
-            layout(location = 0) out vec4 outColor;
-
-            void main() {
-                outColor = vec4(fragColor, 1.0);
-            }
-            """;
-
         VkShaderModule vertShaderModule = _shaderManager.CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
         VkShaderModule fragShaderModule = _shaderManager.CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
 
