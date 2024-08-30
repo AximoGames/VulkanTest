@@ -10,7 +10,7 @@ public unsafe class RenderContext
     private readonly VkCommandBuffer _commandBuffer;
     private readonly VkExtent2D _extent;
 
-    public RenderContext(VulkanDevice device, BufferManager bufferManager, VkCommandBuffer commandBuffer, VkExtent2D extent)
+    internal RenderContext(VulkanDevice device, BufferManager bufferManager, VkCommandBuffer commandBuffer, VkExtent2D extent)
     {
         _device = device;
         _bufferManager = bufferManager;
