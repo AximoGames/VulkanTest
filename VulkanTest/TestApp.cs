@@ -25,9 +25,6 @@ public unsafe class TestApp : Application
     protected override void Initialize()
     {
         base.Initialize();
-        // Need to initialize
-        vkInitialize().CheckResult();
-
         _graphicsDevice = new GraphicsDevice(Name, EnableValidationLayers, MainWindow);
     }
 

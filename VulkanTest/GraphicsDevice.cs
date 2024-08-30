@@ -38,6 +38,9 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
     {
+        // Need to initialize
+        vkInitialize().CheckResult();
+
         VulkanInstance = new VulkanInstance(applicationName, enableValidation);
 
         _surface = CreateSurface(window);
