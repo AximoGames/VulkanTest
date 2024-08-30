@@ -54,10 +54,8 @@ public unsafe class TestApp : Application
             g = 0.0f;
         _greenValue = g;
 
-        _graphicsDevice.ClearColor = new VkClearColorValue(1.0f, _greenValue, 0.0f, 1.0f);
-
         var renderContext = new RenderContext(_graphicsDevice.VulkanDevice, _graphicsDevice.BufferManager, commandBuffer, size);
-
+        renderContext.Clear(new VkClearColorValue(0, 0, _greenValue));
         renderContext.BindVertexBuffer();
         renderContext.BindIndexBuffer();
         renderContext.DrawIndexed(6);

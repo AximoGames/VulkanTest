@@ -34,7 +34,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public VulkanCommandBufferManager CommandBufferManager;
 
-    public VkClearColorValue ClearColor { get; set; } = new VkClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+    public VkClearColorValue? ClearColor { get; set; }
 
     public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
     {
@@ -261,16 +261,19 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public void BeginRenderPass(VkCommandBuffer commandBuffer, VkExtent2D size)
     {
-        VkClearValue clearValue = new VkClearValue { color = ClearColor };
-
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
             imageView = Swapchain.GetImageView(CurrentSwapchainImageIndex),
             imageLayout = VkImageLayout.ColorAttachmentOptimal,
-            loadOp = VkAttachmentLoadOp.Clear,
+            loadOp = VkAttachmentLoadOp.Load,
             storeOp = VkAttachmentStoreOp.Store,
-            clearValue = clearValue
         };
+
+        if (ClearColor.HasValue)
+        {
+            colorAttachmentInfo.loadOp = VkAttachmentLoadOp.Clear;
+            colorAttachmentInfo.clearValue = new VkClearValue { color = ClearColor.Value };
+        }
 
         VkRenderingInfo renderingInfo = new VkRenderingInfo
         {

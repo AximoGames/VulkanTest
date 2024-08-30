@@ -26,4 +26,30 @@ public unsafe class RenderContext
 
     public void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0)
         => vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+
+    /// <remarks>Consider using <see cref="GraphicsDevice.ClearColor"/> instead</remarks>
+    public void Clear(VkClearColorValue clearColor)
+    {
+        Clear(clearColor, new VkRect2D { extent = _extent });
+    }
+
+    /// <remarks>Consider using <see cref="GraphicsDevice.ClearColor"/> instead</remarks>
+    public void Clear(VkClearColorValue clearColor, VkRect2D rect)
+    {
+        VkClearAttachment clearAttachment = new VkClearAttachment
+        {
+            aspectMask = VkImageAspectFlags.Color,
+            colorAttachment = 0,
+            clearValue = new VkClearValue { color = clearColor }
+        };
+
+        VkClearRect clearRect = new VkClearRect
+        {
+            rect = rect,
+            baseArrayLayer = 0,
+            layerCount = 1
+        };
+
+        vkCmdClearAttachments(_commandBuffer, 1, &clearAttachment, 1, &clearRect);
+    }
 }
