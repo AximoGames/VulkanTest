@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Engine.Vulkan;
+namespace Engine;
 
 public abstract class GraphicsDevice : IDisposable
 {

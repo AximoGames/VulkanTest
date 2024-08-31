@@ -1,4 +1,4 @@
-namespace Engine.Vulkan;
+namespace Engine;
 
 public enum ShaderKind
 {

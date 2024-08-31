@@ -1,7 +1,7 @@
 using OpenTK;
 using OpenTK.Mathematics;
 
-namespace Engine.Vulkan;
+namespace Engine;
 
 public abstract class RenderContext
 {
