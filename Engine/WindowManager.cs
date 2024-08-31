@@ -2,6 +2,7 @@ namespace Engine;
 
 public abstract class WindowManager
 {
+    public Application Application { get; internal set; } = null!;
     public abstract Window CreateWindow(string name);
     public abstract IReadOnlyList<Window> Windows { get; }
 
@@ -12,4 +13,6 @@ public abstract class WindowManager
         
         return Windows[0].GetRequiredInstanceExtensions();
     }
+
+    public abstract void ProcessEvents();
 }

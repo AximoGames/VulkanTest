@@ -20,6 +20,7 @@ public abstract class Application
 
     public void RegisterWindowManager(WindowManager windowManager)
     {
+        windowManager.Application = this;
         _windowManagers.Add(windowManager);
     }
 
@@ -33,12 +34,24 @@ public abstract class Application
     {
     }
 
+    public bool IsQuitRequested { get; internal set; }
+    
     public void Run()
     {
         Initialize();
-        while (true)
+        while (!IsQuitRequested)
         {
-            RenderFrame?.Invoke(new FrameEventArgs());
+            ProcessEvents();
+            ProcessRenderFrame();
         }
     }
+
+    private void ProcessEvents()
+    {
+        foreach (var windowManager in _windowManagers)
+            windowManager.ProcessEvents();
+    }
+
+    private void ProcessRenderFrame()
+        => RenderFrame?.Invoke(new FrameEventArgs());
 }

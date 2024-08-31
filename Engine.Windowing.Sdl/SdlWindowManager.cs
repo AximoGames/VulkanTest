@@ -65,4 +65,18 @@ public class SdlWindowManager : WindowManager
     }
 
     public override IReadOnlyList<Window> Windows => _windows;
+
+    public override void ProcessEvents()
+    {
+        SDL.SDL_Event e;
+        while (SDL.SDL_PollEvent(out e) != 0)
+        {
+            switch (e.type)
+            {
+                case SDL.SDL_EventType.SDL_QUIT:
+                    Application.IsQuitRequested = true;
+                    break;
+            }
+        }
+    }
 }
