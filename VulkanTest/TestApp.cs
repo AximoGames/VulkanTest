@@ -115,6 +115,6 @@ public unsafe class TestApp : Application
         renderContext.Clear(new VkClearColorValue(0, 0, _greenValue));
         renderContext.BindVertexBuffer(_vertexBuffer);
         renderContext.BindIndexBuffer(_indexBuffer);
-        renderContext.DrawIndexed(6);
+        renderContext.DrawIndexed((uint)Indices.Length);
     }
 }
