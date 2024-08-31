@@ -12,11 +12,5 @@
         <PackageReference Include="Vortice.ShaderCompiler" Version="1.7.3"/>
         <PackageReference Include="Vortice.Vulkan" Version="1.9.5"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <Reference Include="Vortice.Vulkan">
-            <HintPath>..\..\..\..\..\.nuget\packages\vortice.vulkan\1.5.28\lib\net7.0\Vortice.Vulkan.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-
+    
 </Project>

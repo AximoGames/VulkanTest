@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using OpenTK.Mathematics;
-using Vortice.ShaderCompiler;
 using Vortice.Vulkan;
 
 namespace Engine.Vulkan;

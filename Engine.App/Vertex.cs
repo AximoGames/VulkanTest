@@ -1,6 +1,5 @@
 using System.Runtime.InteropServices;
 using OpenTK.Mathematics;
-using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
