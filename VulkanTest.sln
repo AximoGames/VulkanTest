@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Vulkan.Loader", "Engine.Vulkan.Loader\Engine.Vulkan.Loader.csproj", "{CDB5F9CF-0379-42A8-9951-0D4CB6426A72}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Windowing.Sdl", "Engine.Windowing.Sdl\Engine.Windowing.Sdl.csproj", "{2A96253C-9472-4857-A09A-7464A1A1BEED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{CDB5F9CF-0379-42A8-9951-0D4CB6426A72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDB5F9CF-0379-42A8-9951-0D4CB6426A72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDB5F9CF-0379-42A8-9951-0D4CB6426A72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A96253C-9472-4857-A09A-7464A1A1BEED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A96253C-9472-4857-A09A-7464A1A1BEED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A96253C-9472-4857-A09A-7464A1A1BEED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A96253C-9472-4857-A09A-7464A1A1BEED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

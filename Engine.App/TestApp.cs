@@ -24,10 +24,10 @@ public class TestApp : Application
 
     public Vertex[] Vertices =
     {
-        new() { position = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new() { position = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new() { position = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
-        new() { position = new Vector2(-0.5f, 0.5f), color = new Vector3(0.0f, 0.0f, 1.0f) }
+        new() { Position = new Vector2(-0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new() { Position = new Vector2(0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new() { Position = new Vector2(0.5f, 0.5f), Color = new Vector3(0.0f, 1.0f, 0.0f) },
+        new() { Position = new Vector2(-0.5f, 0.5f), Color = new Vector3(0.0f, 0.0f, 1.0f) }
     };
 
     public ushort[] Indices =
@@ -41,7 +41,12 @@ public class TestApp : Application
     protected override void Initialize()
     {
         base.Initialize();
-        _graphicsDevice = VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, MainWindow);
+        var windowManager = SdlWindowManager.GetInstance();
+        RegisterWindowManager(windowManager);
+        var window = windowManager.CreateWindow(Name);
+        RenderFrame += (e) => { OnRenderFrame(); };
+        
+        _graphicsDevice = VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window);
         _graphicsDevice.InitializePipeline(InitializePipeline);
     }
 
@@ -108,7 +113,6 @@ public class TestApp : Application
         builder.ConfigureVertexLayout(vertexLayoutInfo);
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
-        // Engine.Vulkan.VulkanGraphicsDevice d;
     }
 
     protected override void OnRenderFrame()

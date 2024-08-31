@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using OpenTK.Mathematics;
-using OpenTK.Windowing.Desktop;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
@@ -12,7 +11,7 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
     public readonly VulkanDevice Device;
 
     [NotNull]
-    public readonly GameWindow? Window = default!;
+    public readonly Window? Window = default!;
 
     public VkSwapchainKHR Handle;
     public Vector2i Extent { get; }
@@ -22,7 +21,7 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
     private VkImage[] _images;
     private readonly VkSurfaceKHR _surface;
 
-    public VulkanSwapchain(VulkanDevice device, GameWindow? window, VkSurfaceKHR surface)
+    public VulkanSwapchain(VulkanDevice device, Window? window, VkSurfaceKHR surface)
     {
         Device = device;
         Window = window;

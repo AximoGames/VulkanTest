@@ -8,19 +8,25 @@ namespace Engine;
 
 public abstract class Application
 {
+    public event Action<FrameEventArgs> RenderFrame;
+
     protected Application()
     {
     }
 
     public abstract string Name { get; }
 
-    [NotNull]
-    public MyGameWindow MainWindow { get; private set; } = default!;
+    private List<WindowManager> _windowManagers = new();
+
+    public void RegisterWindowManager(WindowManager windowManager)
+    {
+        _windowManagers.Add(windowManager);
+    }
 
     protected virtual void Initialize()
     {
-        MainWindow = new MyGameWindow(Name);
-        MainWindow.RenderFrame += (e) => { OnRenderFrame(); };
+        // Window = new OpenTkGameWindow(Name);
+        // MainWindow.RenderFrame += (e) => { OnRenderFrame(); };
     }
 
     protected virtual void OnRenderFrame()
@@ -30,6 +36,9 @@ public abstract class Application
     public void Run()
     {
         Initialize();
-        MainWindow.Run();
+        while (true)
+        {
+            RenderFrame?.Invoke(new FrameEventArgs());
+        }
     }
 }

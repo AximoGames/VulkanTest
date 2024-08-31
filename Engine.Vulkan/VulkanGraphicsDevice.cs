@@ -6,8 +6,6 @@ using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 using System.Collections.Generic;
 using System.Text;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using OpenTK.Windowing.Desktop;
 using Vortice.ShaderCompiler;
 using OpenTK.Mathematics;
 
@@ -36,12 +34,12 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 
     public VkClearColorValue? ClearColor { get; set; }
 
-    public VulkanGraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
+    public VulkanGraphicsDevice(string applicationName, bool enableValidation, Window window)
     {
         // Need to initialize
         vkInitialize().CheckResult();
 
-        VulkanInstance = new VulkanInstance(applicationName, enableValidation);
+        VulkanInstance = new VulkanInstance(applicationName, enableValidation, window.WindowManager);
 
         _surface = CreateSurface(window);
 
@@ -235,10 +233,11 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 
     #region Private Methods
 
-    private VkSurfaceKHR CreateSurface(GameWindow window)
+    private VkSurfaceKHR CreateSurface(Window window)
     {
-        GLFW.CreateWindowSurface(new VkHandle(VulkanInstance.Instance.Handle), window.WindowPtr, null, out var handle);
-        return new VkSurfaceKHR((ulong)handle.Handle);
+        // GLFW.CreateWindowSurface(new VkHandle(VulkanInstance.Instance.Handle), window.WindowPtr, null, out var handle);
+        var handle = window.CreateVulkanSurfaceHandle(VulkanInstance.Instance.Handle);
+        return new VkSurfaceKHR((ulong)handle);
     }
 
     #endregion

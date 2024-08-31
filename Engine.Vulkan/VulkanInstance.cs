@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
@@ -9,13 +8,15 @@ namespace Engine.Vulkan;
 
 internal unsafe class VulkanInstance : IDisposable
 {
+    private readonly WindowManager _windowManager;
     private static readonly string[] _requestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
 
     public VkInstance Instance;
     private VkDebugUtilsMessengerEXT _debugMessenger = VkDebugUtilsMessengerEXT.Null;
 
-    public VulkanInstance(string applicationName, bool enableValidation)
+    public VulkanInstance(string applicationName, bool enableValidation, WindowManager windowManager)
     {
+        _windowManager = windowManager;
         CreateInstance(applicationName, enableValidation);
     }
 
@@ -31,18 +32,14 @@ internal unsafe class VulkanInstance : IDisposable
         };
 
         List<string> instanceExtensions = new List<string>();
-        instanceExtensions.AddRange(GLFW.GetRequiredInstanceExtensions());
+        instanceExtensions.AddRange(_windowManager.GetRequiredInstanceExtensions());
 
         List<string> instanceLayers = new List<string>();
-        if (enableValidation)
-        {
+        if (enableValidation) 
             FindValidationLayers(instanceLayers);
-        }
 
-        if (instanceLayers.Count > 0)
-        {
+        if (instanceLayers.Count > 0) 
             instanceExtensions.Add(VK_EXT_DEBUG_UTILS_EXTENSION_NAME.GetStringFromUtf8Buffer());
-        }
 
         using var vkInstanceExtensions = new VkStringArray(instanceExtensions);
 

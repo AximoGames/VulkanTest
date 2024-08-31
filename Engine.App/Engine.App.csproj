@@ -5,12 +5,9 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-	
-    <ItemGroup>
-        <PackageReference Include="OpenTK.Windowing.Desktop" Version="5.0.0-pre.8"/>
-    </ItemGroup>
     
     <ItemGroup>
+      <ProjectReference Include="..\Engine.Windowing.Sdl\Engine.Windowing.Sdl.csproj" />
       <ProjectReference Include="..\Engine.Vulkan.Loader\Engine.Vulkan.Loader.csproj" />
       <ProjectReference Include="..\Engine\Engine.csproj" />
     </ItemGroup>

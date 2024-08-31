@@ -5,6 +5,6 @@ namespace Engine.App;
 
 public struct Vertex
 {
-    public Vector2 position;
-    public Vector3 color;
+    public Vector2 Position;
+    public Vector3 Color;
 }
