@@ -7,6 +7,7 @@ using static Vortice.Vulkan.Vulkan;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Engine.Vulkan;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
 using Vortice.ShaderCompiler;
@@ -47,7 +48,7 @@ public class TestApp : Application
     protected override void Initialize()
     {
         base.Initialize();
-        _graphicsDevice = new GraphicsDevice(Name, EnableValidationLayers, MainWindow);
+        _graphicsDevice = VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, MainWindow);
         _graphicsDevice.InitializePipeline(InitializePipeline);
     }
 

@@ -1,7 +1,7 @@
 ﻿using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.Common;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
 public class MyGameWindow : GameWindow
 {

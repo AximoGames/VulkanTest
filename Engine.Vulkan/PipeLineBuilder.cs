@@ -4,7 +4,7 @@ using static Vortice.Vulkan.Vulkan;
 using OpenTK.Mathematics;
 using Vortice.ShaderCompiler;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
 public unsafe class PipelineBuilder
 {

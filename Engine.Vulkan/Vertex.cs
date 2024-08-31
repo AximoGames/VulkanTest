@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using OpenTK.Mathematics;
 using Vortice.Vulkan;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
 public struct Vertex
 {

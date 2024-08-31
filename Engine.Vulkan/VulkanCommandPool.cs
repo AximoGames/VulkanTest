@@ -2,7 +2,7 @@ using System;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
 public unsafe class VulkanCommandPool : IDisposable
 {

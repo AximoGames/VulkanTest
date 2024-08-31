@@ -1,7 +1,7 @@
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
 public class VulkanBuffer
 {

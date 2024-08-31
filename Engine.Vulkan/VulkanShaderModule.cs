@@ -1,6 +1,7 @@
 using Vortice.Vulkan;
+using static Vortice.Vulkan.Vulkan;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
 public class VulkanShaderModule
 {
@@ -15,6 +16,6 @@ public class VulkanShaderModule
 
     public unsafe void Free()
     {
-        Vulkan.vkDestroyShaderModule(_device.LogicalDevice, Module, null);
+        vkDestroyShaderModule(_device.LogicalDevice, Module, null);
     }
 }

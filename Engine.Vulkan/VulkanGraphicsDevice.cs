@@ -11,9 +11,9 @@ using OpenTK.Windowing.Desktop;
 using Vortice.ShaderCompiler;
 using OpenTK.Mathematics;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
-public unsafe sealed class GraphicsDevice : IDisposable
+internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 {
     private static readonly string _engineName = "Vortice";
 
@@ -36,7 +36,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public VkClearColorValue? ClearColor { get; set; }
 
-    public GraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
+    public VulkanGraphicsDevice(string applicationName, bool enableValidation, GameWindow window)
     {
         // Need to initialize
         vkInitialize().CheckResult();
@@ -54,7 +54,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         // Initialize _perFrame array
         _perFrameData = new PerFrame[Swapchain.ImageCount];
-        
+
         CommandPool = new VulkanCommandPool(VulkanDevice);
         Synchronization = new VulkanSynchronization(VulkanDevice);
 
@@ -70,8 +70,8 @@ public unsafe sealed class GraphicsDevice : IDisposable
             _perFrameData[i].PrimaryCommandBuffer = _perFrameData[i].PrimaryCommandPool.AllocateCommandBuffer();
         }
     }
-    
-    public void Dispose()
+
+    public override void Dispose()
     {
         // Don't release anything until the GPU is completely idle.
         vkDeviceWaitIdle(VulkanDevice.LogicalDevice);
@@ -123,14 +123,14 @@ public unsafe sealed class GraphicsDevice : IDisposable
         VulkanInstance.Dispose();
     }
 
-    public void InitializePipeline(Action<PipelineBuilder> callback)
+    public override void InitializePipeline(Action<PipelineBuilder> callback)
     {
         var builder = new PipelineBuilder(VulkanDevice, Swapchain, ShaderManager, BufferManager);
         callback(builder);
         Pipeline = builder.Build();
     }
 
-    public void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
+    public override void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
 
@@ -231,7 +231,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         return vkQueuePresentKHR(VulkanDevice.PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, Swapchain.Handle, imageIndex);
     }
 
-    public static implicit operator VkDevice(GraphicsDevice device) => device.VulkanDevice.LogicalDevice;
+    public static implicit operator VkDevice(VulkanGraphicsDevice device) => device.VulkanDevice.LogicalDevice;
 
     #region Private Methods
 

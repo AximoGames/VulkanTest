@@ -4,7 +4,7 @@ using OpenTK.Windowing.Desktop;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace Engine;
+namespace Engine.Vulkan;
 
 public sealed unsafe class VulkanSwapchain : IDisposable
 {
