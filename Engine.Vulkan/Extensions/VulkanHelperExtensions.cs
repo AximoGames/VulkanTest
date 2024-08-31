@@ -2,7 +2,7 @@ using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
-public static class VulkanHelper
+internal static class VulkanHelperExtensions
 {
     public static VkIndexType ToVkIndexType(this Type elementType)
     {

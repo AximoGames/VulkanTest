@@ -4,7 +4,7 @@ using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class VulkanRenderContext : RenderContext
+internal unsafe class VulkanRenderContext : RenderContext
 {
     private readonly VulkanDevice _device;
     private readonly VkCommandBuffer _commandBuffer;

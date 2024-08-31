@@ -1,3 +1,3 @@
 using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("Engine")]
+[assembly:InternalsVisibleTo("Engine.Vulkan.Loader")]

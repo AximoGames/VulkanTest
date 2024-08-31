@@ -7,7 +7,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public sealed unsafe class VulkanSwapchain : IDisposable
+internal sealed unsafe class VulkanSwapchain : IDisposable
 {
     public readonly VulkanDevice Device;
 

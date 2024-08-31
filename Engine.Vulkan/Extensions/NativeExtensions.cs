@@ -4,7 +4,7 @@ using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
-public static class NativeExtensions
+internal static class VulkanNativeExtensions
 {
     public static unsafe string GetLayerName(this VkLayerProperties properties)
         => VkStringInterop.ConvertToManaged(properties.layerName) ?? throw new InvalidOperationException();

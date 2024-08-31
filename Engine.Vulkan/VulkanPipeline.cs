@@ -6,7 +6,7 @@ using Vortice.ShaderCompiler;
 
 namespace Engine.Vulkan;
 
-public unsafe class VulkanPipeline : IDisposable
+internal unsafe class VulkanPipeline : IDisposable
 {
     private readonly VulkanDevice _device;
     public VkPipeline PipelineHandle;

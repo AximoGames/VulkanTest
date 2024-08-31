@@ -3,7 +3,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public class VulkanBuffer : Buffer
+internal class VulkanBuffer : Buffer
 {
     private readonly VulkanDevice _device;
     internal VkBuffer Buffer { get; }

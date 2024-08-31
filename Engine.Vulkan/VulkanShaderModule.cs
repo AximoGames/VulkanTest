@@ -3,7 +3,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public class VulkanShaderModule
+internal class VulkanShaderModule
 {
     private readonly VulkanDevice _device;
     internal VkShaderModule Module { get; }

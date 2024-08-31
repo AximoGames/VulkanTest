@@ -88,14 +88,14 @@ public class TestApp : Application
             },
             AttributeDescriptions = new List<VertexInputAttributeDescription>
             {
-                new VertexInputAttributeDescription
+                new()
                 {
                     Binding = 0,
                     Location = 0,
                     Format = VertexFormat.Float32_2,
                     Offset = 0
                 },
-                new VertexInputAttributeDescription
+                new()
                 {
                     Binding = 0,
                     Location = 1,

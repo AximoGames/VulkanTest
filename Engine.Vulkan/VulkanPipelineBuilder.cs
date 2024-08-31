@@ -5,30 +5,30 @@ using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class VulkanPipelineBuilder : PipelineBuilder
+internal unsafe class VulkanPipelineBuilder : PipelineBuilder
 {
-    private BufferManager BufferManager;
+    private VulkanBufferManager _vulkanBufferManager;
     private readonly VulkanDevice _device;
     private readonly VulkanSwapchain _swapchain;
-    private readonly ShaderManager _shaderManager;
+    private readonly VulkanShaderManager _shaderManager;
     private VkPipeline PipelineHandle;
     private VkPipelineLayout PipelineLayoutHandle;
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
     private VertexLayoutInfo _vertexLayoutInfo;
 
-    internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, ShaderManager shaderManager, BufferManager bufferManager)
+    internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
     {
         _device = device;
         _swapchain = swapchain;
         _shaderManager = shaderManager;
-        BufferManager = bufferManager;
+        _vulkanBufferManager = vulkanBufferManager;
     }
 
     public override Buffer CreateVertexBuffer<T>(T[] vertices)
-        => BufferManager.CreateVertexBuffer(vertices);
+        => _vulkanBufferManager.CreateVertexBuffer(vertices);
 
     public override Buffer CreateIndexBuffer(ushort[] indices)
-        => BufferManager.CreateIndexBuffer(indices);
+        => _vulkanBufferManager.CreateIndexBuffer(indices);
 
     internal VulkanPipeline Build()
     {

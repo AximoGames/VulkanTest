@@ -5,7 +5,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class VulkanSynchronization : IDisposable
+internal unsafe class VulkanSynchronization : IDisposable
 {
     private readonly VulkanDevice _device;
     private readonly List<VkSemaphore> _recycledSemaphores = new List<VkSemaphore>();

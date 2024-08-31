@@ -5,7 +5,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class VulkanCommandBufferManager : IDisposable
+internal unsafe class VulkanCommandBufferManager : IDisposable
 {
     private readonly VulkanDevice _device;
     private readonly VulkanCommandPool _commandPool;

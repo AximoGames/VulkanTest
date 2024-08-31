@@ -6,12 +6,12 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class BufferManager : IDisposable
+internal unsafe class VulkanBufferManager : IDisposable
 {
     private readonly VulkanDevice _device;
     private readonly VulkanCommandPool _commandPool;
 
-    public BufferManager(VulkanDevice device, VulkanCommandPool commandPool)
+    public VulkanBufferManager(VulkanDevice device, VulkanCommandPool commandPool)
     {
         _device = device;
         _commandPool = commandPool;

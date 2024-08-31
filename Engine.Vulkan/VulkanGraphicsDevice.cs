@@ -13,7 +13,7 @@ using OpenTK.Mathematics;
 
 namespace Engine.Vulkan;
 
-public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
+internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 {
     private static readonly string _engineName = "Vortice";
 
@@ -24,13 +24,13 @@ public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
     public readonly VulkanSwapchain Swapchain;
     public VulkanPipeline Pipeline;
     private PerFrame[] _perFrameData; // TODO: Pin during init?
-    internal readonly BufferManager BufferManager;
+    internal readonly VulkanBufferManager VulkanBufferManager;
     public VulkanCommandPool CommandPool;
     public VulkanSynchronization Synchronization;
 
     public uint CurrentSwapchainImageIndex;
 
-    public ShaderManager ShaderManager { get; private set; }
+    public VulkanShaderManager ShaderManager { get; private set; }
 
     public VulkanCommandBufferManager CommandBufferManager;
 
@@ -47,7 +47,7 @@ public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 
         VulkanDevice = new VulkanDevice(VulkanInstance, _surface);
 
-        ShaderManager = new ShaderManager(VulkanDevice);
+        ShaderManager = new VulkanShaderManager(VulkanDevice);
 
         // Create swap chain
         Swapchain = new VulkanSwapchain(VulkanDevice, window, _surface);
@@ -58,7 +58,7 @@ public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
         CommandPool = new VulkanCommandPool(VulkanDevice);
         Synchronization = new VulkanSynchronization(VulkanDevice);
 
-        BufferManager = new BufferManager(VulkanDevice, CommandPool);
+        VulkanBufferManager = new VulkanBufferManager(VulkanDevice, CommandPool);
 
         CommandBufferManager = new VulkanCommandBufferManager(VulkanDevice, CommandPool);
 
@@ -76,7 +76,7 @@ public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
         // Don't release anything until the GPU is completely idle.
         vkDeviceWaitIdle(VulkanDevice.LogicalDevice);
 
-        BufferManager.Dispose();
+        VulkanBufferManager.Dispose();
 
         Swapchain.Dispose();
 
@@ -125,7 +125,7 @@ public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 
     public override void InitializePipeline(Action<PipelineBuilder> callback)
     {
-        var builder = new VulkanPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, BufferManager);
+        var builder = new VulkanPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, VulkanBufferManager);
         callback(builder);
         Pipeline = builder.Build();
     }

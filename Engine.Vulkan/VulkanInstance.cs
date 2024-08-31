@@ -7,7 +7,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class VulkanInstance : IDisposable
+internal unsafe class VulkanInstance : IDisposable
 {
     private static readonly string[] _requestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
 

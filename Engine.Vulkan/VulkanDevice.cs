@@ -5,7 +5,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class VulkanDevice : IDisposable
+internal unsafe class VulkanDevice : IDisposable
 {
     public VkPhysicalDevice PhysicalDevice;
     public VkDevice LogicalDevice;
