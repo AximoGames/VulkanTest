@@ -21,7 +21,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
     public readonly VulkanDevice VulkanDevice;
 
     private readonly VkSurfaceKHR _surface;
-    public readonly Swapchain Swapchain;
+    public readonly VulkanSwapchain Swapchain;
     public VulkanPipeline Pipeline;
     private PerFrame[] _perFrameData; // TODO: Pin during init?
     internal readonly BufferManager BufferManager;
@@ -50,7 +50,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         ShaderManager = new ShaderManager(VulkanDevice);
 
         // Create swap chain
-        Swapchain = new Swapchain(VulkanDevice, window, _surface);
+        Swapchain = new VulkanSwapchain(VulkanDevice, window, _surface);
 
         // Initialize _perFrame array
         _perFrameData = new PerFrame[Swapchain.ImageCount];

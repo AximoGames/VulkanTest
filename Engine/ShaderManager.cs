@@ -14,13 +14,13 @@ public unsafe class ShaderManager
         _device = device;
     }
 
-    public ShaderModule CreateShaderModuleFromCode(string shaderCode, ShaderKind shaderKind)
+    public VulkanShaderModule CreateShaderModuleFromCode(string shaderCode, ShaderKind shaderKind)
     {
         using Compiler compiler = new Compiler();
         using (var compilationResult = compiler.Compile(shaderCode, "main", shaderKind))
         {
             vkCreateShaderModule(_device.LogicalDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
-            return new ShaderModule(_device, module);
+            return new VulkanShaderModule(_device, module);
         }
     }
 }

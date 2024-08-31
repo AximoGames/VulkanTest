@@ -2,12 +2,12 @@ using Vortice.Vulkan;
 
 namespace Engine;
 
-public class ShaderModule
+public class VulkanShaderModule
 {
     private readonly VulkanDevice _device;
     internal VkShaderModule Module { get; }
 
-    internal ShaderModule(VulkanDevice device, VkShaderModule module)
+    internal VulkanShaderModule(VulkanDevice device, VkShaderModule module)
     {
         _device = device;
         Module = module;

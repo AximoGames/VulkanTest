@@ -6,7 +6,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine;
 
-public sealed unsafe class Swapchain : IDisposable
+public sealed unsafe class VulkanSwapchain : IDisposable
 {
     public readonly VulkanDevice Device;
 
@@ -21,7 +21,7 @@ public sealed unsafe class Swapchain : IDisposable
     private VkImage[] _images;
     private readonly VkSurfaceKHR _surface;
 
-    public Swapchain(VulkanDevice device, GameWindow? window, VkSurfaceKHR surface)
+    public VulkanSwapchain(VulkanDevice device, GameWindow? window, VkSurfaceKHR surface)
     {
         Device = device;
         Window = window;

@@ -10,13 +10,13 @@ public unsafe class PipelineBuilder
 {
     public BufferManager BufferManager;
     private readonly VulkanDevice _device;
-    private readonly Swapchain _swapchain;
+    private readonly VulkanSwapchain _swapchain;
     private readonly ShaderManager _shaderManager;
     private VkPipeline PipelineHandle;
     private VkPipelineLayout PipelineLayoutHandle;
-    private IDictionary<ShaderKind, ShaderModule> _shaderModules = new Dictionary<ShaderKind, ShaderModule>();
+    private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
 
-    internal PipelineBuilder(VulkanDevice device, Swapchain swapchain, ShaderManager shaderManager, BufferManager bufferManager)
+    internal PipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, ShaderManager shaderManager, BufferManager bufferManager)
     {
         _device = device;
         _swapchain = swapchain;
@@ -26,8 +26,8 @@ public unsafe class PipelineBuilder
 
     internal VulkanPipeline Build()
     {
-        ShaderModule vertShaderModule = _shaderModules[ShaderKind.VertexShader];
-        ShaderModule fragShaderModule = _shaderModules[ShaderKind.FragmentShader];
+        VulkanShaderModule vertShaderModule = _shaderModules[ShaderKind.VertexShader];
+        VulkanShaderModule fragShaderModule = _shaderModules[ShaderKind.FragmentShader];
 
         var name = "main".ToVkUtf8ReadOnlyString();
 
