@@ -12,7 +12,7 @@ using OpenTK.Windowing.Desktop;
 using Vortice.ShaderCompiler;
 using OpenTK.Mathematics;
 
-namespace VulkanTest;
+namespace Engine.App;
 
 public unsafe class TestApp : Application
 {

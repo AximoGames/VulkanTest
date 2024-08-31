@@ -3,7 +3,7 @@ using Vortice.Vulkan;
 using Vortice.ShaderCompiler;
 using static Vortice.Vulkan.Vulkan;
 
-namespace VulkanTest;
+namespace Engine;
 
 public unsafe class ShaderManager
 {

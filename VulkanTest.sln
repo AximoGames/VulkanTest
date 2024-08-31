@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31605.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngineTest", "EngineTest\EngineTest.csproj", "{DA84AA56-7C3F-4716-BD77-3AE9A1F7C8DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.App", "Engine.App\Engine.App.csproj", "{DA84AA56-7C3F-4716-BD77-3AE9A1F7C8DA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Vulkan", "Engine.Vulkan\Engine.Vulkan.csproj", "{59200DD7-F167-41B9-8F67-788F6FDAF1AB}"
 EndProject

@@ -5,7 +5,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
-namespace VulkanTest;
+namespace Engine;
 
 public unsafe class VulkanInstance : IDisposable
 {

@@ -5,7 +5,6 @@
         <TargetFramework>net8.0</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Nullable>enable</Nullable>
-        <RootNamespace>VulkanTest</RootNamespace>
     </PropertyGroup>
 	
     <ItemGroup>

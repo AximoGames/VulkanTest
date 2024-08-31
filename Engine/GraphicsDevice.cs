@@ -11,7 +11,7 @@ using OpenTK.Windowing.Desktop;
 using Vortice.ShaderCompiler;
 using OpenTK.Mathematics;
 
-namespace VulkanTest;
+namespace Engine;
 
 public unsafe sealed class GraphicsDevice : IDisposable
 {

@@ -4,7 +4,7 @@ using static Vortice.Vulkan.Vulkan;
 using OpenTK.Mathematics;
 using Vortice.ShaderCompiler;
 
-namespace VulkanTest;
+namespace Engine;
 
 public unsafe class VulkanPipeline : IDisposable
 {
