@@ -8,6 +8,7 @@ namespace VulkanTest;
 
 public unsafe class PipelineBuilder
 {
+    public BufferManager BufferManager;
     private readonly VulkanDevice _device;
     private readonly Swapchain _swapchain;
     private readonly ShaderManager _shaderManager;
@@ -15,11 +16,12 @@ public unsafe class PipelineBuilder
     private VkPipelineLayout PipelineLayoutHandle;
     private IDictionary<ShaderKind, ShaderModule> _shaderModules = new Dictionary<ShaderKind, ShaderModule>();
 
-    internal PipelineBuilder(VulkanDevice device, Swapchain swapchain, ShaderManager shaderManager)
+    internal PipelineBuilder(VulkanDevice device, Swapchain swapchain, ShaderManager shaderManager, BufferManager bufferManager)
     {
         _device = device;
         _swapchain = swapchain;
         _shaderManager = shaderManager;
+        BufferManager = bufferManager;
     }
 
     internal VulkanPipeline Build()

@@ -24,7 +24,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
     public readonly Swapchain Swapchain;
     public VulkanPipeline Pipeline;
     private PerFrame[] _perFrameData; // TODO: Pin during init?
-    public readonly BufferManager BufferManager;
+    internal readonly BufferManager BufferManager;
     public VulkanCommandPool CommandPool;
     public VulkanSynchronization Synchronization;
 
@@ -59,8 +59,6 @@ public unsafe sealed class GraphicsDevice : IDisposable
         Synchronization = new VulkanSynchronization(VulkanDevice);
 
         BufferManager = new BufferManager(VulkanDevice, CommandPool);
-        BufferManager.CreateVertexBuffer(Vertices);
-        BufferManager.CreateIndexBuffer(Indices);
 
         CommandBufferManager = new VulkanCommandBufferManager(VulkanDevice, CommandPool);
 
@@ -72,20 +70,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
             _perFrameData[i].PrimaryCommandBuffer = _perFrameData[i].PrimaryCommandPool.AllocateCommandBuffer();
         }
     }
-
-    public Vertex[] Vertices = new Vertex[]
-    {
-        new Vertex { position = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new Vertex { position = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new Vertex { position = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
-        new Vertex { position = new Vector2(-0.5f, 0.5f), color = new Vector3(0.0f, 0.0f, 1.0f) }
-    };
-
-    public ushort[] Indices =
-    {
-        0, 1, 2, 2, 3, 0,
-    };
-
+    
     public void Dispose()
     {
         // Don't release anything until the GPU is completely idle.
@@ -140,7 +125,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
     public void InitializePipeline(Action<PipelineBuilder> callback)
     {
-        var builder = new PipelineBuilder(VulkanDevice, Swapchain, ShaderManager);
+        var builder = new PipelineBuilder(VulkanDevice, Swapchain, ShaderManager, BufferManager);
         callback(builder);
         Pipeline = builder.Build();
     }
@@ -164,7 +149,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
         // Begin command recording
         VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
-        var renderContext = new RenderContext(VulkanDevice, BufferManager, cmd, Swapchain.Extent);
+        var renderContext = new RenderContext(VulkanDevice, cmd, Swapchain.Extent);
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 

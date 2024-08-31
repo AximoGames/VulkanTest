@@ -11,19 +11,17 @@ public unsafe class BufferManager : IDisposable
     private readonly VulkanDevice _device;
     private readonly VulkanCommandPool _commandPool;
 
-    public VkBuffer VertexBuffer;
-    public VkDeviceMemory VertexBufferMemory;
-    public VkBuffer IndexBuffer;
-    public VkDeviceMemory IndexBufferMemory;
-
     public BufferManager(VulkanDevice device, VulkanCommandPool commandPool)
     {
         _device = device;
         _commandPool = commandPool;
     }
 
-    public void CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
+    public VulkanBuffer CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
     {
+        VkBuffer buffer;
+        VkDeviceMemory bufferMemory;
+
         var bufferSize = (uint)(Unsafe.SizeOf<T>() * vertices.Length);
 
         VkBuffer stagingBuffer;
@@ -38,16 +36,21 @@ public unsafe class BufferManager : IDisposable
             vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
         }
 
-        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.VertexBuffer, VkMemoryPropertyFlags.DeviceLocal, out VertexBuffer, out VertexBufferMemory);
+        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.VertexBuffer, VkMemoryPropertyFlags.DeviceLocal, out buffer, out bufferMemory);
 
-        CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
+        CopyBuffer(stagingBuffer, buffer, bufferSize);
 
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
+
+        return new VulkanBuffer(_device, buffer, bufferMemory);
     }
 
-    public void CreateIndexBuffer(ushort[] indices)
+    public VulkanBuffer CreateIndexBuffer(ushort[] indices)
     {
+        VkBuffer buffer;
+        VkDeviceMemory bufferMemory;
+
         uint bufferSize = (uint)(Marshal.SizeOf<ushort>() * indices.Length);
 
         VkBuffer stagingBuffer;
@@ -62,12 +65,14 @@ public unsafe class BufferManager : IDisposable
             vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
         }
 
-        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.IndexBuffer, VkMemoryPropertyFlags.DeviceLocal, out IndexBuffer, out IndexBufferMemory);
+        CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.IndexBuffer, VkMemoryPropertyFlags.DeviceLocal, out buffer, out bufferMemory);
 
-        CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
+        CopyBuffer(stagingBuffer, buffer, bufferSize);
 
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
+
+        return new VulkanBuffer(_device, buffer, bufferMemory);
     }
 
     private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
@@ -146,9 +151,9 @@ public unsafe class BufferManager : IDisposable
 
     public void Dispose()
     {
-        vkDestroyBuffer(_device.LogicalDevice, VertexBuffer, null);
-        vkFreeMemory(_device.LogicalDevice, VertexBufferMemory, null);
-        vkDestroyBuffer(_device.LogicalDevice, IndexBuffer, null);
-        vkFreeMemory(_device.LogicalDevice, IndexBufferMemory, null);
+        // vkDestroyBuffer(_device.LogicalDevice, VertexBuffer, null);
+        // vkFreeMemory(_device.LogicalDevice, VertexBufferMemory, null);
+        // vkDestroyBuffer(_device.LogicalDevice, IndexBuffer, null);
+        // vkFreeMemory(_device.LogicalDevice, IndexBufferMemory, null);
     }
 }
