@@ -14,7 +14,7 @@ using OpenTK.Mathematics;
 
 namespace Engine.App;
 
-public unsafe class TestApp : Application
+public class TestApp : Application
 {
 #if DEBUG
     private static bool EnableValidationLayers = true;

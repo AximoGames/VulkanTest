@@ -2,7 +2,7 @@
 
 namespace Engine.App;
 
-public static unsafe partial class Program
+public static partial class Program
 {
     public static void Main()
     {
