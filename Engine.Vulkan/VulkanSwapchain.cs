@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
@@ -14,7 +15,7 @@ public sealed unsafe class VulkanSwapchain : IDisposable
     public readonly GameWindow? Window = default!;
 
     public VkSwapchainKHR Handle;
-    public VkExtent2D Extent { get; }
+    public Vector2i Extent { get; }
     public VkSurfaceFormatKHR SurfaceFormat;
     public int ImageCount => _images.Length;
     private VkImageView[] _imageViews;
@@ -46,7 +47,7 @@ public sealed unsafe class VulkanSwapchain : IDisposable
             minImageCount = imageCount,
             imageFormat = SurfaceFormat.format,
             imageColorSpace = SurfaceFormat.colorSpace,
-            imageExtent = Extent,
+            imageExtent = Extent.ToVkExtent2D(),
             imageArrayLayers = 1,
             imageUsage = VkImageUsageFlags.ColorAttachment,
             imageSharingMode = VkSharingMode.Exclusive,
@@ -112,11 +113,11 @@ public sealed unsafe class VulkanSwapchain : IDisposable
         public ReadOnlySpan<VkPresentModeKHR> PresentModes;
     };
 
-    private VkExtent2D ChooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities)
+    private Vector2i ChooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities)
     {
         if (capabilities.currentExtent.width > 0)
         {
-            return capabilities.currentExtent;
+            return capabilities.currentExtent.ToVector2i();
         }
         else
         {
@@ -127,7 +128,7 @@ public sealed unsafe class VulkanSwapchain : IDisposable
                 Math.Max(capabilities.minImageExtent.height, Math.Min(capabilities.maxImageExtent.height, actualExtent.height))
             );
 
-            return actualExtent;
+            return actualExtent.ToVector2i();
         }
     }
 

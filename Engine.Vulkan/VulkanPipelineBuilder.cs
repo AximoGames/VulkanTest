@@ -91,8 +91,8 @@ public unsafe class VulkanPipelineBuilder : PipelineBuilder
             {
                 x = 0.0f,
                 y = 0.0f,
-                width = _swapchain.Extent.width,
-                height = _swapchain.Extent.height,
+                width = _swapchain.Extent.X,
+                height = _swapchain.Extent.Y,
                 minDepth = 0.0f,
                 maxDepth = 1.0f
             };
@@ -100,7 +100,7 @@ public unsafe class VulkanPipelineBuilder : PipelineBuilder
             var scissor = new VkRect2D
             {
                 offset = new VkOffset2D(0, 0),
-                extent = _swapchain.Extent
+                extent = _swapchain.Extent.ToVkExtent2D(),
             };
 
             var viewportState = new VkPipelineViewportStateCreateInfo

@@ -7,8 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-<!--      <ProjectReference Include="..\Engine.Vulkan\Engine.Vulkan.csproj" PrivateAssets="all" />-->
-      <ProjectReference Include="..\Engine.Vulkan\Engine.Vulkan.csproj" />
+      <ProjectReference Include="..\Engine.Vulkan\Engine.Vulkan.csproj" PrivateAssets="analyzers;build" ExcludeAssets="none" />
     </ItemGroup>
 
 </Project>

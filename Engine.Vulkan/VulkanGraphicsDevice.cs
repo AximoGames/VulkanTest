@@ -254,7 +254,7 @@ public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
         public VkSemaphore SwapchainReleaseSemaphore;
     }
 
-    public void BeginRenderPass(VkCommandBuffer commandBuffer, VkExtent2D size)
+    public void BeginRenderPass(VkCommandBuffer commandBuffer, Vector2i size)
     {
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
@@ -272,7 +272,7 @@ public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 
         VkRenderingInfo renderingInfo = new VkRenderingInfo
         {
-            renderArea = new VkRect2D(VkOffset2D.Zero, size),
+            renderArea = new VkRect2D(VkOffset2D.Zero, size.ToVkExtent2D()),
             layerCount = 1,
             colorAttachmentCount = 1,
             pColorAttachments = &colorAttachmentInfo

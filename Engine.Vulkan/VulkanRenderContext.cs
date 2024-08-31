@@ -1,4 +1,5 @@
 using OpenTK;
+using OpenTK.Mathematics;
 using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
@@ -7,9 +8,9 @@ public unsafe class VulkanRenderContext : RenderContext
 {
     private readonly VulkanDevice _device;
     private readonly VkCommandBuffer _commandBuffer;
-    private readonly VkExtent2D _extent;
+    private readonly Vector2i _extent;
 
-    internal VulkanRenderContext(VulkanDevice device, VkCommandBuffer commandBuffer, VkExtent2D extent)
+    internal VulkanRenderContext(VulkanDevice device, VkCommandBuffer commandBuffer, Vector2i extent)
     {
         _device = device;
         _commandBuffer = commandBuffer;
@@ -28,11 +29,11 @@ public unsafe class VulkanRenderContext : RenderContext
     /// <remarks>Consider using <see cref="VulkanGraphicsDevice.ClearColor"/> instead</remarks>
     public override void Clear(Color3<Rgb> clearColor)
     {
-        Clear(clearColor, new VkRect2D { extent = _extent });
+        Clear(clearColor, new Box2i(Vector2i.Zero, _extent));
     }
 
     /// <remarks>Consider using <see cref="VulkanGraphicsDevice.ClearColor"/> instead</remarks>
-    public override void Clear(Color3<Rgb> clearColor, VkRect2D rect)
+    public override void Clear(Color3<Rgb> clearColor, Box2i rect)
     {
         VkClearAttachment clearAttachment = new VkClearAttachment
         {
@@ -43,7 +44,7 @@ public unsafe class VulkanRenderContext : RenderContext
 
         VkClearRect clearRect = new VkClearRect
         {
-            rect = rect,
+            rect = rect.ToVkRect2D(),
             baseArrayLayer = 0,
             layerCount = 1,
         };
