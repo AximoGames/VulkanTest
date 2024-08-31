@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Engine.Vulkan;
+namespace Engine;
 
 public static class Log
 {

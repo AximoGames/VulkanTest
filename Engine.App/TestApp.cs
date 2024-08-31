@@ -30,7 +30,8 @@ public class TestApp : Application
 
     public override string Name => "01-DrawTriangle";
 
-    public Vertex[] Vertices = {
+    public Vertex[] Vertices =
+    {
         new() { position = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
         new() { position = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
         new() { position = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
@@ -42,8 +43,8 @@ public class TestApp : Application
         0, 1, 2, 2, 3, 0,
     };
 
-    private VulkanBuffer _vertexBuffer;
-    private VulkanBuffer _indexBuffer;
+    private Buffer _vertexBuffer;
+    private Buffer _indexBuffer;
 
     protected override void Initialize()
     {
@@ -82,8 +83,8 @@ public class TestApp : Application
             }
             """;
 
-        _vertexBuffer = builder.BufferManager.CreateVertexBuffer(Vertices);
-        _indexBuffer = builder.BufferManager.CreateIndexBuffer(Indices);
+        _vertexBuffer = builder.CreateVertexBuffer(Vertices);
+        _indexBuffer = builder.CreateIndexBuffer(Indices);
 
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);

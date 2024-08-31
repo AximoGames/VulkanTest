@@ -125,7 +125,7 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 
     public override void InitializePipeline(Action<PipelineBuilder> callback)
     {
-        var builder = new PipelineBuilder(VulkanDevice, Swapchain, ShaderManager, BufferManager);
+        var builder = new VulkanPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, BufferManager);
         callback(builder);
         Pipeline = builder.Build();
     }
@@ -149,7 +149,7 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
         // Begin command recording
         VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
-        var renderContext = new RenderContext(VulkanDevice, cmd, Swapchain.Extent);
+        var renderContext = new VulkanRenderContext(VulkanDevice, cmd, Swapchain.Extent);
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 

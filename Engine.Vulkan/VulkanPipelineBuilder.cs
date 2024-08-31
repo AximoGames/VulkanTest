@@ -1,14 +1,11 @@
-using System.Collections.Generic;
-using Vortice.Vulkan;
-using static Vortice.Vulkan.Vulkan;
-using OpenTK.Mathematics;
 using Vortice.ShaderCompiler;
+using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
-public unsafe class PipelineBuilder
+public unsafe class VulkanPipelineBuilder : PipelineBuilder
 {
-    public BufferManager BufferManager;
+    private BufferManager BufferManager;
     private readonly VulkanDevice _device;
     private readonly VulkanSwapchain _swapchain;
     private readonly ShaderManager _shaderManager;
@@ -16,13 +13,19 @@ public unsafe class PipelineBuilder
     private VkPipelineLayout PipelineLayoutHandle;
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
 
-    internal PipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, ShaderManager shaderManager, BufferManager bufferManager)
+    internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, ShaderManager shaderManager, BufferManager bufferManager)
     {
         _device = device;
         _swapchain = swapchain;
         _shaderManager = shaderManager;
         BufferManager = bufferManager;
     }
+
+    public override Buffer CreateVertexBuffer<T>(T[] vertices)
+        => BufferManager.CreateVertexBuffer(vertices);
+
+    public override Buffer CreateIndexBuffer(ushort[] indices)
+        => BufferManager.CreateIndexBuffer(indices);
 
     internal VulkanPipeline Build()
     {
@@ -129,7 +132,7 @@ public unsafe class PipelineBuilder
                 pushConstantRangeCount = 0
             };
 
-            vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
+            Vortice.Vulkan.Vulkan.vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
 
             VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
 
@@ -157,7 +160,7 @@ public unsafe class PipelineBuilder
             };
 
             VkPipeline graphicsPipeline;
-            vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
+            Vortice.Vulkan.Vulkan.vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
             PipelineHandle = graphicsPipeline;
         }
 
@@ -167,7 +170,7 @@ public unsafe class PipelineBuilder
         return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle);
     }
     
-    public void ConfigureShader(string shaderCode, ShaderKind shaderKind)
+    public override void ConfigureShader(string shaderCode, ShaderKind shaderKind)
     {
         _shaderModules.Add(shaderKind, _shaderManager.CreateShaderModuleFromCode(shaderCode, shaderKind));
     }
