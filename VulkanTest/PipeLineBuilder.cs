@@ -27,22 +27,22 @@ public unsafe class PipelineBuilder
 
     public void CreateGraphicsPipeline(string vertexShaderCode, string fragShaderCode)
     {
-        VkShaderModule vertShaderModule = _shaderManager.CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
-        VkShaderModule fragShaderModule = _shaderManager.CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
+        ShaderModule vertShaderModule = _shaderManager.CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
+        ShaderModule fragShaderModule = _shaderManager.CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
 
         var name = "main".ToVkUtf8ReadOnlyString();
 
         var vertShaderStageInfo = new VkPipelineShaderStageCreateInfo
         {
             stage = VkShaderStageFlags.Vertex,
-            module = vertShaderModule,
+            module = vertShaderModule.Module,
             pName = name
         };
 
         var fragShaderStageInfo = new VkPipelineShaderStageCreateInfo
         {
             stage = VkShaderStageFlags.Fragment,
-            module = fragShaderModule,
+            module = fragShaderModule.Module,
             pName = name
         };
 
@@ -162,7 +162,7 @@ public unsafe class PipelineBuilder
             PipelineHandle = graphicsPipeline;
         }
 
-        vkDestroyShaderModule(_device.LogicalDevice, fragShaderModule, null);
-        vkDestroyShaderModule(_device.LogicalDevice, vertShaderModule, null);
+        fragShaderModule.Free();
+        vertShaderModule.Free();
     }
 }

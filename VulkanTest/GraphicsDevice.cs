@@ -47,7 +47,7 @@ public unsafe sealed class GraphicsDevice : IDisposable
 
         VulkanDevice = new VulkanDevice(VulkanInstance, _surface);
 
-        ShaderManager = new ShaderManager(VulkanDevice.LogicalDevice);
+        ShaderManager = new ShaderManager(VulkanDevice);
 
         // Create swap chain
         Swapchain = new Swapchain(VulkanDevice, window, _surface);
