@@ -5,5 +5,5 @@ namespace Engine;
 public enum VertexInputRate
 {
     Vertex,
-    Instance
+    Instance,
 }

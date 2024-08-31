@@ -43,7 +43,7 @@ public unsafe class BufferManager : IDisposable
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
 
-        return new VulkanBuffer(_device, buffer, bufferMemory);
+        return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
     public VulkanBuffer CreateIndexBuffer(ushort[] indices)
@@ -72,7 +72,7 @@ public unsafe class BufferManager : IDisposable
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
 
-        return new VulkanBuffer(_device, buffer, bufferMemory);
+        return new VulkanBuffer(typeof(ushort), _device, buffer, bufferMemory);
     }
 
     private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)

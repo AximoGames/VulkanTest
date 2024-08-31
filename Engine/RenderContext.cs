@@ -6,7 +6,7 @@ namespace Engine.Vulkan;
 public abstract class RenderContext
 {
     public abstract void BindVertexBuffer(Buffer buffer, uint binding = 0);
-    public abstract void BindIndexBuffer(Buffer buffer, VkIndexType indexType = VkIndexType.Uint16);
+    public abstract void BindIndexBuffer(Buffer buffer);
 
     /// <remarks>Consider using <see cref="Engine.Vulkan.Engine.Vulkan.VulkanGraphicsDevice.ClearColoremarks>
     public abstract void Clear(Color3<Rgb> clearColor);

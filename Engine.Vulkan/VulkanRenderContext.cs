@@ -19,8 +19,8 @@ public unsafe class VulkanRenderContext : RenderContext
     public override void BindVertexBuffer(Buffer buffer, uint binding = 0)
         => Vortice.Vulkan.Vulkan.vkCmdBindVertexBuffer(_commandBuffer, binding, ((VulkanBuffer)buffer).Buffer);
 
-    public override void BindIndexBuffer(Buffer buffer, VkIndexType indexType = VkIndexType.Uint16)
-        => Vortice.Vulkan.Vulkan.vkCmdBindIndexBuffer(_commandBuffer, ((VulkanBuffer)buffer).Buffer, 0, indexType);
+    public override void BindIndexBuffer(Buffer buffer)
+        => Vortice.Vulkan.Vulkan.vkCmdBindIndexBuffer(_commandBuffer, ((VulkanBuffer)buffer).Buffer, 0, buffer.ElementType.ToVkIndexType());
 
     public override void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0)
         => Vortice.Vulkan.Vulkan.vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
