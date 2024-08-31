@@ -19,8 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Engine.Vulkan.Loader\Engine.Vulkan.Loader.csproj" />
       <ProjectReference Include="..\Engine\Engine.csproj" />
-      <ProjectReference Include="..\Engine.Vulkan\Engine.Vulkan.csproj" />
     </ItemGroup>
 
 </Project>

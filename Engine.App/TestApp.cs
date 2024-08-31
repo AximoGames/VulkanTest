@@ -86,8 +86,32 @@ public class TestApp : Application
         _vertexBuffer = builder.CreateVertexBuffer(Vertices);
         _indexBuffer = builder.CreateIndexBuffer(Indices);
 
+        // bindingDescription
+        VkVertexInputBindingDescription bindingDescription;
+        bindingDescription.binding = 0;
+        bindingDescription.stride = (uint)Marshal.SizeOf<Vertex>();
+        bindingDescription.inputRate = VkVertexInputRate.Vertex;
+        builder.ConfigureBindingDescription(bindingDescription);
+
+        // attributeDescriptions
+        var attributeDescriptions = new VkVertexInputAttributeDescription[2];
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VkFormat.R32G32Sfloat;
+        attributeDescriptions[0].offset = 0;
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VkFormat.R32G32B32Sfloat;
+        attributeDescriptions[1].offset = (uint)Marshal.SizeOf<Vector2>();
+        builder.ConfigureAttributeDescriptions(attributeDescriptions);
+
+        // ---
+
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
+        // Engine.Vulkan.VulkanGraphicsDevice d;
     }
 
     protected override void OnRenderFrame()

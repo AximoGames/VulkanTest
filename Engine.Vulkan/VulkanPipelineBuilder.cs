@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using OpenTK.Mathematics;
 using Vortice.ShaderCompiler;
 using Vortice.Vulkan;
 
@@ -48,8 +50,8 @@ public unsafe class VulkanPipelineBuilder : PipelineBuilder
             pName = name
         };
 
-        var bindingDescription = Vertex.GetBindingDescription();
-        var attributeDescriptions = Vertex.GetAttributeDescriptions();
+        var bindingDescription = _bindingDescription;
+        var attributeDescriptions = _attributeDescriptions;
 
         fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
         {
@@ -169,7 +171,7 @@ public unsafe class VulkanPipelineBuilder : PipelineBuilder
 
         return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle);
     }
-    
+
     public override void ConfigureShader(string shaderCode, ShaderKind shaderKind)
     {
         _shaderModules.Add(shaderKind, _shaderManager.CreateShaderModuleFromCode(shaderCode, shaderKind));

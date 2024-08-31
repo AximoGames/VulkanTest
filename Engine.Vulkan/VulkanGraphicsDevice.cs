@@ -13,7 +13,7 @@ using OpenTK.Mathematics;
 
 namespace Engine.Vulkan;
 
-internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
+public unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 {
     private static readonly string _engineName = "Vortice";
 
