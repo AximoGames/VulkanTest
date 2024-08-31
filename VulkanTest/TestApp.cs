@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using Vortice;
+using Vortice.ShaderCompiler;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
@@ -59,7 +60,8 @@ public unsafe class TestApp : Application
             }
             """;
 
-        builder.CreateGraphicsPipeline(vertexShaderCode, fragShaderCode);
+        builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
+        builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
     }
 
     protected override void OnRenderFrame()

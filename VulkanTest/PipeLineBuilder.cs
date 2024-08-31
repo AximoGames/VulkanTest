@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 using OpenTK.Mathematics;
@@ -12,6 +13,7 @@ public unsafe class PipelineBuilder
     private readonly ShaderManager _shaderManager;
     private VkPipeline PipelineHandle;
     private VkPipelineLayout PipelineLayoutHandle;
+    private IDictionary<ShaderKind, ShaderModule> _shaderModules = new Dictionary<ShaderKind, ShaderModule>();
 
     internal PipelineBuilder(VulkanDevice device, Swapchain swapchain, ShaderManager shaderManager)
     {
@@ -22,13 +24,8 @@ public unsafe class PipelineBuilder
 
     internal VulkanPipeline Build()
     {
-        return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle);
-    }
-
-    public void CreateGraphicsPipeline(string vertexShaderCode, string fragShaderCode)
-    {
-        ShaderModule vertShaderModule = _shaderManager.CreateShaderModuleFromCode(vertexShaderCode, ShaderKind.VertexShader);
-        ShaderModule fragShaderModule = _shaderManager.CreateShaderModuleFromCode(fragShaderCode, ShaderKind.FragmentShader);
+        ShaderModule vertShaderModule = _shaderModules[ShaderKind.VertexShader];
+        ShaderModule fragShaderModule = _shaderModules[ShaderKind.FragmentShader];
 
         var name = "main".ToVkUtf8ReadOnlyString();
 
@@ -164,5 +161,12 @@ public unsafe class PipelineBuilder
 
         fragShaderModule.Free();
         vertShaderModule.Free();
+
+        return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle);
+    }
+    
+    public void ConfigureShader(string shaderCode, ShaderKind shaderKind)
+    {
+        _shaderModules.Add(shaderKind, _shaderManager.CreateShaderModuleFromCode(shaderCode, shaderKind));
     }
 }
