@@ -86,28 +86,34 @@ public class TestApp : Application
         _vertexBuffer = builder.CreateVertexBuffer(Vertices);
         _indexBuffer = builder.CreateIndexBuffer(Indices);
 
-        // bindingDescription
-        VkVertexInputBindingDescription bindingDescription;
-        bindingDescription.binding = 0;
-        bindingDescription.stride = (uint)Marshal.SizeOf<Vertex>();
-        bindingDescription.inputRate = VkVertexInputRate.Vertex;
-        builder.ConfigureBindingDescription(bindingDescription);
+        var vertexLayoutInfo = new VertexLayoutInfo
+        {
+            BindingDescription = new VertexInputBindingDescription
+            {
+                Binding = 0,
+                Stride = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Vertex>(),
+                InputRate = VertexInputRate.Vertex
+            },
+            AttributeDescriptions = new List<VertexInputAttributeDescription>
+            {
+                new VertexInputAttributeDescription
+                {
+                    Binding = 0,
+                    Location = 0,
+                    Format = VertexFormat.Float32_2,
+                    Offset = 0
+                },
+                new VertexInputAttributeDescription
+                {
+                    Binding = 0,
+                    Location = 1,
+                    Format = VertexFormat.Float32_3,
+                    Offset = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Vector2>()
+                }
+            }
+        };
 
-        // attributeDescriptions
-        var attributeDescriptions = new VkVertexInputAttributeDescription[2];
-
-        attributeDescriptions[0].binding = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VkFormat.R32G32Sfloat;
-        attributeDescriptions[0].offset = 0;
-
-        attributeDescriptions[1].binding = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VkFormat.R32G32B32Sfloat;
-        attributeDescriptions[1].offset = (uint)Marshal.SizeOf<Vector2>();
-        builder.ConfigureAttributeDescriptions(attributeDescriptions);
-
-        // ---
+        builder.ConfigureVertexLayout(vertexLayoutInfo);
 
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);

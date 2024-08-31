@@ -19,4 +19,6 @@ public abstract class PipelineBuilder
 
     public void ConfigureAttributeDescriptions(VkVertexInputAttributeDescription[] attributeDescriptions)
         => _attributeDescriptions = attributeDescriptions;
+
+    public abstract void ConfigureVertexLayout(VertexLayoutInfo vertexLayoutInfo);
 }

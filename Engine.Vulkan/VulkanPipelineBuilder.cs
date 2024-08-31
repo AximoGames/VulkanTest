@@ -14,6 +14,7 @@ public unsafe class VulkanPipelineBuilder : PipelineBuilder
     private VkPipeline PipelineHandle;
     private VkPipelineLayout PipelineLayoutHandle;
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
+    private VertexLayoutInfo _vertexLayoutInfo;
 
     internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, ShaderManager shaderManager, BufferManager bufferManager)
     {
@@ -50,16 +51,33 @@ public unsafe class VulkanPipelineBuilder : PipelineBuilder
             pName = name
         };
 
-        var bindingDescription = _bindingDescription;
-        var attributeDescriptions = _attributeDescriptions;
+        // Convert VertexLayoutInfo to Vulkan structures
+        VkVertexInputBindingDescription bindingDescription = new VkVertexInputBindingDescription
+        {
+            binding = _vertexLayoutInfo.BindingDescription.Binding,
+            stride = _vertexLayoutInfo.BindingDescription.Stride,
+            inputRate = ConvertInputRate(_vertexLayoutInfo.BindingDescription.InputRate)
+        };
+
+        var attributeDescriptions = new VkVertexInputAttributeDescription[_vertexLayoutInfo.AttributeDescriptions.Count];
+        for (int i = 0; i < _vertexLayoutInfo.AttributeDescriptions.Count; i++)
+        {
+            attributeDescriptions[i] = new VkVertexInputAttributeDescription
+            {
+                binding = _vertexLayoutInfo.AttributeDescriptions[i].Binding,
+                location = _vertexLayoutInfo.AttributeDescriptions[i].Location,
+                format = ConvertFormat(_vertexLayoutInfo.AttributeDescriptions[i].Format),
+                offset = _vertexLayoutInfo.AttributeDescriptions[i].Offset
+            };
+        }
 
         fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
         {
             var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo
             {
                 vertexBindingDescriptionCount = 1,
-                vertexAttributeDescriptionCount = (uint)attributeDescriptions.Length,
                 pVertexBindingDescriptions = &bindingDescription,
+                vertexAttributeDescriptionCount = (uint)attributeDescriptions.Length,
                 pVertexAttributeDescriptions = attributeDescriptionsPtr
             };
 
@@ -175,5 +193,31 @@ public unsafe class VulkanPipelineBuilder : PipelineBuilder
     public override void ConfigureShader(string shaderCode, ShaderKind shaderKind)
     {
         _shaderModules.Add(shaderKind, _shaderManager.CreateShaderModuleFromCode(shaderCode, shaderKind));
+    }
+
+    public override void ConfigureVertexLayout(VertexLayoutInfo vertexLayoutInfo)
+    {
+        _vertexLayoutInfo = vertexLayoutInfo;
+    }
+
+    private VkVertexInputRate ConvertInputRate(VertexInputRate inputRate)
+    {
+        return inputRate switch
+        {
+            VertexInputRate.Vertex => VkVertexInputRate.Vertex,
+            VertexInputRate.Instance => VkVertexInputRate.Instance,
+            _ => throw new ArgumentOutOfRangeException(nameof(inputRate))
+        };
+    }
+
+    private VkFormat ConvertFormat(VertexFormat format)
+    {
+        return format switch
+        {
+            VertexFormat.Float32_2 => VkFormat.R32G32Sfloat,
+            VertexFormat.Float32_3 => VkFormat.R32G32B32Sfloat,
+            VertexFormat.Float32_4 => VkFormat.R32G32B32A32Sfloat,
+            _ => throw new ArgumentOutOfRangeException(nameof(format))
+        };
     }
 }
