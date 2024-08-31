@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.31605.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanTest", "VulkanTest\VulkanTest.csproj", "{DA84AA56-7C3F-4716-BD77-3AE9A1F7C8DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanLib", "VulkanLib\VulkanLib.csproj", "{59200DD7-F167-41B9-8F67-788F6FDAF1AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanEngine", "VulkanEngine\VulkanEngine.csproj", "{A8FA060E-77FD-45C0-8B63-93E1E30913F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{DA84AA56-7C3F-4716-BD77-3AE9A1F7C8DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA84AA56-7C3F-4716-BD77-3AE9A1F7C8DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA84AA56-7C3F-4716-BD77-3AE9A1F7C8DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59200DD7-F167-41B9-8F67-788F6FDAF1AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59200DD7-F167-41B9-8F67-788F6FDAF1AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59200DD7-F167-41B9-8F67-788F6FDAF1AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59200DD7-F167-41B9-8F67-788F6FDAF1AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8FA060E-77FD-45C0-8B63-93E1E30913F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8FA060E-77FD-45C0-8B63-93E1E30913F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8FA060E-77FD-45C0-8B63-93E1E30913F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8FA060E-77FD-45C0-8B63-93E1E30913F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
