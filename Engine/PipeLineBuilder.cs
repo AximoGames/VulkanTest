@@ -11,11 +11,3 @@ public abstract class PipelineBuilder
     public abstract Buffer CreateIndexBuffer(ushort[] indices);
     public abstract void ConfigureVertexLayout(VertexLayoutInfo vertexLayoutInfo);
 }
-
-public enum ShaderKind
-{
-    VertexShader,
-    FragmentShader,
-    ComputeShader,
-    GeometryShader,
-}
