@@ -1,3 +1,4 @@
+namespace Engine;
 
 public class Buffer
 {

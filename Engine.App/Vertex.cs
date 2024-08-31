@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using OpenTK.Mathematics;
 
-namespace Engine.Vulkan;
+namespace Engine.App;
 
 public struct Vertex
 {
