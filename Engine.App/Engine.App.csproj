@@ -8,16 +8,8 @@
 	
     <ItemGroup>
         <PackageReference Include="OpenTK.Windowing.Desktop" Version="5.0.0-pre.8"/>
-        <PackageReference Include="Vortice.ShaderCompiler" Version="1.7.3"/>
-        <PackageReference Include="Vortice.Vulkan" Version="1.9.5"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <Reference Include="Vortice.Vulkan">
-            <HintPath>..\..\..\..\..\.nuget\packages\vortice.vulkan\1.5.28\lib\net7.0\Vortice.Vulkan.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-
+    
     <ItemGroup>
       <ProjectReference Include="..\Engine.Vulkan.Loader\Engine.Vulkan.Loader.csproj" />
       <ProjectReference Include="..\Engine\Engine.csproj" />

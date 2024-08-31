@@ -22,3 +22,11 @@ public abstract class PipelineBuilder
 
     public abstract void ConfigureVertexLayout(VertexLayoutInfo vertexLayoutInfo);
 }
+
+public enum ShaderKind
+{
+    VertexShader,
+    FragmentShader,
+    ComputeShader,
+    GeometryShader,
+}

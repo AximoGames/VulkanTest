@@ -1,3 +1,4 @@
+using OpenTK;
 using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
@@ -25,26 +26,26 @@ public unsafe class VulkanRenderContext : RenderContext
         => Vortice.Vulkan.Vulkan.vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 
     /// <remarks>Consider using <see cref="VulkanGraphicsDevice.ClearColor"/> instead</remarks>
-    public override void Clear(VkClearColorValue clearColor)
+    public override void Clear(Color3<Rgb> clearColor)
     {
         Clear(clearColor, new VkRect2D { extent = _extent });
     }
 
     /// <remarks>Consider using <see cref="VulkanGraphicsDevice.ClearColor"/> instead</remarks>
-    public override void Clear(VkClearColorValue clearColor, VkRect2D rect)
+    public override void Clear(Color3<Rgb> clearColor, VkRect2D rect)
     {
         VkClearAttachment clearAttachment = new VkClearAttachment
         {
             aspectMask = VkImageAspectFlags.Color,
             colorAttachment = 0,
-            clearValue = new VkClearValue { color = clearColor }
+            clearValue = new VkClearValue { color = clearColor.ToVkClearColorValue() },
         };
 
         VkClearRect clearRect = new VkClearRect
         {
             rect = rect,
             baseArrayLayer = 0,
-            layerCount = 1
+            layerCount = 1,
         };
 
         Vortice.Vulkan.Vulkan.vkCmdClearAttachments(_commandBuffer, 1, &clearAttachment, 1, &clearRect);

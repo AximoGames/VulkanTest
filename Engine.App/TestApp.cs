@@ -1,16 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Vortice.Vulkan;
-using static Vortice.Vulkan.Vulkan;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Engine.Vulkan;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using OpenTK.Windowing.Desktop;
-using Vortice.ShaderCompiler;
+using OpenTK;
 using OpenTK.Mathematics;
 
 namespace Engine.App;
@@ -114,7 +106,6 @@ public class TestApp : Application
         };
 
         builder.ConfigureVertexLayout(vertexLayoutInfo);
-
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
         // Engine.Vulkan.VulkanGraphicsDevice d;
@@ -125,10 +116,6 @@ public class TestApp : Application
         try
         {
             _graphicsDevice.RenderFrame(OnDraw);
-        }
-        catch (VkException ex)
-        {
-            Log.Error($"Vulkan error occurred: {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -143,9 +130,10 @@ public class TestApp : Application
             g = 0.0f;
         _greenValue = g;
 
-        renderContext.Clear(new VkClearColorValue(0, 0, _greenValue));
+        renderContext.Clear(new Color3<Rgb>(0, 0, _greenValue));
         renderContext.BindVertexBuffer(_vertexBuffer);
         renderContext.BindIndexBuffer(_indexBuffer);
         renderContext.DrawIndexed((uint)Indices.Length);
     }
 }
+
