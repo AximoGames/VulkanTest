@@ -29,12 +29,11 @@ public unsafe class TestApp : Application
 
     public override string Name => "01-DrawTriangle";
 
-    public Vertex[] Vertices = new Vertex[]
-    {
-        new Vertex { position = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new Vertex { position = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new Vertex { position = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
-        new Vertex { position = new Vector2(-0.5f, 0.5f), color = new Vector3(0.0f, 0.0f, 1.0f) }
+    public Vertex[] Vertices = {
+        new() { position = new Vector2(-0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new() { position = new Vector2(0.5f, -0.5f), color = new Vector3(1.0f, 0.0f, 0.0f) },
+        new() { position = new Vector2(0.5f, 0.5f), color = new Vector3(0.0f, 1.0f, 0.0f) },
+        new() { position = new Vector2(-0.5f, 0.5f), color = new Vector3(0.0f, 0.0f, 1.0f) }
     };
 
     public ushort[] Indices =
