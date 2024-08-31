@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RootNamespace>VulkanEngine</RootNamespace>
     </PropertyGroup>
-	
+    
     <ItemGroup>
         <PackageReference Include="OpenTK.Windowing.Desktop" Version="5.0.0-pre.8"/>
         <PackageReference Include="Vortice.ShaderCompiler" Version="1.7.3"/>
@@ -17,11 +18,6 @@
         <Reference Include="Vortice.Vulkan">
             <HintPath>..\..\..\..\..\.nuget\packages\vortice.vulkan\1.5.28\lib\net7.0\Vortice.Vulkan.dll</HintPath>
         </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\VulkanEngine\VulkanEngine.csproj" />
-      <ProjectReference Include="..\VulkanLib\VulkanLib.csproj" />
     </ItemGroup>
 
 </Project>
