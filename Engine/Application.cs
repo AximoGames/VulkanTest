@@ -24,11 +24,7 @@ public abstract class Application
         _windowManagers.Add(windowManager);
     }
 
-    protected virtual void Initialize()
-    {
-        // Window = new OpenTkGameWindow(Name);
-        // MainWindow.RenderFrame += (e) => { OnRenderFrame(); };
-    }
+    protected abstract void Initialize();
 
     protected virtual void OnRenderFrame()
     {

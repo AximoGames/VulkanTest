@@ -40,7 +40,6 @@ public class TestApp : Application
 
     protected override void Initialize()
     {
-        base.Initialize();
         var windowManager = SdlWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
         var window = windowManager.CreateWindow(Name);
