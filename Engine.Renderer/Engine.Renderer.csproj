@@ -7,8 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Engine.Renderer\Engine.Renderer.csproj" />
-      <ProjectReference Include="..\Engine.Vulkan\Engine.Vulkan.csproj" PrivateAssets="compile" />
+        <PackageReference Include="OpenTK.Mathematics" Version="5.0.0-pre.8"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Engine.Descriptors\Engine.Descriptors.csproj" />
     </ItemGroup>
 
 </Project>

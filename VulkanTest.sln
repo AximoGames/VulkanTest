@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Vulkan.Loader", "Eng
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Windowing.Sdl", "Engine.Windowing.Sdl\Engine.Windowing.Sdl.csproj", "{2A96253C-9472-4857-A09A-7464A1A1BEED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Renderer", "Engine.Renderer\Engine.Renderer.csproj", "{FCC6EEFF-3D30-4798-993E-F94E2BAD1C91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Descriptors", "Engine.Descriptors\Engine.Descriptors.csproj", "{8583F158-ACB1-4AEB-AFC8-8332BBDE5A05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{2A96253C-9472-4857-A09A-7464A1A1BEED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A96253C-9472-4857-A09A-7464A1A1BEED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A96253C-9472-4857-A09A-7464A1A1BEED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCC6EEFF-3D30-4798-993E-F94E2BAD1C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCC6EEFF-3D30-4798-993E-F94E2BAD1C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCC6EEFF-3D30-4798-993E-F94E2BAD1C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCC6EEFF-3D30-4798-993E-F94E2BAD1C91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8583F158-ACB1-4AEB-AFC8-8332BBDE5A05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8583F158-ACB1-4AEB-AFC8-8332BBDE5A05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8583F158-ACB1-4AEB-AFC8-8332BBDE5A05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8583F158-ACB1-4AEB-AFC8-8332BBDE5A05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

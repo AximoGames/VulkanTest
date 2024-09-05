@@ -6,9 +6,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Engine.Renderer\Engine.Renderer.csproj" />
-      <ProjectReference Include="..\Engine.Vulkan\Engine.Vulkan.csproj" PrivateAssets="compile" />
-    </ItemGroup>
-
 </Project>
