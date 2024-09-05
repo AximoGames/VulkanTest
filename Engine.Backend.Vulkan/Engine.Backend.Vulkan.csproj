@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RootNamespace>Engine.Vulkan</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,7 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Engine.Descriptors\Engine.Descriptors.csproj" />
-        <ProjectReference Include="..\Engine.Renderer\Engine.Renderer.csproj" />
+        <ProjectReference Include="..\Engine.Backend\Engine.Backend.csproj" />
         <ProjectReference Include="..\Engine\Engine.csproj"/>
     </ItemGroup>
 

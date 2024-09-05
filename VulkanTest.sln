@@ -5,15 +5,15 @@ VisualStudioVersion = 16.0.31605.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.App", "Engine.App\Engine.App.csproj", "{DA84AA56-7C3F-4716-BD77-3AE9A1F7C8DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Vulkan", "Engine.Vulkan\Engine.Vulkan.csproj", "{59200DD7-F167-41B9-8F67-788F6FDAF1AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Backend.Vulkan", "Engine.Backend.Vulkan\Engine.Backend.Vulkan.csproj", "{59200DD7-F167-41B9-8F67-788F6FDAF1AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csproj", "{A8FA060E-77FD-45C0-8B63-93E1E30913F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Vulkan.Loader", "Engine.Vulkan.Loader\Engine.Vulkan.Loader.csproj", "{CDB5F9CF-0379-42A8-9951-0D4CB6426A72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Backend.Vulkan.Loader", "Engine.Backend.Vulkan.Loader\Engine.Backend.Vulkan.Loader.csproj", "{CDB5F9CF-0379-42A8-9951-0D4CB6426A72}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Windowing.Sdl", "Engine.Windowing.Sdl\Engine.Windowing.Sdl.csproj", "{2A96253C-9472-4857-A09A-7464A1A1BEED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Renderer", "Engine.Renderer\Engine.Renderer.csproj", "{FCC6EEFF-3D30-4798-993E-F94E2BAD1C91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Backend", "Engine.Backend\Engine.Backend.csproj", "{FCC6EEFF-3D30-4798-993E-F94E2BAD1C91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Descriptors", "Engine.Descriptors\Engine.Descriptors.csproj", "{8583F158-ACB1-4AEB-AFC8-8332BBDE5A05}"
 EndProject
