@@ -6,7 +6,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal unsafe class VulkanBufferManager : IDisposable
+internal unsafe class VulkanBufferManager : BackendBufferManager
 {
     private readonly VulkanDevice _device;
     private readonly VulkanCommandPool _commandPool;
@@ -17,7 +17,7 @@ internal unsafe class VulkanBufferManager : IDisposable
         _commandPool = commandPool;
     }
 
-    public VulkanBackendBuffer CreateBuffer<T>(BufferType bufferType, int vertexCount) where T : unmanaged
+    public override BackendBuffer CreateBuffer<T>(BufferType bufferType, int vertexCount)
     {
         uint bufferSize = (uint)(Unsafe.SizeOf<T>() * vertexCount);
         VkBuffer buffer;
@@ -35,7 +35,7 @@ internal unsafe class VulkanBufferManager : IDisposable
         return new VulkanBackendBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
-    public void CopyBuffer<T>(T[] source, int sourceStartIndex, VulkanBackendBuffer destinationBuffer, int destinationStartIndex, int count) where T : unmanaged
+    public override void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
     {
         var elementSize = Unsafe.SizeOf<T>();
         uint bufferSize = (uint)(elementSize * count);
@@ -130,7 +130,7 @@ internal unsafe class VulkanBufferManager : IDisposable
         throw new Exception("failed to find suitable memory type!");
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
     }
 }

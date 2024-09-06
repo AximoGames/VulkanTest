@@ -12,7 +12,8 @@ internal unsafe class VulkanPipeline : BackendPipeline
     public VkPipeline PipelineHandle;
     public VkPipelineLayout PipelineLayoutHandle;
 
-    public VulkanPipeline(VulkanDevice device, VkPipeline pipelineHandle, VkPipelineLayout pipelineLayoutHandle)
+    public VulkanPipeline(VulkanDevice device, BackendGraphicsDevice backendGraphicsDevice, VkPipeline pipelineHandle, VkPipelineLayout pipelineLayoutHandle)
+        : base(backendGraphicsDevice)
     {
         _device = device;
         PipelineHandle = pipelineHandle;

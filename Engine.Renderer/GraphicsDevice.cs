@@ -5,30 +5,27 @@ namespace Engine;
 public class GraphicsDevice : IDisposable
 {
     private readonly BackendGraphicsDevice _backendGraphicsDevice;
+    // private Pipeline _pipeline;
+    private ResourceAllocator _resourceAllocator;
 
     public GraphicsDevice(BackendGraphicsDevice backendGraphicsDevice)
     {
         _backendGraphicsDevice = backendGraphicsDevice;
+        _resourceAllocator = new ResourceAllocator(_backendGraphicsDevice.BackendBufferManager);
     }
 
     public void Dispose()
         => _backendGraphicsDevice?.Dispose();
 
-    public void InitializePipeline(Action<PipelineBuilder> callback)
+    public Pipeline CreatePipeline(Action<PipelineBuilder> callback)
     {
-        _backendGraphicsDevice.InitializePipeline(backendBuilder =>
-        {
-            var pipelineBuilder = new PipelineBuilder(backendBuilder);
-            callback(pipelineBuilder);
-        });
+        var pipelineBuilder = new PipelineBuilder(_backendGraphicsDevice.CreatePipelineBuilder());
+        callback(pipelineBuilder);
+        return pipelineBuilder.Build();
     }
 
-    public void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
+    public void InitializeResources(Action<ResourceAllocator> callback)
     {
-        _backendGraphicsDevice.RenderFrame(backendContext =>
-        {
-            var renderContext = new RenderContext(backendContext);
-            draw(renderContext);
-        }, frameName);
+        callback(_resourceAllocator);
     }
 }

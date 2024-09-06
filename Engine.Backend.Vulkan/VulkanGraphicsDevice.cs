@@ -20,7 +20,6 @@ internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
 
     private readonly VkSurfaceKHR _surface;
     public readonly VulkanSwapchain Swapchain;
-    public VulkanPipeline Pipeline;
     private PerFrame[] _perFrameData; // TODO: Pin during init?
     internal readonly VulkanBufferManager VulkanBufferManager;
     public VulkanCommandPool CommandPool;
@@ -105,7 +104,7 @@ internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
 
         Synchronization.Dispose();
 
-        Pipeline.Dispose();
+        // Pipeline.Dispose();
 
         CommandBufferManager.Dispose();
 
@@ -123,17 +122,19 @@ internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
 
     public override BackendPipelineBuilder CreatePipelineBuilder()
     {
-        return new VulkanBackendPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, VulkanBufferManager);
-    }
-    
-    public override void InitializePipeline(Action<BackendPipelineBuilder> callback)
-    {
-        var builder = CreatePipelineBuilder();
-        callback(builder);
-        Pipeline = (VulkanPipeline)builder.Build();
+        return new VulkanBackendPipelineBuilder(VulkanDevice, this, Swapchain, ShaderManager, VulkanBufferManager);
     }
 
-    public override void RenderFrame(Action<BackendRenderContext> draw, [CallerMemberName] string? frameName = null)
+    public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
+
+    // public override void InitializePipeline(Action<BackendPipelineBuilder> callback)
+    // {
+    //     var builder = CreatePipelineBuilder();
+    //     callback(builder);
+    //     Pipeline = (VulkanPipeline)builder.Build();
+    // }
+
+    public override void RenderFrame(Action<BackendRenderContext> draw, BackendPipeline pipeline, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
 
@@ -156,7 +157,7 @@ internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 
-        BeginRenderPass(cmd, Swapchain.Extent);
+        BeginRenderPass(cmd, Swapchain.Extent, ((VulkanPipeline)pipeline).PipelineHandle);
         draw(renderContext);
         EndRenderPass(cmd);
 
@@ -258,7 +259,7 @@ internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
         public VkSemaphore SwapchainReleaseSemaphore;
     }
 
-    public void BeginRenderPass(VkCommandBuffer commandBuffer, Vector2i size)
+    public void BeginRenderPass(VkCommandBuffer commandBuffer, Vector2i size, VkPipeline pipeline)
     {
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
@@ -283,7 +284,7 @@ internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
         };
 
         vkCmdBeginRendering(commandBuffer, &renderingInfo);
-        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, Pipeline.PipelineHandle);
+        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
     }
 
     public void EndRenderPass(VkCommandBuffer commandBuffer)

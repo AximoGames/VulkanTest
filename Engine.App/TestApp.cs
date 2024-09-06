@@ -9,49 +9,43 @@ namespace Engine.App;
 
 public class TestApp : Application
 {
-#if DEBUG
-    private static bool EnableValidationLayers = true;
-#else
-		private static bool EnableValidationLayers = false;
-#endif
+	private GraphicsDevice _graphicsDevice;
+	private Pipeline _pipeline;
+	private Buffer _vertexBuffer;
+	private Buffer _indexBuffer;
+	private float _greenValue = 0.0f;
+	private bool EnableValidationLayers = true;
+	
+	public override string Name => "01-DrawTriangle";
 
-    [NotNull]
-    private GraphicsDevice _graphicsDevice = default!;
+	public Vertex[] Vertices =
+	{
+		new() { Position = new Vector2(-0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
+		new() { Position = new Vector2(0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
+		new() { Position = new Vector2(0.5f, 0.5f), Color = new Vector3(0.0f, 1.0f, 0.0f) },
+		new() { Position = new Vector2(-0.5f, 0.5f), Color = new Vector3(0.0f, 0.0f, 1.0f) }
+	};
 
-    private float _greenValue = 0.0f;
+	public ushort[] Indices =
+	{
+		0, 1, 2, 2, 3, 0,
+	};
 
-    public override string Name => "01-DrawTriangle";
+	protected override void Initialize()
+	{
+		var windowManager = SdlWindowManager.GetInstance();
+		RegisterWindowManager(windowManager);
+		var window = windowManager.CreateWindow(Name);
+		RenderFrame += (e) => { OnRenderFrame(); };
+		
+		_graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window));
+		_pipeline = _graphicsDevice.CreatePipeline(InitializePipeline);
+		_graphicsDevice.InitializeResources(InitializeResources);
+	}
 
-    public Vertex[] Vertices =
-    {
-        new() { Position = new Vector2(-0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new() { Position = new Vector2(0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new() { Position = new Vector2(0.5f, 0.5f), Color = new Vector3(0.0f, 1.0f, 0.0f) },
-        new() { Position = new Vector2(-0.5f, 0.5f), Color = new Vector3(0.0f, 0.0f, 1.0f) }
-    };
-
-    public ushort[] Indices =
-    {
-        0, 1, 2, 2, 3, 0,
-    };
-
-    private Buffer _vertexBuffer;
-    private Buffer _indexBuffer;
-
-    protected override void Initialize()
-    {
-        var windowManager = SdlWindowManager.GetInstance();
-        RegisterWindowManager(windowManager);
-        var window = windowManager.CreateWindow(Name);
-        RenderFrame += (e) => { OnRenderFrame(); };
-        
-        _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window));
-        _graphicsDevice.InitializePipeline(InitializePipeline);
-    }
-
-    protected void InitializePipeline(PipelineBuilder builder)
-    {
-        string vertexShaderCode =
+	private void InitializePipeline(PipelineBuilder builder)
+	{
+       string vertexShaderCode =
             """
             #version 450
 
@@ -78,11 +72,8 @@ public class TestApp : Application
                 outColor = vec4(fragColor, 1.0);
             }
             """;
-
-        _vertexBuffer = builder.CreateVertexBuffer(Vertices);
-        _indexBuffer = builder.CreateIndexBuffer(Indices);
-
-        var vertexLayoutInfo = new VertexLayoutInfo
+            
+                    var vertexLayoutInfo = new VertexLayoutInfo
         {
             BindingDescription = new VertexInputBindingDescription
             {
@@ -112,31 +103,37 @@ public class TestApp : Application
         builder.ConfigureVertexLayout(vertexLayoutInfo);
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
-    }
+   	}
 
-    protected override void OnRenderFrame()
-    {
-        try
-        {
-            _graphicsDevice.RenderFrame(OnDraw);
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"Unexpected error occurred: {ex.Message}");
-        }
-    }
+	private void InitializeResources(ResourceAllocator allocator)
+	{
+		_vertexBuffer = allocator.CreateVertexBuffer(Vertices);
+		_indexBuffer = allocator.CreateIndexBuffer(Indices);
+	}
 
-    private void OnDraw(RenderContext renderContext)
-    {
-        float g = _greenValue + 0.0003f;
-        if (g > 1.0f)
-            g = 0.0f;
-        _greenValue = g;
+	protected override void OnRenderFrame()
+	{
+		try
+		{
+			_pipeline.RenderFrame(OnDraw);
+		}
+		catch (Exception ex)
+		{
+			Log.Error($"Unexpected error occurred: {ex.Message}");
+		}
+	}
 
-        renderContext.Clear(new Color3<Rgb>(0, 0, _greenValue));
-        renderContext.BindVertexBuffer(_vertexBuffer);
-        renderContext.BindIndexBuffer(_indexBuffer);
-        renderContext.DrawIndexed((uint)Indices.Length);
-    }
+	private void OnDraw(RenderContext context)
+	{
+		float g = _greenValue + 0.0003f;
+		if (g > 1.0f)
+			g = 0.0f;
+		_greenValue = g;
+
+		context.Clear(new Color3<Rgb>(0, 0, _greenValue));
+		context.BindVertexBuffer(_vertexBuffer);
+		context.BindIndexBuffer(_indexBuffer);
+		context.DrawIndexed((uint)Indices.Length);
+	}
 }
 

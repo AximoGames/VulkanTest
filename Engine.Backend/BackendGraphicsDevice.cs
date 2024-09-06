@@ -4,8 +4,10 @@ namespace Engine;
 
 public abstract class BackendGraphicsDevice : IDisposable
 {
-    public abstract void Dispose();
+  public abstract void Dispose();
     public abstract BackendPipelineBuilder CreatePipelineBuilder();
-    public abstract void InitializePipeline(Action<BackendPipelineBuilder> callback);
-    public abstract void RenderFrame(Action<BackendRenderContext> draw, [CallerMemberName] string? frameName = null);
+    // public abstract BackendBuffer CreateBuffer<T>(BufferType bufferType, int count) where T : unmanaged;
+    // public abstract void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count) where T : unmanaged;
+    public abstract BackendBufferManager BackendBufferManager { get; }
+    public abstract void RenderFrame(Action<BackendRenderContext> draw, BackendPipeline pipeline, [CallerMemberName] string? frameName = null);
 }

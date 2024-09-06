@@ -9,6 +9,7 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
 {
     private VulkanBufferManager _vulkanBufferManager;
     private readonly VulkanDevice _device;
+    private readonly BackendGraphicsDevice _backendGraphicsDevice;
     private readonly VulkanSwapchain _swapchain;
     private readonly VulkanShaderManager _shaderManager;
     private VkPipeline PipelineHandle;
@@ -16,9 +17,10 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
     private VertexLayoutInfo _vertexLayoutInfo;
 
-    internal VulkanBackendPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
+    internal VulkanBackendPipelineBuilder(VulkanDevice device, BackendGraphicsDevice backendGraphicsDevice, VulkanSwapchain swapchain, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
     {
         _device = device;
+        _backendGraphicsDevice = backendGraphicsDevice;
         _swapchain = swapchain;
         _shaderManager = shaderManager;
         _vulkanBufferManager = vulkanBufferManager;
@@ -187,7 +189,7 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
         fragShaderModule.Free();
         vertShaderModule.Free();
 
-        return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle);
+        return new VulkanPipeline(_device, _backendGraphicsDevice, PipelineHandle, PipelineLayoutHandle);
     }
 
     public override void ConfigureShader(string shaderCode, ShaderKind shaderKind)

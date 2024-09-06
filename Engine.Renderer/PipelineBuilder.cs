@@ -4,9 +4,9 @@ public class PipelineBuilder
 {
     private readonly BackendPipelineBuilder _backendPipelineBuilder;
 
-    internal PipelineBuilder(BackendPipelineBuilder pipelineBuilder)
+    internal PipelineBuilder(BackendPipelineBuilder backendPipelineBuilder)
     {
-        _backendPipelineBuilder = pipelineBuilder;
+        _backendPipelineBuilder = backendPipelineBuilder;
     }
 
     public void ConfigureShader(string shaderCode, ShaderKind shaderKind)
@@ -14,28 +14,13 @@ public class PipelineBuilder
         _backendPipelineBuilder.ConfigureShader(shaderCode, shaderKind);
     }
 
-    public Buffer CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
-    {
-        var backendBuffer = _backendPipelineBuilder.CreateBuffer<T>(BufferType.Vertex, vertices.Length);
-        _backendPipelineBuilder.CopyBuffer(vertices, 0, backendBuffer, 0, vertices.Length);
-        return new Buffer(backendBuffer);
-    }
-
-    public Buffer CreateIndexBuffer<T>(T[] indices) where T : unmanaged
-    {
-        var backendBuffer = _backendPipelineBuilder.CreateBuffer<T>(BufferType.Index, indices.Length);
-        _backendPipelineBuilder.CopyBuffer(indices, 0, backendBuffer, 0, indices.Length);
-        return new Buffer(backendBuffer);
-    }
-
     public void ConfigureVertexLayout(VertexLayoutInfo vertexLayoutInfo)
     {
         _backendPipelineBuilder.ConfigureVertexLayout(vertexLayoutInfo);
     }
 
-    internal Action<BackendPipelineBuilder> Build => builder =>
+    internal Pipeline Build()
     {
-        // Transfer any additional configuration from this builder to the backend builder
-        // This might include transferring shader configurations, vertex layouts, etc.
-    };
+        return new Pipeline(_backendPipelineBuilder.Build());
+    }
 }
