@@ -30,7 +30,7 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
     public override BackendBuffer CreateIndexBuffer(ushort[] indices)
         => _vulkanBufferManager.CreateIndexBuffer(indices);
 
-    internal VulkanPipeline Build()
+    public override BackendPipeline Build()
     {
         VulkanShaderModule vertShaderModule = _shaderModules[ShaderKind.VertexShader];
         VulkanShaderModule fragShaderModule = _shaderModules[ShaderKind.FragmentShader];

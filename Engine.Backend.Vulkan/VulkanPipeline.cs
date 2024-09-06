@@ -6,20 +6,20 @@ using Vortice.ShaderCompiler;
 
 namespace Engine.Vulkan;
 
-internal unsafe class VulkanPipeline : IDisposable
+internal unsafe class VulkanPipeline : BackendPipeline
 {
     private readonly VulkanDevice _device;
     public VkPipeline PipelineHandle;
     public VkPipelineLayout PipelineLayoutHandle;
 
-    public VulkanPipeline(VulkanDevice device , VkPipeline pipelineHandle, VkPipelineLayout pipelineLayoutHandle)
+    public VulkanPipeline(VulkanDevice device, VkPipeline pipelineHandle, VkPipelineLayout pipelineLayoutHandle)
     {
         _device = device;
         PipelineHandle = pipelineHandle;
         PipelineLayoutHandle = pipelineLayoutHandle;
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         if (PipelineHandle != VkPipeline.Null)
         {

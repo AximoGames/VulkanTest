@@ -2,10 +2,12 @@ namespace Engine;
 
 public class Buffer
 {
-    protected Buffer(Type elementType)
+    internal BackendBuffer BackendBuffer { get; }
+
+    internal Buffer(BackendBuffer backendBuffer)
     {
-        ElementType = elementType;
+        BackendBuffer = backendBuffer;
     }
 
-    public Type ElementType { get; private set; }
+    public Type ElementType => BackendBuffer.ElementType;
 }

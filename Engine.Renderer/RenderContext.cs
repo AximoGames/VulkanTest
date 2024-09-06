@@ -5,20 +5,25 @@ namespace Engine;
 
 public class RenderContext
 {
+    private readonly BackendRenderContext _backendContext;
+
+    internal RenderContext(BackendRenderContext backendContext)
+    {
+        _backendContext = backendContext;
+    }
+
     public void BindVertexBuffer(Buffer buffer, uint binding = 0)
-        => throw new NotImplementedException();
+        => _backendContext.BindVertexBuffer(buffer.BackendBuffer, binding);
 
     public void BindIndexBuffer(Buffer buffer)
-        => throw new NotImplementedException();
+        => _backendContext.BindIndexBuffer(buffer.BackendBuffer);
 
-    /// <remarks>Consider using <see cref="Engine.Backend.Vulkan.Engine.Backend.Vulkan.VulkanGraphicsDevice.ClearColor"/></remarks>
     public void Clear(Color3<Rgb> clearColor)
-        => throw new NotImplementedException();
+        => _backendContext.Clear(clearColor);
 
-    /// <remarks>Consider using <see cref="Engine.Backend.Vulkan.Engine.Backend.Vulkan.VulkanGraphicsDevice.ClearColor"/></remarks>
     public void Clear(Color3<Rgb> clearColor, Box2i rect)
-        => throw new NotImplementedException();
+        => _backendContext.Clear(clearColor, rect);
 
     public void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0)
-        => throw new NotImplementedException();
+        => _backendContext.DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }

@@ -121,11 +121,16 @@ internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
         VulkanInstance.Dispose();
     }
 
+    public override BackendPipelineBuilder CreatePipelineBuilder()
+    {
+        return new VulkanBackendPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, VulkanBufferManager);
+    }
+    
     public override void InitializePipeline(Action<BackendPipelineBuilder> callback)
     {
-        var builder = new VulkanBackendPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, VulkanBufferManager);
+        var builder = CreatePipelineBuilder();
         callback(builder);
-        Pipeline = builder.Build();
+        Pipeline = (VulkanPipeline)builder.Build();
     }
 
     public override void RenderFrame(Action<BackendRenderContext> draw, [CallerMemberName] string? frameName = null)
