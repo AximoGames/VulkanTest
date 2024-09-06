@@ -27,7 +27,7 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
     public override BackendBuffer CreateVertexBuffer<T>(T[] vertices)
         => _vulkanBufferManager.CreateVertexBuffer(vertices);
 
-    public override BackendBuffer CreateIndexBuffer(ushort[] indices)
+    public override BackendBuffer CreateIndexBuffer<T>(T[] indices)
         => _vulkanBufferManager.CreateIndexBuffer(indices);
 
     public override BackendPipeline Build()

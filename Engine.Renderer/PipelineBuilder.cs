@@ -20,7 +20,7 @@ public class PipelineBuilder
         return new Buffer(backendBuffer);
     }
 
-    public Buffer CreateIndexBuffer(ushort[] indices)
+    public Buffer CreateIndexBuffer<T>(T[] indices) where T : unmanaged 
     {
         var backendBuffer = _backendPipelineBuilder.CreateIndexBuffer(indices);
         return new Buffer(backendBuffer);

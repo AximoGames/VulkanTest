@@ -46,18 +46,18 @@ internal unsafe class VulkanBufferManager : IDisposable
         return new VulkanBackendBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
-    public VulkanBackendBuffer CreateIndexBuffer(ushort[] indices)
+    public VulkanBackendBuffer CreateIndexBuffer<T>(T[] indices) where T : unmanaged
     {
         VkBuffer buffer;
         VkDeviceMemory bufferMemory;
 
-        uint bufferSize = (uint)(Marshal.SizeOf<ushort>() * indices.Length);
+        uint bufferSize = (uint)(Marshal.SizeOf<T>() * indices.Length);
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
 
-        fixed (ushort* indicesPtr = &indices[0])
+        fixed (T* indicesPtr = &indices[0])
         {
             void* data;
             vkMapMemory(_device.LogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
