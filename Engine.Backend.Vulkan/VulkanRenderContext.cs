@@ -26,13 +26,13 @@ internal unsafe class VulkanBackendRenderContext : BackendRenderContext
     public override void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0)
         => Vortice.Vulkan.Vulkan.vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 
-    /// <remarks>Consider using <see cref="VulkanBackendGraphicsDevice.ClearColor"/> instead</remarks>
+    /// <remarks>Consider using <see cref="VulkanDevice.ClearColor"/> instead</remarks>
     public override void Clear(Color3<Rgb> clearColor)
     {
         Clear(clearColor, new Box2i(Vector2i.Zero, _extent));
     }
 
-    /// <remarks>Consider using <see cref="VulkanBackendGraphicsDevice.ClearColor"/> instead</remarks>
+    /// <remarks>Consider using <see cref="VulkanDevice.ClearColor"/> instead</remarks>
     public override void Clear(Color3<Rgb> clearColor, Box2i rect)
     {
         VkClearAttachment clearAttachment = new VkClearAttachment

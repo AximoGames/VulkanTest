@@ -2,11 +2,11 @@ namespace Engine;
 
 public abstract class BackendPipeline : IDisposable
 {
-    public BackendGraphicsDevice GraphicsDevice { get; private set; }
+    public BackendDevice Device { get; private set; }
     public abstract void Dispose();
 
-    public BackendPipeline(BackendGraphicsDevice graphicsDevice)
+    public BackendPipeline(BackendDevice device)
     {
-        GraphicsDevice = graphicsDevice;
+        Device = device;
     }
 }

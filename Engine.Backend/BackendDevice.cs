@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace Engine;
 
-public abstract class BackendGraphicsDevice : IDisposable
+public abstract class BackendDevice : IDisposable
 {
   public abstract void Dispose();
     public abstract BackendPipelineBuilder CreatePipelineBuilder();

@@ -13,7 +13,7 @@ public class Pipeline
 
     public void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
     {
-        BackendPipeline.GraphicsDevice.RenderFrame(backendContext =>
+        BackendPipeline.Device.RenderFrame(backendContext =>
         {
             var drawContext = new RenderContext(backendContext);
             draw(drawContext);

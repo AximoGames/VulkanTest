@@ -1,12 +1,21 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
+using System.Collections.Generic;
+using System.Text;
+using Vortice.ShaderCompiler;
+using OpenTK.Mathematics;
 
 namespace Engine.Vulkan;
 
-internal unsafe class VulkanDevice : IDisposable
+internal unsafe sealed class VulkanDevice : BackendDevice
 {
+    private static readonly string _engineName = "Vortice";
+
+    public readonly VulkanInstance VulkanInstance;
     public VkPhysicalDevice PhysicalDevice;
     public VkDevice LogicalDevice;
     public VkQueue GraphicsQueue;
@@ -14,14 +23,54 @@ internal unsafe class VulkanDevice : IDisposable
 
     public (uint GraphicsFamily, uint PresentFamily) QueueFamilies { get; private set; }
 
-    private readonly VulkanInstance _instance;
     private readonly VkSurfaceKHR _surface;
+    public readonly VulkanSwapchain Swapchain;
+    private PerFrame[] _perFrameData;
+    internal readonly VulkanBufferManager VulkanBufferManager;
+    public VulkanCommandPool CommandPool;
+    public VulkanSynchronization Synchronization;
 
-    public VulkanDevice(VulkanInstance instance, VkSurfaceKHR surface)
+    public uint CurrentSwapchainImageIndex;
+
+    public VulkanShaderManager ShaderManager { get; private set; }
+
+    public VulkanCommandBufferManager CommandBufferManager;
+
+    public VkClearColorValue? ClearColor { get; set; }
+
+    public VulkanDevice(string applicationName, bool enableValidation, Window window)
     {
-        _instance = instance;
-        _surface = surface;
+        // Need to initialize
+        vkInitialize().CheckResult();
+
+        VulkanInstance = new VulkanInstance(applicationName, enableValidation, window.WindowManager);
+
+        _surface = CreateSurface(window);
+
         CreateDevice();
+
+        ShaderManager = new VulkanShaderManager(this);
+
+        // Create swap chain
+        Swapchain = new VulkanSwapchain(this, window, _surface);
+
+        // Initialize _perFrame array
+        _perFrameData = new PerFrame[Swapchain.ImageCount];
+
+        CommandPool = new VulkanCommandPool(this);
+        Synchronization = new VulkanSynchronization(this);
+
+        VulkanBufferManager = new VulkanBufferManager(this, CommandPool);
+
+        CommandBufferManager = new VulkanCommandBufferManager(this, CommandPool);
+
+        for (var i = 0; i < _perFrameData.Length; i++)
+        {
+            _perFrameData[i].QueueSubmitFence = Synchronization.CreateFence();
+
+            _perFrameData[i].PrimaryCommandPool = new VulkanCommandPool(this);
+            _perFrameData[i].PrimaryCommandBuffer = _perFrameData[i].PrimaryCommandPool.AllocateCommandBuffer();
+        }
     }
 
     private void CreateDevice()
@@ -32,7 +81,7 @@ internal unsafe class VulkanDevice : IDisposable
 
     private void PickPhysicalDevice()
     {
-        var physicalDevices = vkEnumeratePhysicalDevices(_instance.Instance);
+        var physicalDevices = vkEnumeratePhysicalDevices(VulkanInstance.Instance);
         PhysicalDevice = physicalDevices[0]; // For simplicity, we're just picking the first device
 
         vkGetPhysicalDeviceProperties(PhysicalDevice, out VkPhysicalDeviceProperties properties);
@@ -110,11 +159,227 @@ internal unsafe class VulkanDevice : IDisposable
         return (graphicsFamily, presentFamily);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        if (LogicalDevice != VkDevice.Null)
+        // Don't release anything until the GPU is completely idle.
+        vkDeviceWaitIdle(LogicalDevice);
+
+        VulkanBufferManager.Dispose();
+
+        Swapchain.Dispose();
+
+        for (var i = 0; i < _perFrameData.Length; i++)
         {
-            vkDestroyDevice(LogicalDevice, null);
+            vkDestroyFence(LogicalDevice, _perFrameData[i].QueueSubmitFence, null);
+
+            if (_perFrameData[i].PrimaryCommandBuffer != IntPtr.Zero)
+            {
+                _perFrameData[i].PrimaryCommandPool.FreeCommandBuffer(_perFrameData[i].PrimaryCommandBuffer);
+                _perFrameData[i].PrimaryCommandBuffer = IntPtr.Zero;
+            }
+
+            _perFrameData[i].PrimaryCommandPool.Dispose();
+
+            if (_perFrameData[i].SwapchainAcquireSemaphore != VkSemaphore.Null)
+            {
+                vkDestroySemaphore(LogicalDevice, _perFrameData[i].SwapchainAcquireSemaphore, null);
+                _perFrameData[i].SwapchainAcquireSemaphore = VkSemaphore.Null;
+            }
+
+            if (_perFrameData[i].SwapchainReleaseSemaphore != VkSemaphore.Null)
+            {
+                vkDestroySemaphore(LogicalDevice, _perFrameData[i].SwapchainReleaseSemaphore, null);
+                _perFrameData[i].SwapchainReleaseSemaphore = VkSemaphore.Null;
+            }
         }
+
+        Synchronization.Dispose();
+
+        // Pipeline.Dispose();
+
+        CommandBufferManager.Dispose();
+
+        CommandPool.Dispose();
+
+        vkDestroyDevice(LogicalDevice, null);
+
+        if (_surface != VkSurfaceKHR.Null)
+        {
+            vkDestroySurfaceKHR(VulkanInstance.Instance, _surface, null);
+        }
+
+        VulkanInstance.Dispose();
+    }
+
+    public override BackendPipelineBuilder CreatePipelineBuilder()
+    {
+        return new VulkanBackendPipelineBuilder(this, Swapchain, ShaderManager, VulkanBufferManager);
+    }
+
+    public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
+
+    // public override void InitializePipeline(Action<BackendPipelineBuilder> callback)
+    // {
+    //     var builder = CreatePipelineBuilder();
+    //     callback(builder);
+    //     Pipeline = (VulkanPipeline)builder.Build();
+    // }
+
+    public override void RenderFrame(Action<BackendRenderContext> draw, BackendPipeline pipeline, [CallerMemberName] string? frameName = null)
+    {
+        VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
+
+        // Handle outdated error in acquire.
+        if (result == VkResult.SuboptimalKHR || result == VkResult.ErrorOutOfDateKHR)
+        {
+            result = AcquireNextImage(out CurrentSwapchainImageIndex);
+        }
+
+        if (result != VkResult.Success)
+        {
+            vkDeviceWaitIdle(LogicalDevice);
+            return;
+        }
+
+        // Begin command recording
+        VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
+
+        var renderContext = new VulkanBackendRenderContext(this, cmd, Swapchain.Extent);
+
+        CommandBufferManager.BeginCommandBuffer(cmd);
+
+        BeginRenderPass(cmd, Swapchain.Extent, ((VulkanPipeline)pipeline).PipelineHandle);
+        draw(renderContext);
+        EndRenderPass(cmd);
+
+        CommandBufferManager.EndCommandBuffer(cmd);
+
+        if (_perFrameData[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore == VkSemaphore.Null)
+        {
+            _perFrameData[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore = Synchronization.CreateSemaphore();
+        }
+
+        VkPipelineStageFlags wait_stage = VkPipelineStageFlags.ColorAttachmentOutput;
+        VkSemaphore waitSemaphore = _perFrameData[CurrentSwapchainImageIndex].SwapchainAcquireSemaphore;
+        VkSemaphore signalSemaphore = _perFrameData[CurrentSwapchainImageIndex].SwapchainReleaseSemaphore;
+
+        VkSubmitInfo submitInfo = new VkSubmitInfo
+        {
+            commandBufferCount = 1u,
+            pCommandBuffers = &cmd,
+            waitSemaphoreCount = 1u,
+            pWaitSemaphores = &waitSemaphore,
+            pWaitDstStageMask = &wait_stage,
+            signalSemaphoreCount = 1u,
+            pSignalSemaphores = &signalSemaphore
+        };
+
+        // Submit command buffer to graphics queue
+        vkQueueSubmit(GraphicsQueue, submitInfo, _perFrameData[CurrentSwapchainImageIndex].QueueSubmitFence);
+
+        result = PresentImage(CurrentSwapchainImageIndex);
+
+        // Handle Outdated error in present.
+        if (result == VkResult.SuboptimalKHR || result == VkResult.ErrorOutOfDateKHR)
+        {
+            // Handle resize if needed
+        }
+        else if (result != VkResult.Success)
+        {
+            Log.Error("Failed to present swapchain image.");
+        }
+    }
+
+    private VkResult AcquireNextImage(out uint imageIndex)
+    {
+        VkSemaphore acquireSemaphore = Synchronization.AcquireSemaphore();
+
+        VkResult result = vkAcquireNextImageKHR(LogicalDevice, Swapchain.Handle, ulong.MaxValue, acquireSemaphore, VkFence.Null, out imageIndex);
+
+        if (result != VkResult.Success)
+        {
+            Synchronization.RecycleSemaphore(acquireSemaphore);
+            return result;
+        }
+
+        if (_perFrameData[imageIndex].QueueSubmitFence != VkFence.Null)
+        {
+            Synchronization.WaitForFence(_perFrameData[imageIndex].QueueSubmitFence);
+            Synchronization.ResetFence(_perFrameData[imageIndex].QueueSubmitFence);
+        }
+
+        if (_perFrameData[imageIndex].PrimaryCommandPool.Handle != VkCommandPool.Null)
+        {
+            _perFrameData[imageIndex].PrimaryCommandPool.Reset();
+        }
+
+        // Recycle the old semaphore back into the semaphore manager.
+        Synchronization.RecycleSemaphore(_perFrameData[imageIndex].SwapchainAcquireSemaphore);
+
+        _perFrameData[imageIndex].SwapchainAcquireSemaphore = acquireSemaphore;
+
+        return VkResult.Success;
+    }
+
+    private VkResult PresentImage(uint imageIndex)
+    {
+        return vkQueuePresentKHR(PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, Swapchain.Handle, imageIndex);
+    }
+
+    public static implicit operator VkDevice(VulkanDevice device) => device.LogicalDevice;
+
+    #region Private Methods
+
+    private VkSurfaceKHR CreateSurface(Window window)
+    {
+        // GLFW.CreateWindowSurface(new VkHandle(VulkanInstance.Instance.Handle), window.WindowPtr, null, out var handle);
+        var handle = window.CreateVulkanSurfaceHandle(VulkanInstance.Instance.Handle);
+        return new VkSurfaceKHR((ulong)handle);
+    }
+
+    #endregion
+
+    private struct PerFrame
+    {
+        public VkImage Image;
+        public VkImageView ImageView;
+        public VkFence QueueSubmitFence;
+        public VulkanCommandPool PrimaryCommandPool;
+        public VkCommandBuffer PrimaryCommandBuffer;
+        public VkSemaphore SwapchainAcquireSemaphore;
+        public VkSemaphore SwapchainReleaseSemaphore;
+    }
+
+    public void BeginRenderPass(VkCommandBuffer commandBuffer, Vector2i size, VkPipeline pipeline)
+    {
+        VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
+        {
+            imageView = Swapchain.GetImageView(CurrentSwapchainImageIndex),
+            imageLayout = VkImageLayout.ColorAttachmentOptimal,
+            loadOp = VkAttachmentLoadOp.Load,
+            storeOp = VkAttachmentStoreOp.Store,
+        };
+
+        if (ClearColor.HasValue)
+        {
+            colorAttachmentInfo.loadOp = VkAttachmentLoadOp.Clear;
+            colorAttachmentInfo.clearValue = new VkClearValue { color = ClearColor.Value };
+        }
+
+        VkRenderingInfo renderingInfo = new VkRenderingInfo
+        {
+            renderArea = new VkRect2D(VkOffset2D.Zero, size.ToVkExtent2D()),
+            layerCount = 1,
+            colorAttachmentCount = 1,
+            pColorAttachments = &colorAttachmentInfo
+        };
+
+        vkCmdBeginRendering(commandBuffer, &renderingInfo);
+        vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
+    }
+
+    public void EndRenderPass(VkCommandBuffer commandBuffer)
+    {
+        vkCmdEndRendering(commandBuffer);
     }
 }

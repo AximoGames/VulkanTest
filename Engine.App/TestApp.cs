@@ -120,6 +120,7 @@ public class TestApp : Application
 		catch (Exception ex)
 		{
 			Log.Error($"Unexpected error occurred: {ex.Message}");
+			throw;
 		}
 	}
 
