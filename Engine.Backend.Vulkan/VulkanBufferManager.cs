@@ -6,12 +6,6 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-public enum BufferType
-{
-    Vertex,
-    Index,
-}
-
 internal unsafe class VulkanBufferManager : IDisposable
 {
     private readonly VulkanDevice _device;
@@ -29,13 +23,13 @@ internal unsafe class VulkanBufferManager : IDisposable
         VkBuffer buffer;
         VkDeviceMemory bufferMemory;
 
-        VkBufferUsageFlags vkBufferType = bufferType switch 
+        VkBufferUsageFlags vkBufferType = bufferType switch
         {
             BufferType.Vertex => VkBufferUsageFlags.VertexBuffer,
             BufferType.Index => VkBufferUsageFlags.IndexBuffer,
             _ => throw new InvalidOperationException(),
         };
-        
+
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | vkBufferType, VkMemoryPropertyFlags.DeviceLocal, out buffer, out bufferMemory);
 
         return new VulkanBackendBuffer(typeof(T), _device, buffer, bufferMemory);
@@ -43,7 +37,8 @@ internal unsafe class VulkanBufferManager : IDisposable
 
     public void CopyBuffer<T>(T[] sourceVertices, int sourceStartIndex, VulkanBackendBuffer destinationBuffer, int destinationStartIndex, int vertexCount) where T : unmanaged
     {
-        uint bufferSize = (uint)(Unsafe.SizeOf<T>() * vertexCount);
+        var elementSize = Unsafe.SizeOf<T>();
+        uint bufferSize = (uint)(elementSize * vertexCount);
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
@@ -56,7 +51,7 @@ internal unsafe class VulkanBufferManager : IDisposable
             vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
         }
 
-        uint destinationOffset = (uint)(Unsafe.SizeOf<T>() * destinationStartIndex);
+        uint destinationOffset = (uint)(elementSize * destinationStartIndex);
         CopyBuffer(stagingBuffer, ((VulkanBackendBuffer)destinationBuffer).Buffer, bufferSize, 0, destinationOffset);
 
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
@@ -71,9 +66,7 @@ internal unsafe class VulkanBufferManager : IDisposable
         bufferInfo.sharingMode = VkSharingMode.Exclusive;
 
         if (vkCreateBuffer(_device.LogicalDevice, &bufferInfo, null, out buffer) != VkResult.Success)
-        {
             throw new Exception("failed to create buffer!");
-        }
 
         VkMemoryRequirements memRequirements;
         vkGetBufferMemoryRequirements(_device.LogicalDevice, buffer, out memRequirements);
@@ -131,9 +124,7 @@ internal unsafe class VulkanBufferManager : IDisposable
         for (int i = 0; i < memProperties.memoryTypeCount; i++)
         {
             if ((typeFilter & (1 << i)) != 0 && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-            {
                 return (uint)i;
-            }
         }
 
         throw new Exception("failed to find suitable memory type!");
@@ -141,9 +132,5 @@ internal unsafe class VulkanBufferManager : IDisposable
 
     public void Dispose()
     {
-        // vkDestroyBuffer(_device.LogicalDevice, VertexBuffer, null);
-        // vkFreeMemory(_device.LogicalDevice, VertexBufferMemory, null);
-        // vkDestroyBuffer(_device.LogicalDevice, IndexBuffer, null);
-        // vkFreeMemory(_device.LogicalDevice, IndexBufferMemory, null);
     }
 }
