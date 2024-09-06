@@ -2,8 +2,8 @@ namespace Engine.Vulkan;
 
 public static class VulkanGraphicsFactory
 {
-    public static GraphicsDevice CreateVulkanGraphicsDevice(string applicationName, bool enableValidation, Window window)
+    public static BackendGraphicsDevice CreateVulkanGraphicsDevice(string applicationName, bool enableValidation, Window window)
     {
-        return new VulkanGraphicsDevice(applicationName, enableValidation, window);
+        return new VulkanBackendGraphicsDevice(applicationName, enableValidation, window);
     }
 }

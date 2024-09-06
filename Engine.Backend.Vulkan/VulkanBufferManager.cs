@@ -17,7 +17,7 @@ internal unsafe class VulkanBufferManager : IDisposable
         _commandPool = commandPool;
     }
 
-    public VulkanBuffer CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
+    public VulkanBackendBuffer CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
     {
         VkBuffer buffer;
         VkDeviceMemory bufferMemory;
@@ -43,10 +43,10 @@ internal unsafe class VulkanBufferManager : IDisposable
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
 
-        return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
+        return new VulkanBackendBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
-    public VulkanBuffer CreateIndexBuffer(ushort[] indices)
+    public VulkanBackendBuffer CreateIndexBuffer(ushort[] indices)
     {
         VkBuffer buffer;
         VkDeviceMemory bufferMemory;
@@ -72,7 +72,7 @@ internal unsafe class VulkanBufferManager : IDisposable
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
 
-        return new VulkanBuffer(typeof(ushort), _device, buffer, bufferMemory);
+        return new VulkanBackendBuffer(typeof(ushort), _device, buffer, bufferMemory);
     }
 
     private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)

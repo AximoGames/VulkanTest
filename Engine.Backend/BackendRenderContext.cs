@@ -3,10 +3,10 @@ using OpenTK.Mathematics;
 
 namespace Engine;
 
-public abstract class RenderContext
+public abstract class BackendRenderContext
 {
-    public abstract void BindVertexBuffer(Buffer buffer, uint binding = 0);
-    public abstract void BindIndexBuffer(Buffer buffer);
+    public abstract void BindVertexBuffer(BackendBuffer backendBuffer, uint binding = 0);
+    public abstract void BindIndexBuffer(BackendBuffer backendBuffer);
 
     /// <remarks>Consider using <see cref="Engine.Backend.Vulkan.Engine.Backend.Vulkan.VulkanGraphicsDevice.ClearColor"/></remarks>
     public abstract void Clear(Color3<Rgb> clearColor);

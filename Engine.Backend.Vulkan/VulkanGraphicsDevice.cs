@@ -11,7 +11,7 @@ using OpenTK.Mathematics;
 
 namespace Engine.Vulkan;
 
-internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
+internal unsafe sealed class VulkanBackendGraphicsDevice : BackendGraphicsDevice
 {
     private static readonly string _engineName = "Vortice";
 
@@ -34,7 +34,7 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
 
     public VkClearColorValue? ClearColor { get; set; }
 
-    public VulkanGraphicsDevice(string applicationName, bool enableValidation, Window window)
+    public VulkanBackendGraphicsDevice(string applicationName, bool enableValidation, Window window)
     {
         // Need to initialize
         vkInitialize().CheckResult();
@@ -121,14 +121,14 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
         VulkanInstance.Dispose();
     }
 
-    public override void InitializePipeline(Action<PipelineBuilder> callback)
+    public override void InitializePipeline(Action<BackendPipelineBuilder> callback)
     {
-        var builder = new VulkanPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, VulkanBufferManager);
+        var builder = new VulkanBackendPipelineBuilder(VulkanDevice, Swapchain, ShaderManager, VulkanBufferManager);
         callback(builder);
         Pipeline = builder.Build();
     }
 
-    public override void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
+    public override void RenderFrame(Action<BackendRenderContext> draw, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
 
@@ -147,7 +147,7 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
         // Begin command recording
         VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
-        var renderContext = new VulkanRenderContext(VulkanDevice, cmd, Swapchain.Extent);
+        var renderContext = new VulkanBackendRenderContext(VulkanDevice, cmd, Swapchain.Extent);
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 
@@ -229,7 +229,7 @@ internal unsafe sealed class VulkanGraphicsDevice : GraphicsDevice
         return vkQueuePresentKHR(VulkanDevice.PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, Swapchain.Handle, imageIndex);
     }
 
-    public static implicit operator VkDevice(VulkanGraphicsDevice device) => device.VulkanDevice.LogicalDevice;
+    public static implicit operator VkDevice(VulkanBackendGraphicsDevice device) => device.VulkanDevice.LogicalDevice;
 
     #region Private Methods
 
