@@ -16,13 +16,15 @@ public class PipelineBuilder
 
     public Buffer CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
     {
-        var backendBuffer = _backendPipelineBuilder.CreateBuffer(BufferType.Vertex, vertices);
+        var backendBuffer = _backendPipelineBuilder.CreateBuffer<T>(BufferType.Vertex, vertices.Length);
+        _backendPipelineBuilder.CopyBuffer(vertices, 0, backendBuffer, 0, vertices.Length);
         return new Buffer(backendBuffer);
     }
 
     public Buffer CreateIndexBuffer<T>(T[] indices) where T : unmanaged
     {
-        var backendBuffer = _backendPipelineBuilder.CreateBuffer(BufferType.Index, indices);
+        var backendBuffer = _backendPipelineBuilder.CreateBuffer<T>(BufferType.Index, indices.Length);
+        _backendPipelineBuilder.CopyBuffer(indices, 0, backendBuffer, 0, indices.Length);
         return new Buffer(backendBuffer);
     }
 

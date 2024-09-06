@@ -35,15 +35,15 @@ internal unsafe class VulkanBufferManager : IDisposable
         return new VulkanBackendBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
-    public void CopyBuffer<T>(T[] sourceVertices, int sourceStartIndex, VulkanBackendBuffer destinationBuffer, int destinationStartIndex, int vertexCount) where T : unmanaged
+    public void CopyBuffer<T>(T[] source, int sourceStartIndex, VulkanBackendBuffer destinationBuffer, int destinationStartIndex, int count) where T : unmanaged
     {
         var elementSize = Unsafe.SizeOf<T>();
-        uint bufferSize = (uint)(elementSize * vertexCount);
+        uint bufferSize = (uint)(elementSize * count);
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out stagingBuffer, out stagingBufferMemory);
 
-        fixed (void* verticesPtr = &sourceVertices[sourceStartIndex])
+        fixed (void* verticesPtr = &source[sourceStartIndex])
         {
             void* data;
             vkMapMemory(_device.LogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);

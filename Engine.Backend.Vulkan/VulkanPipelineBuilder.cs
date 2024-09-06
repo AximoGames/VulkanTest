@@ -24,13 +24,12 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
         _vulkanBufferManager = vulkanBufferManager;
     }
 
-    public override BackendBuffer CreateBuffer<T>(BufferType bufferType, T[] vertices)
-    {
-        var buffer = _vulkanBufferManager.CreateBuffer<T>(bufferType, vertices.Length);
-        _vulkanBufferManager.CopyBuffer(vertices, 0, buffer, 0, vertices.Length);
-        return buffer;
-    }
-    
+    public override BackendBuffer CreateBuffer<T>(BufferType bufferType, int count)
+        => _vulkanBufferManager.CreateBuffer<T>(bufferType, count);
+
+    public override void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
+        => _vulkanBufferManager.CopyBuffer(source, 0, (VulkanBackendBuffer)destinationBuffer, 0, count);
+
     public override BackendPipeline Build()
     {
         VulkanShaderModule vertShaderModule = _shaderModules[ShaderKind.VertexShader];
