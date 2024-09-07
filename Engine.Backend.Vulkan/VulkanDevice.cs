@@ -248,7 +248,8 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 
-        BeginRenderPass(cmd, Swapchain.Extent, ((VulkanPipeline)pipeline).PipelineHandle);
+        BeginRenderPass(cmd, Swapchain.Extent);
+        BindPipeline(cmd, ((VulkanPipeline)pipeline).PipelineHandle);
         draw(renderContext);
         EndRenderPass(cmd);
 
@@ -350,7 +351,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         public VkSemaphore SwapchainReleaseSemaphore;
     }
 
-    public void BeginRenderPass(VkCommandBuffer commandBuffer, Vector2i size, VkPipeline pipeline)
+    public void BeginRenderPass(VkCommandBuffer commandBuffer, Vector2i size)
     {
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
@@ -375,6 +376,10 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         };
 
         vkCmdBeginRendering(commandBuffer, &renderingInfo);
+    }
+
+    public void BindPipeline(VkCommandBuffer commandBuffer, VkPipeline pipeline)
+    {
         vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.Graphics, pipeline);
     }
 

@@ -51,4 +51,9 @@ internal unsafe class VulkanBackendRenderContext : BackendRenderContext
 
         Vortice.Vulkan.Vulkan.vkCmdClearAttachments(_commandBuffer, 1, &clearAttachment, 1, &clearRect);
     }
+
+    public override void BindPipeline(BackendPipeline pipeline)
+    {
+        _device.BindPipeline(_commandBuffer, ((VulkanPipeline)pipeline).PipelineHandle);
+    }
 }
