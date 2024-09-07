@@ -217,15 +217,8 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     }
 
     public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
-
-    // public override void InitializePipeline(Action<BackendPipelineBuilder> callback)
-    // {
-    //     var builder = CreatePipelineBuilder();
-    //     callback(builder);
-    //     Pipeline = (VulkanPipeline)builder.Build();
-    // }
-
-    public override void RenderFrame(Action<BackendRenderContext> draw, BackendPipeline pipeline, [CallerMemberName] string? frameName = null)
+    
+    public override void RenderFrame(Action<BackendRenderFrameContext> action, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
 
@@ -244,14 +237,9 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         // Begin command recording
         VkCommandBuffer cmd = _perFrameData[CurrentSwapchainImageIndex].PrimaryCommandBuffer;
 
-        var renderContext = new VulkanBackendRenderContext(this, cmd, Swapchain.Extent);
-
         CommandBufferManager.BeginCommandBuffer(cmd);
 
-        BeginRenderPass(cmd, Swapchain.Extent);
-        BindPipeline(cmd, ((VulkanPipeline)pipeline).PipelineHandle);
-        draw(renderContext);
-        EndRenderPass(cmd);
+        action(new VulkanRenderFrameContext(this, cmd));
 
         CommandBufferManager.EndCommandBuffer(cmd);
 
@@ -386,5 +374,42 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     public void EndRenderPass(VkCommandBuffer commandBuffer)
     {
         vkCmdEndRendering(commandBuffer);
+    }
+}
+
+internal class VulkanUsePassContext : BackendUsePassContext
+{
+    private VkCommandBuffer _commandBuffer;
+    private VulkanDevice _device;
+
+    internal VulkanUsePassContext(VulkanDevice device, VkCommandBuffer commandBuffer)
+    {
+        _commandBuffer = commandBuffer;
+        _device = device;
+    }
+
+    public override void UsePipeline(Action<BackendRenderContext> action, BackendPipeline pipeline)
+    {
+        _device.BindPipeline(_commandBuffer, ((VulkanPipeline)pipeline).PipelineHandle);
+        action(new VulkanBackendRenderContext(_device, _commandBuffer, _device.Swapchain.Extent));
+    }
+}
+
+internal class VulkanRenderFrameContext : BackendRenderFrameContext
+{
+    private VkCommandBuffer _commandBuffer;
+    private VulkanDevice _device;
+
+    internal VulkanRenderFrameContext(VulkanDevice device, VkCommandBuffer commandBuffer)
+    {
+        _commandBuffer = commandBuffer;
+        _device = device;
+    }
+
+    public override void UsePass(Action<BackendUsePassContext> action)
+    {
+        _device.BeginRenderPass(_commandBuffer, _device.Swapchain.Extent);
+        action(new VulkanUsePassContext(_device, _commandBuffer));
+        _device.EndRenderPass(_commandBuffer);
     }
 }

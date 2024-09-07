@@ -2,11 +2,20 @@ namespace Engine;
 
 public class UsePassContext
 {
-
     private Pass _pass;
-    
-    public void UsePipeline(Pipeline pipeline, Action<RenderContext> draw)
+    private BackendUsePassContext _backendContext;
+
+    public UsePassContext(BackendUsePassContext backendContext)
     {
-        pipeline.RenderFrame(draw); // TODO: Use pass
+        _backendContext = backendContext;
+    }
+
+    public void UsePipeline(Pipeline pipeline, Action<RenderPipelineContext> draw)
+    {
+        _backendContext.UsePipeline(backendContext =>
+        {
+            var drawContext = new RenderPipelineContext(backendContext);
+            draw(drawContext);
+        }, pipeline.BackendPipeline);
     }
 }

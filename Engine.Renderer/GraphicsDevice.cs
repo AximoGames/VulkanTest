@@ -5,6 +5,7 @@ namespace Engine;
 public class GraphicsDevice : IDisposable
 {
     private readonly BackendDevice _backendDevice;
+
     // private Pipeline _pipeline;
     private ResourceAllocator _resourceAllocator;
 
@@ -31,6 +32,6 @@ public class GraphicsDevice : IDisposable
 
     public void RenderFrame(Action<DrawFrameContext> action)
     {
-        action(new DrawFrameContext());
+        _backendDevice.RenderFrame(backendContext => action(new DrawFrameContext(backendContext)), "RenderFrame");
     }
 }

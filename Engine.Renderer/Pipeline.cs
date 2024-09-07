@@ -10,13 +10,4 @@ public class Pipeline
     {
         BackendPipeline = backendPipeline;
     }
-
-    public void RenderFrame(Action<RenderContext> draw, [CallerMemberName] string? frameName = null)
-    {
-        BackendPipeline.Device.RenderFrame(backendContext =>
-        {
-            var drawContext = new RenderContext(backendContext);
-            draw(drawContext);
-        }, BackendPipeline, frameName);
-    }
 }

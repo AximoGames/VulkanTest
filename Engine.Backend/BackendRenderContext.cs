@@ -17,3 +17,13 @@ public abstract class BackendRenderContext
     public abstract void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0);
     public abstract void BindPipeline(BackendPipeline pipeline);
 }
+
+public abstract class BackendUsePassContext
+{
+    public abstract void UsePipeline(Action<BackendRenderContext> action, BackendPipeline pipeline);
+}
+
+public abstract class BackendRenderFrameContext
+{
+    public abstract void UsePass(Action<BackendUsePassContext> action);
+}

@@ -3,11 +3,11 @@ using OpenTK.Mathematics;
 
 namespace Engine;
 
-public class RenderContext
+public class RenderPipelineContext
 {
     private readonly BackendRenderContext _backendContext;
 
-    internal RenderContext(BackendRenderContext backendContext)
+    internal RenderPipelineContext(BackendRenderContext backendContext)
     {
         _backendContext = backendContext;
     }

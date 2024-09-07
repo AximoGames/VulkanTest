@@ -2,8 +2,17 @@ namespace Engine;
 
 public class DrawFrameContext
 {
-    public void UsePass(Pass pass, Action<UsePassContext> draw)
+    private readonly BackendDevice _backendDevice;
+    private readonly BackendRenderFrameContext _backendContext;
+
+    public DrawFrameContext(BackendRenderFrameContext backendContext)
     {
-        draw(new UsePassContext());
+        _backendContext = backendContext;
+    }
+
+    public void UsePass(Pass pass, Action<UsePassContext> action)
+    {
+        //TODO: Pass
+        _backendContext.UsePass(backendContext => action(new UsePassContext(backendContext)));
     }
 }
