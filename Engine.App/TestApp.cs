@@ -120,13 +120,16 @@ public class TestApp : Application
 
         try
         {
-            _graphicsDevice.RenderFrame(frame => { 
-                frame.UsePass(null!, pass => {
-                    pass.UsePipeline(_pipeline, pipeline => {
-                        pipeline.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
-                        pipeline.BindVertexBuffer(_vertexBuffer);
-                        pipeline.BindIndexBuffer(_indexBuffer);
-                        pipeline.DrawIndexed((uint)Indices.Length);
+            _graphicsDevice.RenderFrame(frameContext =>
+            {
+                frameContext.UsePass(null!, passContext =>
+                {
+                    passContext.UsePipeline(_pipeline, drawContext =>
+                    {
+                        drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
+                        drawContext.BindVertexBuffer(_vertexBuffer);
+                        drawContext.BindIndexBuffer(_indexBuffer);
+                        drawContext.DrawIndexed((uint)Indices.Length);
                     });
                 });
             });
