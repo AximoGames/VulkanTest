@@ -28,4 +28,9 @@ public class GraphicsDevice : IDisposable
     {
         callback(_resourceAllocator);
     }
+
+    public void RenderFrame(Action<DrawFrameContext> action)
+    {
+        action(new DrawFrameContext());
+    }
 }
