@@ -15,7 +15,7 @@ internal class VulkanUsePassContext : BackendUsePassContext
 
     public override void UsePipeline(BackendPipeline pipeline, Action<BackendRenderContext> action)
     {
-        _device.BindPipeline(_commandBuffer, ((VulkanPipeline)pipeline).PipelineHandle);
-        action(new VulkanRenderContext(_device, _commandBuffer, _device.SwapchainRenderTarget.Extent));
+        _device.BindPipeline(_commandBuffer, ((VulkanPipeline)pipeline).Pipeline);
+        action(new VulkanRenderPipelineContext(_device, _commandBuffer, _device.SwapchainRenderTarget.Extent, (VulkanPipeline)pipeline));
     }
 }

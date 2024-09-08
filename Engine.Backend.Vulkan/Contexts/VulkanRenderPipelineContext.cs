@@ -5,17 +5,19 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal unsafe class VulkanRenderContext : BackendRenderContext
+internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
 {
     private readonly VulkanDevice _device;
     private readonly VkCommandBuffer _commandBuffer;
     private readonly Vector2i _extent;
-
-    internal VulkanRenderContext(VulkanDevice device, VkCommandBuffer commandBuffer, Vector2i extent)
+    private VulkanPipeline _pipeline;
+    
+    internal VulkanRenderPipelineContext(VulkanDevice device, VkCommandBuffer commandBuffer, Vector2i extent, VulkanPipeline pipeline)
     {
         _device = device;
         _commandBuffer = commandBuffer;
         _extent = extent;
+        _pipeline = pipeline;
     }
 
     public override void BindVertexBuffer(BackendBuffer backendBuffer, uint binding = 0)

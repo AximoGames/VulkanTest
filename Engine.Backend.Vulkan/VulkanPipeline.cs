@@ -9,27 +9,27 @@ namespace Engine.Vulkan;
 internal unsafe class VulkanPipeline : BackendPipeline
 {
     private readonly VulkanDevice _device;
-    public VkPipeline PipelineHandle;
-    public VkPipelineLayout PipelineLayoutHandle;
+    public VkPipeline Pipeline;
+    public VkPipelineLayout PipelineLayout;
 
-    public VulkanPipeline(VulkanDevice device, VkPipeline pipelineHandle, VkPipelineLayout pipelineLayoutHandle)
+    public VulkanPipeline(VulkanDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
         : base(device)
     {
         _device = device;
-        PipelineHandle = pipelineHandle;
-        PipelineLayoutHandle = pipelineLayoutHandle;
+        Pipeline = pipeline;
+        PipelineLayout = pipelineLayout;
     }
 
     public override void Dispose()
     {
-        if (PipelineHandle != VkPipeline.Null)
+        if (Pipeline != VkPipeline.Null)
         {
-            vkDestroyPipeline(_device.LogicalDevice, PipelineHandle, null);
+            vkDestroyPipeline(_device.LogicalDevice, Pipeline, null);
         }
 
-        if (PipelineLayoutHandle != VkPipelineLayout.Null)
+        if (PipelineLayout != VkPipelineLayout.Null)
         {
-            vkDestroyPipelineLayout(_device.LogicalDevice, PipelineLayoutHandle, null);
+            vkDestroyPipelineLayout(_device.LogicalDevice, PipelineLayout, null);
         }
     }
 }
