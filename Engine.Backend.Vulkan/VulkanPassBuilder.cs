@@ -23,6 +23,9 @@ internal class VulkanPassBuilder : BackendPassBuilder
 
     public override BackendPass Build()
     {
+        if (_renderTarget == null)
+            throw new InvalidOperationException("Render target must be set.");
+
         return new VulkanPass(_colorAttachment, _depthStencilAttachment, _renderTarget);
     }
 }
