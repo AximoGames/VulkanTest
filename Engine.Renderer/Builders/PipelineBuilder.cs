@@ -19,6 +19,11 @@ public class PipelineBuilder
         _backendPipelineBuilder.ConfigureVertexLayout(vertexLayoutInfo);
     }
 
+    public void ConfigurePipelineLayout(PipelineLayoutDescription layoutDescription)
+    {
+        _backendPipelineBuilder.ConfigurePipelineLayout(layoutDescription);
+    }
+
     internal Pipeline Build()
     {
         return new Pipeline(_backendPipelineBuilder.Build());

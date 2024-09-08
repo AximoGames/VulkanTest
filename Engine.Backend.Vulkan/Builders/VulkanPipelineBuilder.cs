@@ -17,6 +17,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
     private VkPipelineLayout PipelineLayoutHandle;
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
     private VertexLayoutInfo _vertexLayoutInfo;
+    private PipelineLayoutDescription _layoutDescription;
 
     internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchainRenderTarget swapchainRenderTarget, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
     {
@@ -148,11 +149,38 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
-            var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
+
+            if (_layoutDescription != null)
             {
-                setLayoutCount = 0,
-                pushConstantRangeCount = 0
-            };
+                // Convert descriptor set layouts
+                var descriptorSetLayouts = new VkDescriptorSetLayout[_layoutDescription.DescriptorSetLayouts.Count];
+                for (int i = 0; i < _layoutDescription.DescriptorSetLayouts.Count; i++)
+                {
+                    descriptorSetLayouts[i] = CreateDescriptorSetLayout(_layoutDescription.DescriptorSetLayouts[i]);
+                }
+
+                // Convert push constant ranges
+                var pushConstantRanges = new VkPushConstantRange[_layoutDescription.PushConstantRanges.Count];
+                for (int i = 0; i < _layoutDescription.PushConstantRanges.Count; i++)
+                {
+                    pushConstantRanges[i] = new VkPushConstantRange
+                    {
+                        stageFlags = ConvertShaderStageFlags(_layoutDescription.PushConstantRanges[i].StageFlags),
+                        offset = _layoutDescription.PushConstantRanges[i].Offset,
+                        size = _layoutDescription.PushConstantRanges[i].Size
+                    };
+                }
+
+                fixed (VkDescriptorSetLayout* pSetLayouts = descriptorSetLayouts)
+                fixed (VkPushConstantRange* pPushConstantRanges = pushConstantRanges)
+                {
+                    pipelineLayoutInfo.setLayoutCount = (uint)descriptorSetLayouts.Length;
+                    pipelineLayoutInfo.pSetLayouts = pSetLayouts;
+                    pipelineLayoutInfo.pushConstantRangeCount = (uint)pushConstantRanges.Length;
+                    pipelineLayoutInfo.pPushConstantRanges = pPushConstantRanges;
+                }
+            }
 
             vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
 
@@ -202,6 +230,11 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         _vertexLayoutInfo = vertexLayoutInfo;
     }
 
+    public override void ConfigurePipelineLayout(PipelineLayoutDescription layoutDescription)
+    {
+        _layoutDescription = layoutDescription;
+    }
+
     private VkVertexInputRate ConvertInputRate(VertexInputRate inputRate)
     {
         return inputRate switch
@@ -221,5 +254,55 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             VertexFormat.Float32_4 => VkFormat.R32G32B32A32Sfloat,
             _ => throw new ArgumentOutOfRangeException(nameof(format))
         };
+    }
+
+    private VkDescriptorSetLayout CreateDescriptorSetLayout(DescriptorSetLayoutDescription layoutDescription)
+    {
+        var bindings = new VkDescriptorSetLayoutBinding[layoutDescription.Bindings.Count];
+        for (int i = 0; i < layoutDescription.Bindings.Count; i++)
+        {
+            bindings[i] = new VkDescriptorSetLayoutBinding
+            {
+                binding = layoutDescription.Bindings[i].Binding,
+                descriptorType = ConvertDescriptorType(layoutDescription.Bindings[i].DescriptorType),
+                descriptorCount = layoutDescription.Bindings[i].DescriptorCount,
+                stageFlags = ConvertShaderStageFlags(layoutDescription.Bindings[i].StageFlags)
+            };
+        }
+
+        fixed (VkDescriptorSetLayoutBinding* bindingsPtr = bindings)
+        {
+            VkDescriptorSetLayoutCreateInfo layoutInfo = new VkDescriptorSetLayoutCreateInfo
+            {
+                bindingCount = (uint)bindings.Length,
+                pBindings = &bindingsPtr[0]
+            };
+
+            VkDescriptorSetLayout descriptorSetLayout;
+            vkCreateDescriptorSetLayout(_device.LogicalDevice, &layoutInfo, null, out descriptorSetLayout).CheckResult();
+            return descriptorSetLayout;
+        }
+    }
+
+    private VkDescriptorType ConvertDescriptorType(DescriptorType descriptorType)
+    {
+        return descriptorType switch
+        {
+            DescriptorType.UniformBuffer => VkDescriptorType.UniformBuffer,
+            DescriptorType.StorageBuffer => VkDescriptorType.StorageBuffer,
+            DescriptorType.CombinedImageSampler => VkDescriptorType.CombinedImageSampler,
+            // Add more cases as needed
+            _ => throw new ArgumentException("Unsupported descriptor type")
+        };
+    }
+
+    private VkShaderStageFlags ConvertShaderStageFlags(ShaderStageFlags stageFlags)
+    {
+        VkShaderStageFlags result = VkShaderStageFlags.None;
+        if ((stageFlags & ShaderStageFlags.Vertex) != 0) result |= VkShaderStageFlags.Vertex;
+        if ((stageFlags & ShaderStageFlags.Fragment) != 0) result |= VkShaderStageFlags.Fragment;
+        if ((stageFlags & ShaderStageFlags.Compute) != 0) result |= VkShaderStageFlags.Compute;
+        // Add more cases as needed
+        return result;
     }
 }
