@@ -11,7 +11,7 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     private readonly VkCommandBuffer _commandBuffer;
     private readonly Vector2i _extent;
     private VulkanPipeline _pipeline;
-    
+
     internal VulkanRenderPipelineContext(VulkanDevice device, VkCommandBuffer commandBuffer, Vector2i extent, VulkanPipeline pipeline)
     {
         _device = device;
@@ -54,7 +54,7 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
 
         vkCmdClearAttachments(_commandBuffer, 1, &clearAttachment, 1, &clearRect);
     }
-    
+
     public override void BindUniformBuffer(BackendBuffer buffer, uint binding)
     {
     }
@@ -62,10 +62,11 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     public override void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data)
     {
         fixed (void* pData = data)
-        {
             vkCmdPushConstants(_commandBuffer, _pipeline.PipelineLayout, ConvertShaderStageFlags(stageFlags), offset, (uint)(data.Length * sizeof(T)), pData);
-        }
     }
+
+    public override void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T data)
+        => vkCmdPushConstants(_commandBuffer, _pipeline.PipelineLayout, ConvertShaderStageFlags(stageFlags), offset, (uint)sizeof(T), &data);
 
     private VkShaderStageFlags ConvertShaderStageFlags(ShaderStageFlags flags)
     {

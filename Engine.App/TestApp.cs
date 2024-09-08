@@ -120,7 +120,7 @@ public class TestApp : Application
     private void InitializeRenderPass()
     {
         var swapchainRenderTarget = _graphicsDevice.GetSwapchainRenderTarget();
-        
+
         _renderPass = _graphicsDevice.CreatePass(builder =>
         {
             var colorAttachmentDescription = new AttachmentDescription
@@ -154,7 +154,7 @@ public class TestApp : Application
                         drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
                         drawContext.BindVertexBuffer(_vertexBuffer);
                         drawContext.BindIndexBuffer(_indexBuffer);
-                        drawContext.SetPushConstants(ShaderStageFlags.Fragment, 0, new[] { _greenValue });
+                        drawContext.SetPushConstants(ShaderStageFlags.Fragment, 0, _greenValue);
                         drawContext.DrawIndexed((uint)Indices.Length);
                     });
                 });

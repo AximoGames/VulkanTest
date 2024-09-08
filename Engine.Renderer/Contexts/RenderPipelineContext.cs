@@ -32,4 +32,7 @@ public class RenderPipelineContext
 
     public void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data) where T : unmanaged
         => _backendContext.SetPushConstants(stageFlags, offset, data);
+
+    public void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T data) where T : unmanaged
+        => _backendContext.SetPushConstants(stageFlags, offset, data);
 }
