@@ -12,10 +12,10 @@ public class UsePassContext
 
     public void UsePipeline(Pipeline pipeline, Action<RenderPipelineContext> draw)
     {
-        _backendContext.UsePipeline(backendContext =>
+        _backendContext.UsePipeline(pipeline.BackendPipeline, backendContext =>
         {
             var drawContext = new RenderPipelineContext(backendContext);
             draw(drawContext);
-        }, pipeline.BackendPipeline);
+        });
     }
 }

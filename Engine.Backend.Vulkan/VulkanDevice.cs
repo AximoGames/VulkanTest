@@ -339,7 +339,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         public VkSemaphore SwapchainReleaseSemaphore;
     }
 
-    public void BeginRenderPass(VkCommandBuffer commandBuffer, Vector2i size)
+    public void BeginRenderPass(VulkanPass pass, VkCommandBuffer commandBuffer, Vector2i size)
     {
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {

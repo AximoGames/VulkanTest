@@ -13,6 +13,6 @@ public class DrawFrameContext
     public void UsePass(Pass pass, Action<UsePassContext> action)
     {
         //TODO: Pass
-        _backendContext.UsePass(backendContext => action(new UsePassContext(backendContext)));
+        _backendContext.UsePass(pass?.BackendPass, backendContext => action(new UsePassContext(backendContext)));
     }
 }

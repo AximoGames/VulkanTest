@@ -13,9 +13,9 @@ internal class VulkanRenderFrameContext : BackendRenderFrameContext
         _device = device;
     }
 
-    public override void UsePass(Action<BackendUsePassContext> action)
+    public override void UsePass(BackendPass pass, Action<BackendUsePassContext> action)
     {
-        _device.BeginRenderPass(_commandBuffer, _device.Swapchain.Extent);
+        _device.BeginRenderPass((VulkanPass)pass, _commandBuffer, _device.Swapchain.Extent);
         action(new VulkanUsePassContext(_device, _commandBuffer));
         _device.EndRenderPass(_commandBuffer);
     }
