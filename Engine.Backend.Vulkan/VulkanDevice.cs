@@ -105,15 +105,22 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         List<string> enabledExtensions = new List<string>
         {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME.GetStringFromUtf8Buffer()
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME.GetStringFromUtf8Buffer(),
+            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME.GetStringFromUtf8Buffer()
         };
 
         VkPhysicalDeviceFeatures deviceFeatures = new VkPhysicalDeviceFeatures();
+
+        VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures = new VkPhysicalDeviceDynamicRenderingFeatures
+        {
+            dynamicRendering = true
+        };
 
         using var deviceExtensionNames = new VkStringArray(enabledExtensions);
 
         var deviceCreateInfo = new VkDeviceCreateInfo
         {
+            pNext = &dynamicRenderingFeatures,
             queueCreateInfoCount = 1,
             pQueueCreateInfos = &queueCreateInfo,
             enabledExtensionCount = deviceExtensionNames.Length,

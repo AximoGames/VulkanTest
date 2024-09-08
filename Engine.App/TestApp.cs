@@ -14,7 +14,7 @@ public class TestApp : Application
     private Buffer _vertexBuffer;
     private Buffer _indexBuffer;
     private float _greenValue = 0.0f;
-    private bool EnableValidationLayers = true;
+    private bool EnableValidationLayers = false;
     private Pass _renderPass;
 
     public override string Name => "01-DrawTriangle";
