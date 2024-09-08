@@ -122,7 +122,7 @@ public class TestApp : Application
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
                 InitialLayout = ImageLayout.Undefined,
-                FinalLayout = ImageLayout.PresentSrcKHR
+                FinalLayout = ImageLayout.PresentSrc
             };
 
             builder.ConfigureColorAttachment(colorAttachmentDescription);

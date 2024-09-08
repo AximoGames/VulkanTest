@@ -377,7 +377,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         {
             ImageLayout.Undefined => VkImageLayout.Undefined,
             ImageLayout.ColorAttachmentOptimal => VkImageLayout.ColorAttachmentOptimal,
-            ImageLayout.PresentSrcKHR => VkImageLayout.PresentSrcKHR,
+            ImageLayout.PresentSrc => VkImageLayout.PresentSrcKHR,
             _ => throw new ArgumentOutOfRangeException(nameof(layout))
         };
     }
