@@ -3,7 +3,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal unsafe class VulkanTexture : BackendTexture
+internal unsafe class VulkanImage : BackendImage
 {
     private readonly VulkanDevice _device;
     internal VkImage Image { get; }
@@ -12,7 +12,7 @@ internal unsafe class VulkanTexture : BackendTexture
     internal VkFormat Format { get; }
     internal bool IsRenderTarget { get; }
 
-    public VulkanTexture(VulkanDevice device, uint width, uint height, VkImage image, VkImageView imageView, VkDeviceMemory memory, VkFormat format, bool isRenderTarget)
+    public VulkanImage(VulkanDevice device, uint width, uint height, VkImage image, VkImageView imageView, VkDeviceMemory memory, VkFormat format, bool isRenderTarget)
     {
         _device = device;
         Width = width;

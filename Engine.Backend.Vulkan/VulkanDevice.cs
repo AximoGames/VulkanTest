@@ -27,7 +27,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     public readonly VulkanSwapchain Swapchain;
     private PerFrame[] _perFrameData;
     internal readonly VulkanBufferManager VulkanBufferManager;
-    internal readonly VulkanTextureManager VulkanTextureManager;
+    internal readonly VulkanImageManager VulkanImageManager;
     public VulkanCommandPool CommandPool;
     public VulkanSynchronization Synchronization;
 
@@ -65,7 +65,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         CommandBufferManager = new VulkanCommandBufferManager(this, CommandPool);
 
-        VulkanTextureManager = new VulkanTextureManager(this, VulkanBufferManager);
+        VulkanImageManager = new VulkanImageManager(this, VulkanBufferManager);
 
         for (var i = 0; i < _perFrameData.Length; i++)
         {
@@ -220,7 +220,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     }
 
     public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
-    public override BackendTextureManager BackendTextureManager => VulkanTextureManager;
+    public override BackendImageManager BackendImageManager => VulkanImageManager;
 
     public override void RenderFrame(Action<BackendRenderFrameContext> action, [CallerMemberName] string? frameName = null)
     {
@@ -339,8 +339,6 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
     private struct PerFrame
     {
-        public VkImage Image;
-        public VkImageView ImageView;
         public VkFence QueueSubmitFence;
         public VulkanCommandPool PrimaryCommandPool;
         public VkCommandBuffer PrimaryCommandBuffer;
@@ -352,7 +350,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     {
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
-            imageView = Swapchain.GetImageView(CurrentSwapchainImageIndex),
+            imageView = Swapchain.GetImage(CurrentSwapchainImageIndex).ImageView,
             imageLayout = ConvertImageLayout(pass.ColorAttachment.FinalLayout),
             loadOp = ConvertLoadOp(pass.ColorAttachment.LoadOp),
             storeOp = ConvertStoreOp(pass.ColorAttachment.StoreOp),

@@ -17,9 +17,8 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
     public Vector2i Extent { get; }
     public VkSurfaceFormatKHR SurfaceFormat;
     public int ImageCount => _images.Length;
-    private VkImageView[] _imageViews;
-    private VkImage[] _images;
     private readonly VkSurfaceKHR _surface;
+    private VulkanImage[] _images;
 
     public VulkanSwapchain(VulkanDevice device, Window? window, VkSurfaceKHR surface)
     {
@@ -59,50 +58,47 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
 
         vkCreateSwapchainKHR(Device.LogicalDevice, &createInfo, null, out Handle).CheckResult();
 
-        GetImages();
-        CreateImageViews();
+        var images = GetImages();
+        var imageViews = new VkImageView[images.Length];
+        for (int i = 0; i < images.Length; i++)
+            imageViews[i] = CreateImageView(images[i]);
+
+        var vulkanImages = new VulkanImage[images.Length];
+        for (int i = 0; i < images.Length; i++)
+            vulkanImages[i] = new VulkanImage(Device, (uint)Extent.X, (uint)Extent.Y, images[i], imageViews[i], VkDeviceMemory.Null, SurfaceFormat.format, true);
+        _images = vulkanImages;
     }
 
-    private void GetImages()
+    private VkImage[] GetImages()
     {
         ReadOnlySpan<VkImage> imagesSpan = vkGetSwapchainImagesKHR(Device.LogicalDevice, Handle);
-        _images = imagesSpan.ToArray();
+        return imagesSpan.ToArray();
     }
 
-    private void CreateImageViews()
+    private VkImageView CreateImageView(VkImage image)
     {
-        _imageViews = new VkImageView[_images.Length];
+        var viewCreateInfo = new VkImageViewCreateInfo(
+            image,
+            VkImageViewType.Image2D,
+            SurfaceFormat.format,
+            VkComponentMapping.Rgba,
+            new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
+        );
 
-        for (int i = 0; i < _images.Length; i++)
-        {
-            var viewCreateInfo = new VkImageViewCreateInfo(
-                _images[i],
-                VkImageViewType.Image2D,
-                SurfaceFormat.format,
-                VkComponentMapping.Rgba,
-                new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
-            );
-
-            vkCreateImageView(Device.LogicalDevice, &viewCreateInfo, null, out _imageViews[i]).CheckResult();
-        }
+        vkCreateImageView(Device.LogicalDevice, &viewCreateInfo, null, out var imageView).CheckResult();
+        return imageView;
     }
 
-    public VkImageView GetImageView(uint index)
-    {
-        return _imageViews[index];
-    }
+    public VulkanImage GetImage(uint index)
+        => _images[index];
 
     public void Dispose()
     {
-        for (int i = 0; i < _imageViews.Length; i++)
-        {
-            vkDestroyImageView(Device.LogicalDevice, _imageViews[i], null);
-        }
+        for (int i = 0; i < _images.Length; i++)
+            vkDestroyImageView(Device.LogicalDevice, _images[i].ImageView, null);
 
         if (Handle != VkSwapchainKHR.Null)
-        {
             vkDestroySwapchainKHR(Device.LogicalDevice, Handle, null);
-        }
     }
 
     private ref struct SwapchainSupportDetails

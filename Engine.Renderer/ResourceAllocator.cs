@@ -3,12 +3,12 @@ namespace Engine;
 public class ResourceAllocator
 {
     private readonly BackendBufferManager _backendBufferManager;
-    private readonly BackendTextureManager _backendTextureManager;
+    private readonly BackendImageManager _backendImageManager;
 
-    internal ResourceAllocator(BackendBufferManager backendBufferManager, BackendTextureManager backendTextureManager)
+    internal ResourceAllocator(BackendBufferManager backendBufferManager, BackendImageManager backendImageManager)
     {
         _backendBufferManager = backendBufferManager;
-        _backendTextureManager = backendTextureManager;
+        _backendImageManager = backendImageManager;
     }
 
     public Buffer CreateVertexBuffer<T>(T[] vertices) where T : unmanaged
@@ -25,9 +25,9 @@ public class ResourceAllocator
         return new Buffer(backendBuffer);
     }
 
-    public Texture CreateTexture(uint width, uint height, byte[] pixelData)
+    public Image CreateImage(uint width, uint height, byte[] pixelData)
     {
-        var backendTexture = _backendTextureManager.CreateRenderTargetTexture(width, height);
-        return new Texture(backendTexture);
+        var backendImage = _backendImageManager.CreateRenderTargetImage(width, height);
+        return new Image(backendImage);
     }
 }
