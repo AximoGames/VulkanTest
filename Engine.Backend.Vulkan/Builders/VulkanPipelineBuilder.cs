@@ -10,17 +10,17 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
     private VulkanBufferManager _vulkanBufferManager;
     private readonly VulkanDevice _device;
     private readonly BackendDevice _backendDevice;
-    private readonly VulkanSwapchain _swapchain;
+    private readonly VulkanSwapchainRenderTarget _swapchainRenderTarget;
     private readonly VulkanShaderManager _shaderManager;
     private VkPipeline PipelineHandle;
     private VkPipelineLayout PipelineLayoutHandle;
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
     private VertexLayoutInfo _vertexLayoutInfo;
 
-    internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
+    internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchainRenderTarget swapchainRenderTarget, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
     {
         _device = device;
-        _swapchain = swapchain;
+        _swapchainRenderTarget = swapchainRenderTarget;
         _shaderManager = shaderManager;
         _vulkanBufferManager = vulkanBufferManager;
     }
@@ -92,8 +92,8 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             {
                 x = 0.0f,
                 y = 0.0f,
-                width = _swapchain.Extent.X,
-                height = _swapchain.Extent.Y,
+                width = _swapchainRenderTarget.Extent.X,
+                height = _swapchainRenderTarget.Extent.Y,
                 minDepth = 0.0f,
                 maxDepth = 1.0f
             };
@@ -101,7 +101,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             var scissor = new VkRect2D
             {
                 offset = new VkOffset2D(0, 0),
-                extent = _swapchain.Extent.ToVkExtent2D(),
+                extent = _swapchainRenderTarget.Extent.ToVkExtent2D(),
             };
 
             var viewportState = new VkPipelineViewportStateCreateInfo
@@ -157,7 +157,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
 
             VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
 
-            var colorAttachmentFormat = _swapchain.SurfaceFormat.format;
+            var colorAttachmentFormat = _swapchainRenderTarget.SurfaceFormat.format;
             VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
             {
                 colorAttachmentCount = 1,

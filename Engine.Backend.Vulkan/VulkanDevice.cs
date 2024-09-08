@@ -24,7 +24,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     public (uint GraphicsFamily, uint PresentFamily) QueueFamilies { get; private set; }
 
     private readonly VkSurfaceKHR _surface;
-    public readonly VulkanSwapchain Swapchain;
+    public readonly VulkanSwapchainRenderTarget SwapchainRenderTarget;
     private PerFrame[] _perFrameData;
     internal readonly VulkanBufferManager VulkanBufferManager;
     internal readonly VulkanImageManager VulkanImageManager;
@@ -53,10 +53,10 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         ShaderManager = new VulkanShaderManager(this);
 
         // Create swap chain
-        Swapchain = new VulkanSwapchain(this, window, _surface);
+        SwapchainRenderTarget = new VulkanSwapchainRenderTarget(this, window, _surface);
 
         // Initialize _perFrame array
-        _perFrameData = new PerFrame[Swapchain.ImageCount];
+        _perFrameData = new PerFrame[SwapchainRenderTarget.ImageCount];
 
         CommandPool = new VulkanCommandPool(this);
         Synchronization = new VulkanSynchronization(this);
@@ -169,7 +169,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         VulkanBufferManager.Dispose();
 
-        Swapchain.Dispose();
+        SwapchainRenderTarget.Dispose();
 
         for (var i = 0; i < _perFrameData.Length; i++)
         {
@@ -216,7 +216,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
     public override BackendPipelineBuilder CreatePipelineBuilder()
     {
-        return new VulkanPipelineBuilder(this, Swapchain, ShaderManager, VulkanBufferManager);
+        return new VulkanPipelineBuilder(this, SwapchainRenderTarget, ShaderManager, VulkanBufferManager);
     }
 
     public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
@@ -292,7 +292,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     {
         VkSemaphore acquireSemaphore = Synchronization.AcquireSemaphore();
 
-        VkResult result = vkAcquireNextImageKHR(LogicalDevice, Swapchain.Handle, ulong.MaxValue, acquireSemaphore, VkFence.Null, out imageIndex);
+        VkResult result = vkAcquireNextImageKHR(LogicalDevice, SwapchainRenderTarget.Handle, ulong.MaxValue, acquireSemaphore, VkFence.Null, out imageIndex);
 
         if (result != VkResult.Success)
         {
@@ -321,7 +321,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
     private VkResult PresentImage(uint imageIndex)
     {
-        return vkQueuePresentKHR(PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, Swapchain.Handle, imageIndex);
+        return vkQueuePresentKHR(PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, SwapchainRenderTarget.Handle, imageIndex);
     }
 
     public static implicit operator VkDevice(VulkanDevice device) => device.LogicalDevice;
@@ -350,7 +350,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     {
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
-            imageView = Swapchain.GetImage(CurrentSwapchainImageIndex).ImageView,
+            imageView = SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex).ImageView,
             imageLayout = ConvertImageLayout(pass.ColorAttachment.FinalLayout),
             loadOp = ConvertLoadOp(pass.ColorAttachment.LoadOp),
             storeOp = ConvertStoreOp(pass.ColorAttachment.StoreOp),
