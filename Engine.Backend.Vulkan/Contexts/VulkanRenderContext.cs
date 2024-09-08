@@ -1,6 +1,7 @@
 using OpenTK;
 using OpenTK.Mathematics;
 using Vortice.Vulkan;
+using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
@@ -51,9 +52,8 @@ internal unsafe class VulkanRenderContext : BackendRenderContext
 
         Vortice.Vulkan.Vulkan.vkCmdClearAttachments(_commandBuffer, 1, &clearAttachment, 1, &clearRect);
     }
-
-    public override void BindPipeline(BackendPipeline pipeline)
+    
+    public override void BindUniformBuffer(BackendBuffer buffer, uint binding)
     {
-        _device.BindPipeline(_commandBuffer, ((VulkanPipeline)pipeline).PipelineHandle);
     }
 }

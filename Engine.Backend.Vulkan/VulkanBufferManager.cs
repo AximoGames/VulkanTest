@@ -17,9 +17,9 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         _commandPool = commandPool;
     }
 
-    public override BackendBuffer CreateBuffer<T>(BufferType bufferType, int vertexCount)
+    public override BackendBuffer CreateBuffer<T>(BufferType bufferType, int elementCount)
     {
-        uint bufferSize = (uint)(Unsafe.SizeOf<T>() * vertexCount);
+        uint bufferSize = (uint)(Unsafe.SizeOf<T>() * elementCount);
         VkBuffer buffer;
         VkDeviceMemory bufferMemory;
 
@@ -33,6 +33,28 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | vkBufferType, VkMemoryPropertyFlags.DeviceLocal, out buffer, out bufferMemory);
 
         return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
+    }
+
+    public BackendBuffer CreateUniformBuffer<T>() where T : unmanaged
+    {
+        uint bufferSize = (uint)(Unsafe.SizeOf<T>());
+        VkBuffer buffer;
+        VkDeviceMemory bufferMemory;
+
+        CreateBuffer(bufferSize, VkBufferUsageFlags.UniformBuffer, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out buffer, out bufferMemory);
+
+        return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
+    }
+
+    public void UpdateUniformBuffer<T>(BackendBuffer buffer, T data) where T : unmanaged
+    {
+        var vulkanBuffer = (VulkanBuffer)buffer;
+        uint bufferSize = (uint)Unsafe.SizeOf<T>();
+
+        void* mappedMemory;
+        vkMapMemory(_device.LogicalDevice, vulkanBuffer.Memory, 0, bufferSize, 0, &mappedMemory);
+        Unsafe.Copy(mappedMemory, ref data);
+        vkUnmapMemory(_device.LogicalDevice, vulkanBuffer.Memory);
     }
 
     public override void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
