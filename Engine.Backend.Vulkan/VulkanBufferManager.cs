@@ -116,7 +116,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         vkFreeCommandBuffers(_device.LogicalDevice, _commandPool.Handle, 1, &commandBuffer);
     }
 
-    private uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
+    public uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(_device.PhysicalDevice, out memProperties);

@@ -27,6 +27,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     public readonly VulkanSwapchain Swapchain;
     private PerFrame[] _perFrameData;
     internal readonly VulkanBufferManager VulkanBufferManager;
+    internal readonly VulkanTextureManager VulkanTextureManager;
     public VulkanCommandPool CommandPool;
     public VulkanSynchronization Synchronization;
 
@@ -63,6 +64,8 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         VulkanBufferManager = new VulkanBufferManager(this, CommandPool);
 
         CommandBufferManager = new VulkanCommandBufferManager(this, CommandPool);
+
+        VulkanTextureManager = new VulkanTextureManager(this, VulkanBufferManager);
 
         for (var i = 0; i < _perFrameData.Length; i++)
         {
@@ -217,6 +220,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     }
 
     public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
+    public override BackendTextureManager BackendTextureManager => VulkanTextureManager;
 
     public override void RenderFrame(Action<BackendRenderFrameContext> action, [CallerMemberName] string? frameName = null)
     {

@@ -12,7 +12,7 @@ public class GraphicsDevice : IDisposable
     public GraphicsDevice(BackendDevice backendDevice)
     {
         _backendDevice = backendDevice;
-        _resourceAllocator = new ResourceAllocator(_backendDevice.BackendBufferManager);
+        _resourceAllocator = new ResourceAllocator(_backendDevice.BackendBufferManager, _backendDevice.BackendTextureManager);
     }
 
     public void Dispose()
