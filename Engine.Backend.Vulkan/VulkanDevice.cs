@@ -413,4 +413,9 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     {
         vkCmdEndRendering(commandBuffer);
     }
+
+    public override BackendRenderTarget GetSwapchainRenderTarget()
+    {
+        return SwapchainRenderTarget;
+    }
 }

@@ -12,4 +12,5 @@ public abstract class BackendDevice : IDisposable
     public abstract BackendImageManager BackendImageManager { get; }
     public abstract void RenderFrame(Action<BackendRenderFrameContext> action, [CallerMemberName] string? frameName = null);
     public abstract BackendPassBuilder CreatePassBuilder();
+    public abstract BackendRenderTarget GetSwapchainRenderTarget();
 }

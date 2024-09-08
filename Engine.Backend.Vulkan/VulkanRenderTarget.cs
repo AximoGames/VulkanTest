@@ -3,10 +3,9 @@ using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal abstract class VulkanRenderTarget : IDisposable
+internal abstract class VulkanRenderTarget : BackendRenderTarget
 {
     protected readonly VulkanDevice Device;
-    public abstract Vector2i Extent { get; }
     public abstract uint ImageCount { get; }
 
     public abstract VulkanImage GetImage(uint index);
@@ -15,6 +14,4 @@ internal abstract class VulkanRenderTarget : IDisposable
     {
         Device = device;
     }
-
-    public abstract void Dispose();
 }

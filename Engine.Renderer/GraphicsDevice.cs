@@ -41,4 +41,9 @@ public class GraphicsDevice : IDisposable
         callback(passBuilder);
         return passBuilder.Build();
     }
+
+    public RenderTarget GetSwapchainRenderTarget()
+    {
+        return new RenderTarget(_backendDevice.GetSwapchainRenderTarget());
+    }
 }

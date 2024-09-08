@@ -4,6 +4,7 @@ internal class VulkanPassBuilder : BackendPassBuilder
 {
     private AttachmentDescription _colorAttachment;
     private AttachmentDescription _depthStencilAttachment;
+    private BackendRenderTarget _renderTarget;
 
     public override void ConfigureColorAttachment(AttachmentDescription attachmentDescription)
     {
@@ -15,8 +16,13 @@ internal class VulkanPassBuilder : BackendPassBuilder
         _depthStencilAttachment = attachmentDescription;
     }
 
+    public override void SetRenderTarget(BackendRenderTarget renderTarget)
+    {
+        _renderTarget = renderTarget;
+    }
+
     public override BackendPass Build()
     {
-        return new VulkanPass(_colorAttachment, _depthStencilAttachment);
+        return new VulkanPass(_colorAttachment, _depthStencilAttachment, _renderTarget);
     }
 }

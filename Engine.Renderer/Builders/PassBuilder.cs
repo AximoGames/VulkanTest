@@ -19,6 +19,11 @@ public class PassBuilder
         _backendPassBuilder.ConfigureDepthStencilAttachment(attachmentDescription);
     }
 
+    public void SetRenderTarget(RenderTarget renderTarget)
+    {
+        _backendPassBuilder.SetRenderTarget(renderTarget.BackendRenderTarget);
+    }
+
     internal Pass Build()
     {
         return new Pass(_backendPassBuilder.Build());

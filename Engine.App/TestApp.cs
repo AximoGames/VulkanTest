@@ -115,6 +115,8 @@ public class TestApp : Application
 
     private void InitializeRenderPass()
     {
+        var swapchainRenderTarget = _graphicsDevice.GetSwapchainRenderTarget();
+        
         _renderPass = _graphicsDevice.CreatePass(builder =>
         {
             var colorAttachmentDescription = new AttachmentDescription
@@ -126,6 +128,7 @@ public class TestApp : Application
             };
 
             builder.ConfigureColorAttachment(colorAttachmentDescription);
+            builder.SetRenderTarget(swapchainRenderTarget);
         });
     }
 
