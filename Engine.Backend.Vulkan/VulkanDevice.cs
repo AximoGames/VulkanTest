@@ -348,18 +348,18 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
     public void BeginRenderPass(VulkanPass pass, VkCommandBuffer commandBuffer, Vector2i size)
     {
+        var targetImage = ((VulkanRenderTarget)pass.RenderTarget).GetImage(CurrentSwapchainImageIndex);
+
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
-            imageView = SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex).ImageView,
+            imageView = targetImage.ImageView,
             imageLayout = ConvertImageLayout(pass.ColorAttachment.FinalLayout),
             loadOp = ConvertLoadOp(pass.ColorAttachment.LoadOp),
             storeOp = ConvertStoreOp(pass.ColorAttachment.StoreOp),
         };
 
-        if (ClearColor.HasValue)
-        {
+        if (ClearColor.HasValue) 
             colorAttachmentInfo.clearValue = new VkClearValue { color = ClearColor.Value };
-        }
 
         VkRenderingInfo renderingInfo = new VkRenderingInfo
         {
