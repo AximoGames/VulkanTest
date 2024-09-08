@@ -67,11 +67,14 @@ public class TestApp : Application
             #version 450
 
             layout(location = 0) in vec3 fragColor;
-
             layout(location = 0) out vec4 outColor;
 
+            layout(push_constant) uniform PushConstants {
+                float colorFactor;
+            } pushConstants;
+
             void main() {
-                outColor = vec4(fragColor, 1.0);
+                outColor = vec4(fragColor + pushConstants.colorFactor, 1.0);
             }
             """;
 
@@ -105,6 +108,7 @@ public class TestApp : Application
         builder.ConfigureVertexLayout(vertexLayoutInfo);
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
+        builder.ConfigurePushConstants(sizeof(float), ShaderStageFlags.Fragment);
     }
 
     private void InitializeResources(ResourceManager allocator)
@@ -150,6 +154,7 @@ public class TestApp : Application
                         drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
                         drawContext.BindVertexBuffer(_vertexBuffer);
                         drawContext.BindIndexBuffer(_indexBuffer);
+                        drawContext.SetPushConstants(ShaderStageFlags.Fragment, 0, new[] { _greenValue });
                         drawContext.DrawIndexed((uint)Indices.Length);
                     });
                 });

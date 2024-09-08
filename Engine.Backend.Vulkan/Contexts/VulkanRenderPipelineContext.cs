@@ -58,4 +58,20 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     public override void BindUniformBuffer(BackendBuffer buffer, uint binding)
     {
     }
+
+    public override void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data)
+    {
+        fixed (void* pData = data)
+        {
+            vkCmdPushConstants(_commandBuffer, _pipeline.PipelineLayout, ConvertShaderStageFlags(stageFlags), offset, (uint)(data.Length * sizeof(T)), pData);
+        }
+    }
+
+    private VkShaderStageFlags ConvertShaderStageFlags(ShaderStageFlags flags)
+    {
+        VkShaderStageFlags result = 0;
+        if ((flags & ShaderStageFlags.Vertex) != 0) result |= VkShaderStageFlags.Vertex;
+        if ((flags & ShaderStageFlags.Fragment) != 0) result |= VkShaderStageFlags.Fragment;
+        return result;
+    }
 }

@@ -16,4 +16,5 @@ public abstract class BackendRenderContext
 
     public abstract void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0);
     public abstract void BindUniformBuffer(BackendBuffer buffer, uint binding);
+    public abstract void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data) where T : unmanaged;
 }

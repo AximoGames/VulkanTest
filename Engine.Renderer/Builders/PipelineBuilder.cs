@@ -10,22 +10,17 @@ public class PipelineBuilder
     }
 
     public void ConfigureShader(string shaderCode, ShaderKind shaderKind)
-    {
-        _backendPipelineBuilder.ConfigureShader(shaderCode, shaderKind);
-    }
+        => _backendPipelineBuilder.ConfigureShader(shaderCode, shaderKind);
 
     public void ConfigureVertexLayout(VertexLayoutInfo vertexLayoutInfo)
-    {
-        _backendPipelineBuilder.ConfigureVertexLayout(vertexLayoutInfo);
-    }
+        => _backendPipelineBuilder.ConfigureVertexLayout(vertexLayoutInfo);
 
     public void ConfigurePipelineLayout(PipelineLayoutDescription layoutDescription)
-    {
-        _backendPipelineBuilder.ConfigurePipelineLayout(layoutDescription);
-    }
+        => _backendPipelineBuilder.ConfigurePipelineLayout(layoutDescription);
+
+    public void ConfigurePushConstants(uint size, ShaderStageFlags stageFlags)
+        => _backendPipelineBuilder.ConfigurePushConstants(size, stageFlags);
 
     internal Pipeline Build()
-    {
-        return new Pipeline(_backendPipelineBuilder.Build());
-    }
+        => new(_backendPipelineBuilder.Build());
 }

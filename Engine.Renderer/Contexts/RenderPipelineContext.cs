@@ -29,4 +29,7 @@ public class RenderPipelineContext
 
     public void BindUniformBuffer(Buffer buffer, uint binding)
         => _backendContext.BindUniformBuffer(buffer.BackendBuffer, binding);
+
+    public void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data) where T : unmanaged
+        => _backendContext.SetPushConstants(stageFlags, offset, data);
 }
