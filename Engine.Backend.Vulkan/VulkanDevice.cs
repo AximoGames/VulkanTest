@@ -217,7 +217,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     }
 
     public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
-    
+
     public override void RenderFrame(Action<BackendRenderFrameContext> action, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
@@ -356,7 +356,6 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         if (ClearColor.HasValue)
         {
-            colorAttachmentInfo.loadOp = VkAttachmentLoadOp.Clear;
             colorAttachmentInfo.clearValue = new VkClearValue { color = ClearColor.Value };
         }
 
