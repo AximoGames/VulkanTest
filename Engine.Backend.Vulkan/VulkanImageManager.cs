@@ -15,12 +15,12 @@ internal unsafe class VulkanImageManager : BackendImageManager
         _bufferManager = bufferManager;
     }
 
-    public override BackendImage CreateRenderTargetImage(uint width, uint height)
+    public override BackendImage CreateRenderTargetImage(Vector2i extent)
     {
         VkImageCreateInfo imageInfo = new VkImageCreateInfo
         {
             imageType = VkImageType.Image2D,
-            extent = new VkExtent3D { width = width, height = height, depth = 1 },
+            extent = new VkExtent3D { width = (uint)extent.X, height = (uint)extent.Y, depth = 1 },
             mipLevels = 1,
             arrayLayers = 1,
             format = VkFormat.R8G8B8A8Unorm,
@@ -66,6 +66,6 @@ internal unsafe class VulkanImageManager : BackendImageManager
         VkImageView imageView;
         vkCreateImageView(_device.LogicalDevice, &viewInfo, null, out imageView).CheckResult();
 
-        return new VulkanImage(_device, new Vector2i((int)width, (int)height), image, imageView, imageMemory, VkFormat.R8G8B8A8Unorm, true);
+        return new VulkanImage(_device, extent, image, imageView, imageMemory, VkFormat.R8G8B8A8Unorm, true);
     }
 }

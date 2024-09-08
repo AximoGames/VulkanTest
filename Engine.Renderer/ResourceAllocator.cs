@@ -1,3 +1,5 @@
+using OpenTK.Mathematics;
+
 namespace Engine;
 
 public class ResourceAllocator
@@ -25,9 +27,11 @@ public class ResourceAllocator
         return new Buffer(backendBuffer);
     }
 
-    public Image CreateImage(uint width, uint height, byte[] pixelData)
+    public Image CreateImage(Vector2i extent, byte[] pixelData)
     {
-        var backendImage = _backendImageManager.CreateRenderTargetImage(width, height);
-        return new Image(backendImage);
+        // var backendImage = _backendImageManager.CreateImage(extent);
+        // return new Image(backendImage);
+
+        throw new NotImplementedException();
     }
 }
