@@ -3,13 +3,13 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal class VulkanBackendBuffer : BackendBuffer
+internal class VulkanBuffer : BackendBuffer
 {
     private readonly VulkanDevice _device;
     internal VkBuffer Buffer { get; }
     internal VkDeviceMemory Memory { get; }
 
-    internal VulkanBackendBuffer(Type elementType, VulkanDevice device, VkBuffer buffer, VkDeviceMemory memory)
+    internal VulkanBuffer(Type elementType, VulkanDevice device, VkBuffer buffer, VkDeviceMemory memory)
         : base(elementType)
     {
         _device = device;

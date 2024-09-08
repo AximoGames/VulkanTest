@@ -32,7 +32,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
 
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | vkBufferType, VkMemoryPropertyFlags.DeviceLocal, out buffer, out bufferMemory);
 
-        return new VulkanBackendBuffer(typeof(T), _device, buffer, bufferMemory);
+        return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
     public override void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
@@ -52,7 +52,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         }
 
         uint destinationOffset = (uint)(elementSize * destinationStartIndex);
-        CopyBuffer(stagingBuffer, ((VulkanBackendBuffer)destinationBuffer).Buffer, bufferSize, 0, destinationOffset);
+        CopyBuffer(stagingBuffer, ((VulkanBuffer)destinationBuffer).Buffer, bufferSize, 0, destinationOffset);
 
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);

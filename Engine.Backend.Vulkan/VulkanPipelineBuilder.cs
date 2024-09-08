@@ -5,7 +5,7 @@ using Vortice.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
+internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
 {
     private VulkanBufferManager _vulkanBufferManager;
     private readonly VulkanDevice _device;
@@ -17,7 +17,7 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
     private VertexLayoutInfo _vertexLayoutInfo;
 
-    internal VulkanBackendPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
+    internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchain swapchain, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
     {
         _device = device;
         _swapchain = swapchain;
@@ -29,7 +29,7 @@ internal unsafe class VulkanBackendPipelineBuilder : BackendPipelineBuilder
         => _vulkanBufferManager.CreateBuffer<T>(bufferType, count);
 
     public override void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
-        => _vulkanBufferManager.CopyBuffer(source, 0, (VulkanBackendBuffer)destinationBuffer, 0, count);
+        => _vulkanBufferManager.CopyBuffer(source, 0, (VulkanBuffer)destinationBuffer, 0, count);
 
     public override BackendPipeline Build()
     {
