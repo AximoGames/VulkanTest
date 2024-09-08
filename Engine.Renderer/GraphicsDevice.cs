@@ -34,4 +34,11 @@ public class GraphicsDevice : IDisposable
     {
         _backendDevice.RenderFrame(backendContext => action(new DrawFrameContext(backendContext)), "RenderFrame");
     }
+
+    public Pass CreatePass(Action<PassBuilder> callback)
+    {
+        var passBuilder = new PassBuilder(_backendDevice.CreatePassBuilder());
+        callback(passBuilder);
+        return passBuilder.Build();
+    }
 }

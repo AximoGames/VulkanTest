@@ -15,6 +15,7 @@ public class TestApp : Application
     private Buffer _indexBuffer;
     private float _greenValue = 0.0f;
     private bool EnableValidationLayers = true;
+    private Pass _renderPass;
 
     public override string Name => "01-DrawTriangle";
 
@@ -41,6 +42,7 @@ public class TestApp : Application
         _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window));
         _pipeline = _graphicsDevice.CreatePipeline(InitializePipeline);
         _graphicsDevice.InitializeResources(InitializeResources);
+        InitializeRenderPass();
     }
 
     private void InitializePipeline(PipelineBuilder builder)
@@ -111,6 +113,22 @@ public class TestApp : Application
         _indexBuffer = allocator.CreateIndexBuffer(Indices);
     }
 
+    private void InitializeRenderPass()
+    {
+        _renderPass = _graphicsDevice.CreatePass(builder =>
+        {
+            var colorAttachmentDescription = new AttachmentDescription
+            {
+                LoadOp = AttachmentLoadOp.Clear,
+                StoreOp = AttachmentStoreOp.Store,
+                InitialLayout = ImageLayout.Undefined,
+                FinalLayout = ImageLayout.PresentSrcKHR
+            };
+
+            builder.ConfigureColorAttachment(colorAttachmentDescription);
+        });
+    }
+
     protected override void OnRenderFrame()
     {
         float g = _greenValue + 0.0003f;
@@ -122,7 +140,7 @@ public class TestApp : Application
         {
             _graphicsDevice.RenderFrame(frameContext =>
             {
-                frameContext.UsePass(null!, passContext =>
+                frameContext.UsePass(_renderPass, passContext =>
                 {
                     passContext.UsePipeline(_pipeline, drawContext =>
                     {

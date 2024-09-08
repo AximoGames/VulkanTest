@@ -279,6 +279,11 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         }
     }
 
+    public override BackendPassBuilder CreatePassBuilder()
+    {
+        return new VulkanPassBuilder();
+    }
+
     private VkResult AcquireNextImage(out uint imageIndex)
     {
         VkSemaphore acquireSemaphore = Synchronization.AcquireSemaphore();
@@ -344,9 +349,9 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
             imageView = Swapchain.GetImageView(CurrentSwapchainImageIndex),
-            imageLayout = VkImageLayout.ColorAttachmentOptimal,
-            loadOp = VkAttachmentLoadOp.Load,
-            storeOp = VkAttachmentStoreOp.Store,
+            imageLayout = ConvertImageLayout(pass.ColorAttachment.FinalLayout),
+            loadOp = ConvertLoadOp(pass.ColorAttachment.LoadOp),
+            storeOp = ConvertStoreOp(pass.ColorAttachment.StoreOp),
         };
 
         if (ClearColor.HasValue)
@@ -364,6 +369,38 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         };
 
         vkCmdBeginRendering(commandBuffer, &renderingInfo);
+    }
+
+    private VkImageLayout ConvertImageLayout(ImageLayout layout)
+    {
+        return layout switch
+        {
+            ImageLayout.Undefined => VkImageLayout.Undefined,
+            ImageLayout.ColorAttachmentOptimal => VkImageLayout.ColorAttachmentOptimal,
+            ImageLayout.PresentSrcKHR => VkImageLayout.PresentSrcKHR,
+            _ => throw new ArgumentOutOfRangeException(nameof(layout))
+        };
+    }
+
+    private VkAttachmentLoadOp ConvertLoadOp(AttachmentLoadOp loadOp)
+    {
+        return loadOp switch
+        {
+            AttachmentLoadOp.Load => VkAttachmentLoadOp.Load,
+            AttachmentLoadOp.Clear => VkAttachmentLoadOp.Clear,
+            AttachmentLoadOp.DontCare => VkAttachmentLoadOp.DontCare,
+            _ => throw new ArgumentOutOfRangeException(nameof(loadOp))
+        };
+    }
+
+    private VkAttachmentStoreOp ConvertStoreOp(AttachmentStoreOp storeOp)
+    {
+        return storeOp switch
+        {
+            AttachmentStoreOp.Store => VkAttachmentStoreOp.Store,
+            AttachmentStoreOp.DontCare => VkAttachmentStoreOp.DontCare,
+            _ => throw new ArgumentOutOfRangeException(nameof(storeOp))
+        };
     }
 
     public void BindPipeline(VkCommandBuffer commandBuffer, VkPipeline pipeline)

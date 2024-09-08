@@ -10,4 +10,5 @@ public abstract class BackendDevice : IDisposable
     // public abstract void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count) where T : unmanaged;
     public abstract BackendBufferManager BackendBufferManager { get; }
     public abstract void RenderFrame(Action<BackendRenderFrameContext> action, [CallerMemberName] string? frameName = null);
+    public abstract BackendPassBuilder CreatePassBuilder();
 }
