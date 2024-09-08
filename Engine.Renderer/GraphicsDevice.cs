@@ -7,12 +7,12 @@ public class GraphicsDevice : IDisposable
     private readonly BackendDevice _backendDevice;
 
     // private Pipeline _pipeline;
-    private ResourceAllocator _resourceAllocator;
+    private ResourceManager _resourceManager;
 
     public GraphicsDevice(BackendDevice backendDevice)
     {
         _backendDevice = backendDevice;
-        _resourceAllocator = new ResourceAllocator(_backendDevice.BackendBufferManager, _backendDevice.BackendImageManager);
+        _resourceManager = new ResourceManager(_backendDevice.BackendBufferManager, _backendDevice.BackendImageManager);
     }
 
     public void Dispose()
@@ -25,9 +25,9 @@ public class GraphicsDevice : IDisposable
         return pipelineBuilder.Build();
     }
 
-    public void InitializeResources(Action<ResourceAllocator> callback)
+    public void InitializeResources(Action<ResourceManager> callback)
     {
-        callback(_resourceAllocator);
+        callback(_resourceManager);
     }
 
     public void RenderFrame(Action<DrawFrameContext> action)

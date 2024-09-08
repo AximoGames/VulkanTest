@@ -107,7 +107,7 @@ public class TestApp : Application
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
     }
 
-    private void InitializeResources(ResourceAllocator allocator)
+    private void InitializeResources(ResourceManager allocator)
     {
         _vertexBuffer = allocator.CreateVertexBuffer(Vertices);
         _indexBuffer = allocator.CreateIndexBuffer(Indices);

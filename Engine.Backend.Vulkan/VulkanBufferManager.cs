@@ -35,7 +35,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
-    public BackendBuffer CreateUniformBuffer<T>() where T : unmanaged
+    public override BackendBuffer CreateUniformBuffer<T>()
     {
         uint bufferSize = (uint)(Unsafe.SizeOf<T>());
         VkBuffer buffer;
@@ -46,7 +46,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
     }
 
-    public void UpdateUniformBuffer<T>(BackendBuffer buffer, T data) where T : unmanaged
+    public override void UpdateUniformBuffer<T>(BackendBuffer buffer, T data)
     {
         var vulkanBuffer = (VulkanBuffer)buffer;
         uint bufferSize = (uint)Unsafe.SizeOf<T>();

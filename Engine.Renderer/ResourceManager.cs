@@ -2,12 +2,12 @@ using OpenTK.Mathematics;
 
 namespace Engine;
 
-public class ResourceAllocator
+public class ResourceManager
 {
     private readonly BackendBufferManager _backendBufferManager;
     private readonly BackendImageManager _backendImageManager;
 
-    internal ResourceAllocator(BackendBufferManager backendBufferManager, BackendImageManager backendImageManager)
+    internal ResourceManager(BackendBufferManager backendBufferManager, BackendImageManager backendImageManager)
     {
         _backendBufferManager = backendBufferManager;
         _backendImageManager = backendImageManager;
@@ -33,5 +33,16 @@ public class ResourceAllocator
         // return new Image(backendImage);
 
         throw new NotImplementedException();
+    }
+
+    public Buffer CreateUniformBuffer<T>() where T : unmanaged
+    {
+        var backendBuffer = _backendBufferManager.CreateUniformBuffer<T>();
+        return new Buffer(backendBuffer);
+    }
+
+    public void UpdateUniformBuffer<T>(Buffer buffer, T data) where T : unmanaged
+    {
+        _backendBufferManager.UpdateUniformBuffer(buffer.BackendBuffer, data);
     }
 }
