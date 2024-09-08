@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using OpenTK.Mathematics;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal sealed unsafe class VulkanSwapchain : IDisposable
+internal sealed unsafe class VulkanSwapchain : VulkanRenderTarget
 {
     public readonly VulkanDevice Device;
 
@@ -14,13 +15,14 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
     public readonly Window? Window = default!;
 
     public VkSwapchainKHR Handle;
-    public Vector2i Extent { get; }
     public VkSurfaceFormatKHR SurfaceFormat;
-    public int ImageCount => _images.Length;
     private readonly VkSurfaceKHR _surface;
     private VulkanImage[] _images;
+    public override Vector2i Extent { get; }
+    public override uint ImageCount { get; }
 
     public VulkanSwapchain(VulkanDevice device, Window? window, VkSurfaceKHR surface)
+        : base(device)
     {
         Device = device;
         Window = window;
@@ -38,7 +40,8 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
         {
             imageCount = swapChainSupport.Capabilities.maxImageCount;
         }
-
+        ImageCount = imageCount;
+        
         var createInfo = new VkSwapchainCreateInfoKHR
         {
             surface = _surface,
@@ -65,7 +68,7 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
 
         var vulkanImages = new VulkanImage[images.Length];
         for (int i = 0; i < images.Length; i++)
-            vulkanImages[i] = new VulkanImage(Device, (uint)Extent.X, (uint)Extent.Y, images[i], imageViews[i], VkDeviceMemory.Null, SurfaceFormat.format, true);
+            vulkanImages[i] = new VulkanImage(Device, Extent, images[i], imageViews[i], VkDeviceMemory.Null, SurfaceFormat.format, true);
         _images = vulkanImages;
     }
 
@@ -89,10 +92,7 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
         return imageView;
     }
 
-    public VulkanImage GetImage(uint index)
-        => _images[index];
-
-    public void Dispose()
+    public override void Dispose()
     {
         for (int i = 0; i < _images.Length; i++)
             vkDestroyImageView(Device.LogicalDevice, _images[i].ImageView, null);
@@ -171,4 +171,7 @@ internal sealed unsafe class VulkanSwapchain : IDisposable
 
         return VkPresentModeKHR.Fifo;
     }
+    
+    public override VulkanImage GetImage(uint index)
+        => _images[index];
 }

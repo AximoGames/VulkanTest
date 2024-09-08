@@ -1,3 +1,5 @@
+using OpenTK.Mathematics;
+
 namespace Engine;
 
 public class Image
@@ -9,6 +11,5 @@ public class Image
         BackendImage = backendImage;
     }
 
-    public uint Width => BackendImage.Width;
-    public uint Height => BackendImage.Height;
+    public Vector2i Extent => BackendImage.Extent;
 }

@@ -1,3 +1,4 @@
+using OpenTK.Mathematics;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
@@ -9,13 +10,16 @@ internal unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
     private VulkanImage[] _images;
 
     public VulkanSwapchainRenderTarget(VulkanDevice device, VulkanSwapchain swapchain, VulkanImage[] images)
-        : base(device, (uint)swapchain.Extent.X, (uint)swapchain.Extent.Y, (uint)swapchain.ImageCount)
+        : base(device)
     {
         _swapchain = swapchain;
         _images = images;
     }
-    
-    public override BackendImage GetImage(uint index)
+
+    public override Vector2i Extent { get; }
+    public override uint ImageCount { get; }
+
+    public override VulkanImage GetImage(uint index)
         => _images[index];
 
     public override void Dispose()

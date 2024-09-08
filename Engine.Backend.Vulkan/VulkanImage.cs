@@ -1,3 +1,4 @@
+using OpenTK.Mathematics;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
@@ -12,17 +13,18 @@ internal unsafe class VulkanImage : BackendImage
     internal VkFormat Format { get; }
     internal bool IsRenderTarget { get; }
 
-    public VulkanImage(VulkanDevice device, uint width, uint height, VkImage image, VkImageView imageView, VkDeviceMemory memory, VkFormat format, bool isRenderTarget)
+    public VulkanImage(VulkanDevice device, Vector2i size, VkImage image, VkImageView imageView, VkDeviceMemory memory, VkFormat format, bool isRenderTarget)
     {
         _device = device;
-        Width = width;
-        Height = height;
+        Extent = size;
         Image = image;
         ImageView = imageView;
         Memory = memory;
         Format = format;
         IsRenderTarget = isRenderTarget;
     }
+
+    public override Vector2i Extent { get; }
 
     public override void Dispose()
     {

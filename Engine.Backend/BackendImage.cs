@@ -1,8 +1,9 @@
+using OpenTK.Mathematics;
+
 namespace Engine;
 
 public abstract class BackendImage
 {
-    public uint Width { get; protected set; }
-    public uint Height { get; protected set; }
+    public abstract Vector2i Extent { get; }
     public abstract void Dispose();
 }
