@@ -154,9 +154,16 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo
             {
                 setLayoutCount = 0,
-                pushConstantRangeCount = (uint)_pushConstantRanges.Count,
-                pPushConstantRanges = _pushConstantRanges.Count > 0 ? (VkPushConstantRange*)Unsafe.AsPointer(ref _pushConstantRanges) : null
             };
+
+            if (_pushConstantRanges.Count > 0)
+            {
+                pipelineLayoutInfo.pushConstantRangeCount = (uint)_pushConstantRanges.Count;
+                fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
+                {
+                    pipelineLayoutInfo.pPushConstantRanges = pushConstantRangesPtr;
+                }
+            }
 
             vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
 
