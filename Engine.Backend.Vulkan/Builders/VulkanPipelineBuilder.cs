@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using OpenTK.Mathematics;
 using Vortice.ShaderCompiler;
 using Vortice.Vulkan;
+using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
@@ -153,7 +154,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
                 pushConstantRangeCount = 0
             };
 
-            Vortice.Vulkan.Vulkan.vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
+            vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
 
             VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
 
@@ -181,7 +182,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             };
 
             VkPipeline graphicsPipeline;
-            Vortice.Vulkan.Vulkan.vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
+            vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
             PipelineHandle = graphicsPipeline;
         }
 
