@@ -55,8 +55,11 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
         vkCmdClearAttachments(_commandBuffer, 1, &clearAttachment, 1, &clearRect);
     }
 
-    public override void BindUniformBuffer(BackendBuffer buffer, uint binding)
+    public override void BindUniformBuffer(BackendBuffer buffer, uint set, uint binding)
     {
+        var vulkanBuffer = (VulkanBuffer)buffer;
+        var descriptorSet = _device.DescriptorSetManager.GetOrCreateDescriptorSet(_pipeline, set, binding, vulkanBuffer);
+        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 0, null);
     }
 
     public override void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data)

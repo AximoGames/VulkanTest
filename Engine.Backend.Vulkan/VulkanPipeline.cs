@@ -11,13 +11,15 @@ internal unsafe class VulkanPipeline : BackendPipeline
     private readonly VulkanDevice _device;
     public VkPipeline Pipeline;
     public VkPipelineLayout PipelineLayout;
+    public VkDescriptorSetLayout[] DescriptorSetLayouts;
 
-    public VulkanPipeline(VulkanDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
-        : base(device)
+    public VulkanPipeline(VulkanDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, int pipelineLayoutHash, VkDescriptorSetLayout[] descriptorSetLayouts)
+        : base(device, pipelineLayoutHash)
     {
         _device = device;
         Pipeline = pipeline;
         PipelineLayout = pipelineLayout;
+        DescriptorSetLayouts = descriptorSetLayouts;
     }
 
     public override void Dispose()

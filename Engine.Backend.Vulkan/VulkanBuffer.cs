@@ -9,8 +9,8 @@ internal class VulkanBuffer : BackendBuffer
     internal VkBuffer Buffer { get; }
     internal VkDeviceMemory Memory { get; }
 
-    internal VulkanBuffer(Type elementType, VulkanDevice device, VkBuffer buffer, VkDeviceMemory memory)
-        : base(elementType)
+    internal VulkanBuffer(Type elementType, uint size, VulkanDevice device, VkBuffer buffer, VkDeviceMemory memory)
+        : base(elementType, size)
     {
         _device = device;
         Buffer = buffer;

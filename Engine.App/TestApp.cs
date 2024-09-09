@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Engine.Vulkan;
 using OpenTK;
 using OpenTK.Mathematics;
@@ -13,6 +12,7 @@ public class TestApp : Application
     private Pipeline _pipeline;
     private Buffer _vertexBuffer;
     private Buffer _indexBuffer;
+    private Buffer _uniformBuffer;
     private float _greenValue = 0.0f;
     private bool EnableValidationLayers = true;
 
@@ -75,12 +75,12 @@ public class TestApp : Application
             layout(location = 0) in vec3 fragColor;
             layout(location = 0) out vec4 outColor;
 
-            layout(push_constant) uniform PushConstants {
+            layout(set = 0, binding = 0) uniform UniformBufferObject {
                 float colorFactor;
-            } pushConstants;
+            } ubo;
 
             void main() {
-                outColor = vec4(fragColor + pushConstants.colorFactor, 1.0);
+                outColor = vec4(fragColor + ubo.colorFactor, 1.0);
             }
             """;
 
@@ -114,13 +114,35 @@ public class TestApp : Application
         builder.ConfigureVertexLayout(vertexLayoutInfo);
         builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
         builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
-        builder.ConfigurePushConstants(sizeof(float), ShaderStageFlags.Fragment);
+
+        var layoutDescription = new PipelineLayoutDescription
+        {
+            DescriptorSetLayouts = new List<DescriptorSetLayoutDescription>
+            {
+                new()
+                {
+                    Bindings = new List<DescriptorSetLayoutBinding>
+                    {
+                        new()
+                        {
+                            Binding = 0,
+                            DescriptorType = DescriptorType.UniformBuffer,
+                            DescriptorCount = 1,
+                            StageFlags = ShaderStageFlags.Fragment
+                        }
+                    }
+                }
+            }
+        };
+
+        builder.ConfigurePipelineLayout(layoutDescription);
     }
 
     private void InitializeResources(ResourceManager allocator)
     {
         _vertexBuffer = allocator.CreateVertexBuffer(Vertices);
         _indexBuffer = allocator.CreateIndexBuffer(Indices);
+        _uniformBuffer = allocator.CreateUniformBuffer<float>();
     }
 
     private void InitializeRenderPass()
@@ -159,7 +181,8 @@ public class TestApp : Application
                         drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
                         drawContext.BindVertexBuffer(_vertexBuffer);
                         drawContext.BindIndexBuffer(_indexBuffer);
-                        drawContext.SetPushConstants(ShaderStageFlags.Fragment, 0, _greenValue);
+                        frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue);
+                        drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
                         drawContext.DrawIndexed((uint)Indices.Length);
                     });
                 });

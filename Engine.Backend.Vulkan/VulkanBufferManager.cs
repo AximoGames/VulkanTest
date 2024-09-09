@@ -32,7 +32,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
 
         CreateBuffer(bufferSize, VkBufferUsageFlags.TransferDst | vkBufferType, VkMemoryPropertyFlags.DeviceLocal, out buffer, out bufferMemory);
 
-        return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
+        return new VulkanBuffer(typeof(T), bufferSize, _device, buffer, bufferMemory);
     }
 
     public override BackendBuffer CreateUniformBuffer<T>()
@@ -43,7 +43,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
 
         CreateBuffer(bufferSize, VkBufferUsageFlags.UniformBuffer, VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent, out buffer, out bufferMemory);
 
-        return new VulkanBuffer(typeof(T), _device, buffer, bufferMemory);
+        return new VulkanBuffer(typeof(T), bufferSize, _device, buffer, bufferMemory);
     }
 
     public override void UpdateUniformBuffer<T>(BackendBuffer buffer, T data)

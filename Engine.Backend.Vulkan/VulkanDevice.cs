@@ -33,9 +33,10 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
     public uint CurrentSwapchainImageIndex;
 
-    public VulkanShaderManager ShaderManager { get; private set; }
 
+    public VulkanShaderManager ShaderManager { get; private set; }
     public VulkanCommandBufferManager CommandBufferManager;
+    public VulkanDescriptorSetManager DescriptorSetManager { get; private set; }
 
     public VkClearColorValue? ClearColor { get; set; }
 
@@ -66,6 +67,8 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         CommandBufferManager = new VulkanCommandBufferManager(this, CommandPool);
 
         VulkanImageManager = new VulkanImageManager(this, VulkanBufferManager);
+
+        DescriptorSetManager = new VulkanDescriptorSetManager(this, 1000); // Adjust the number as needed
 
         for (var i = 0; i < _perFrameData.Length; i++)
         {

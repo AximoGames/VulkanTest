@@ -76,6 +76,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             };
         }
 
+        VkDescriptorSetLayout[] descriptorSetLayouts;
         fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
         {
             var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo
@@ -151,7 +152,6 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
-            VkDescriptorSetLayout[] descriptorSetLayouts;
             if (_layoutDescription != null)
             {
                 descriptorSetLayouts = new VkDescriptorSetLayout[_layoutDescription.DescriptorSetLayouts.Count];
@@ -160,7 +160,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             }
             else
             {
-                descriptorSetLayouts = Array.Empty<VkDescriptorSetLayout>();
+                descriptorSetLayouts = [];
             }
 
             if (descriptorSetLayouts.Length > 0 || _pushConstantRanges.Count > 0)
@@ -219,7 +219,8 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         fragShaderModule.Free();
         vertShaderModule.Free();
 
-        return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle);
+        var pipelineLayoutHash = PipelineLayoutHandle.GetHashCode();
+        return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle, pipelineLayoutHash, descriptorSetLayouts);
     }
 
     public override void ConfigureShader(string shaderCode, ShaderKind shaderKind)
@@ -284,7 +285,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             };
         }
 
-        fixed (VkDescriptorSetLayoutBinding* bindingsPtr = &bindings[0])
+        fixed (VkDescriptorSetLayoutBinding* bindingsPtr = bindings)
         {
             VkDescriptorSetLayoutCreateInfo layoutInfo = new VkDescriptorSetLayoutCreateInfo
             {
