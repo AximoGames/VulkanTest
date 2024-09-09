@@ -1,4 +1,6 @@
 using OpenTK.Mathematics;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Engine;
 
@@ -33,6 +35,12 @@ public class ResourceManager
         // return new Image(backendImage);
 
         throw new NotImplementedException();
+    }
+
+    public Image CreateImage(Image<Rgba32> image)
+    {
+        var backendImage = _backendImageManager.CreateTextureImage(image);
+        return new Image(backendImage);
     }
 
     public Buffer CreateUniformBuffer<T>() where T : unmanaged

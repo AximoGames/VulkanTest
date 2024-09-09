@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Engine.Vulkan;
 using OpenTK;
 using OpenTK.Mathematics;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Engine.App;
 
@@ -22,6 +24,7 @@ public class TestApp : Application
     ];
 
     private Pass _renderPass;
+    private Image _textureImage;
 
     public override string Name => "01-DrawTriangle";
 
@@ -49,6 +52,23 @@ public class TestApp : Application
         _pipeline = _graphicsDevice.CreatePipeline(InitializePipeline);
         _graphicsDevice.InitializeResources(InitializeResources);
         InitializeRenderPass();
+    }
+
+    private Image<Rgba32> CreateGradientImage(int width, int height)
+    {
+        var image = new Image<Rgba32>(width, height);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                float r = (float)x / width;
+                float g = (float)y / height;
+                float b = 1.0f - ((float)x / width + (float)y / height) / 2;
+                image[x, y] = new Rgba32(r, g, b);
+            }
+        }
+
+        return image;
     }
 
     private void InitializePipeline(PipelineBuilder builder)
@@ -143,6 +163,11 @@ public class TestApp : Application
         _vertexBuffer = allocator.CreateVertexBuffer(Vertices);
         _indexBuffer = allocator.CreateIndexBuffer(Indices);
         _uniformBuffer = allocator.CreateUniformBuffer<float>();
+
+        using (var gradientImage = CreateGradientImage(100, 100))
+        {
+            _textureImage = allocator.CreateImage(gradientImage);
+        }
     }
 
     private void InitializeRenderPass()

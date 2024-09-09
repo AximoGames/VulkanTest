@@ -80,7 +80,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
     }
 
-    private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
+    internal void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
     {
         VkBufferCreateInfo bufferInfo = new()
         {
@@ -95,14 +95,14 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         VkMemoryRequirements memRequirements;
         vkGetBufferMemoryRequirements(_device.LogicalDevice, buffer, out memRequirements);
 
-        VkMemoryAllocateInfo allocInfo = new();
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+        VkMemoryAllocateInfo allocInfo = new()
+        {
+            allocationSize = memRequirements.size,
+            memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties),
+        };
 
         if (vkAllocateMemory(_device.LogicalDevice, &allocInfo, null, out bufferMemory) != VkResult.Success)
-        {
             throw new Exception("failed to allocate buffer memory!");
-        }
 
         vkBindBufferMemory(_device.LogicalDevice, buffer, bufferMemory, 0);
     }

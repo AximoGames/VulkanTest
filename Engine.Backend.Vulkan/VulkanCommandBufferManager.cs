@@ -49,12 +49,36 @@ internal unsafe class VulkanCommandBufferManager : IDisposable
         _allocatedCommandBuffers.Remove(commandBuffer);
     }
 
+    public VkCommandBuffer BeginSingleTimeCommands()
+    {
+        VkCommandBuffer commandBuffer = AllocateCommandBuffer();
+        BeginCommandBuffer(commandBuffer, VkCommandBufferUsageFlags.OneTimeSubmit);
+        return commandBuffer;
+    }
+
+    public void EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+    {
+        vkEndCommandBuffer(commandBuffer).CheckResult();
+
+        VkSubmitInfo submitInfo = new VkSubmitInfo
+        {
+            commandBufferCount = 1,
+            pCommandBuffers = &commandBuffer
+        };
+
+        vkQueueSubmit(_device.GraphicsQueue, 1, &submitInfo, VkFence.Null).CheckResult();
+        vkQueueWaitIdle(_device.GraphicsQueue).CheckResult();
+
+        _commandPool.FreeCommandBuffer(commandBuffer);
+    }
+
     public void Dispose()
     {
         foreach (var commandBuffer in _allocatedCommandBuffers)
         {
             _commandPool.FreeCommandBuffer(commandBuffer);
         }
+
         _allocatedCommandBuffers.Clear();
     }
 }
