@@ -82,10 +82,12 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
 
     private void CreateBuffer(uint size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, out VkBuffer buffer, out VkDeviceMemory bufferMemory)
     {
-        VkBufferCreateInfo bufferInfo;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VkSharingMode.Exclusive;
+        VkBufferCreateInfo bufferInfo = new()
+        {
+            size = size,
+            usage = usage,
+            sharingMode = VkSharingMode.Exclusive
+        };
 
         if (vkCreateBuffer(_device.LogicalDevice, &bufferInfo, null, out buffer) != VkResult.Success)
             throw new Exception("failed to create buffer!");
@@ -93,7 +95,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         VkMemoryRequirements memRequirements;
         vkGetBufferMemoryRequirements(_device.LogicalDevice, buffer, out memRequirements);
 
-        VkMemoryAllocateInfo allocInfo;
+        VkMemoryAllocateInfo allocInfo = new();
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
@@ -107,30 +109,38 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
 
     private void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, ulong size, ulong srcOffset, ulong dstOffset)
     {
-        VkCommandBufferAllocateInfo allocInfo;
-        allocInfo.level = VkCommandBufferLevel.Primary;
-        allocInfo.commandPool = _commandPool.Handle;
-        allocInfo.commandBufferCount = 1;
+        VkCommandBufferAllocateInfo allocInfo = new()
+        {
+            level = VkCommandBufferLevel.Primary,
+            commandPool = _commandPool.Handle,
+            commandBufferCount = 1,
+        };
 
         VkCommandBuffer commandBuffer;
         vkAllocateCommandBuffers(_device.LogicalDevice, &allocInfo, &commandBuffer);
 
-        VkCommandBufferBeginInfo beginInfo;
-        beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmit;
+        VkCommandBufferBeginInfo beginInfo = new()
+        {
+            flags = VkCommandBufferUsageFlags.OneTimeSubmit
+        };
 
         vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-        VkBufferCopy copyRegion;
-        copyRegion.srcOffset = srcOffset;
-        copyRegion.dstOffset = dstOffset;
-        copyRegion.size = size;
+        VkBufferCopy copyRegion = new()
+        {
+            srcOffset = srcOffset,
+            dstOffset = dstOffset,
+            size = size
+        };
         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
         vkEndCommandBuffer(commandBuffer);
 
-        VkSubmitInfo submitInfo;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
+        VkSubmitInfo submitInfo = new()
+        {
+            commandBufferCount = 1,
+            pCommandBuffers = &commandBuffer
+        };
 
         vkQueueSubmit(_device.GraphicsQueue, 1, &submitInfo, VkFence.Null);
         vkQueueWaitIdle(_device.GraphicsQueue);
