@@ -22,32 +22,32 @@ internal unsafe class VulkanDescriptorSetManager
 
     public VkDescriptorSet GetOrCreateDescriptorSet(VulkanPipeline pipeline, uint set, uint binding, VulkanBuffer buffer)
     {
-           var key = (pipeline.PipelineLayoutHash, set, binding, buffer.Buffer);
+        var key = (pipeline.PipelineLayoutHash, set, binding, buffer.Buffer);
 
-    if (_descriptorSetCache.TryGetValue(key, out var descriptorSet))
+        if (_descriptorSetCache.TryGetValue(key, out var descriptorSet))
+            return descriptorSet;
+
+        descriptorSet = AllocateDescriptorSet(pipeline.DescriptorSetLayouts[set]);
+        UpdateDescriptorSet(descriptorSet, binding, buffer);
+
+        _descriptorSetCache[key] = descriptorSet;
         return descriptorSet;
-
-    descriptorSet = AllocateDescriptorSet(pipeline.DescriptorSetLayouts[set]);
-    UpdateDescriptorSet(descriptorSet, binding, buffer);
-
-    _descriptorSetCache[key] = descriptorSet;
-    return descriptorSet;
     }
 
 
-private VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout)
-{
-    VkDescriptorSetAllocateInfo allocInfo = new VkDescriptorSetAllocateInfo
+    private VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout)
     {
-        descriptorPool = _descriptorPool,
-        descriptorSetCount = 1,
-        pSetLayouts = &layout
-    };
+        VkDescriptorSetAllocateInfo allocInfo = new VkDescriptorSetAllocateInfo
+        {
+            descriptorPool = _descriptorPool,
+            descriptorSetCount = 1,
+            pSetLayouts = &layout
+        };
 
-    VkDescriptorSet descriptorSet;
-    vkAllocateDescriptorSets(_device.LogicalDevice, &allocInfo, &descriptorSet).CheckResult();
-    return descriptorSet;
-}
+        VkDescriptorSet descriptorSet;
+        vkAllocateDescriptorSets(_device.LogicalDevice, &allocInfo, &descriptorSet).CheckResult();
+        return descriptorSet;
+    }
 
     private void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint binding, VulkanBuffer buffer)
     {
