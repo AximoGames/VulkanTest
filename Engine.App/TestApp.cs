@@ -14,7 +14,7 @@ public class TestApp : Application
     private Buffer _vertexBuffer;
     private Buffer _indexBuffer;
     private float _greenValue = 0.0f;
-    private bool EnableValidationLayers = false;
+    private bool EnableValidationLayers = true;
 
     private string[] suppressDebugMessages =
     [

@@ -250,6 +250,10 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         CommandBufferManager.BeginCommandBuffer(cmd);
 
+        // Transition image layout to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+        TransitionImageLayout(cmd, SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex).Image, 
+                              VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
         action(new VulkanRenderFrameContext(this, cmd));
 
         CommandBufferManager.EndCommandBuffer(cmd);
@@ -288,6 +292,51 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         {
             Log.Error("Failed to present swapchain image.");
         }
+    }
+
+    private void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
+    {
+        VkImageMemoryBarrier barrier = new VkImageMemoryBarrier
+        {
+            oldLayout = oldLayout,
+            newLayout = newLayout,
+            srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            image = image,
+            subresourceRange = new VkImageSubresourceRange
+            {
+                aspectMask = VkImageAspectFlags.Color,
+                baseMipLevel = 0,
+                levelCount = 1,
+                baseArrayLayer = 0,
+                layerCount = 1
+            }
+        };
+
+        VkPipelineStageFlags sourceStage;
+        VkPipelineStageFlags destinationStage;
+
+        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+        {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VkAccessFlags.MemoryRead;
+
+            sourceStage = VkPipelineStageFlags.TopOfPipe;
+            destinationStage = VkPipelineStageFlags.BottomOfPipe;
+        }
+        else
+        {
+            throw new InvalidOperationException("Unsupported layout transition!");
+        }
+
+        vkCmdPipelineBarrier(
+            commandBuffer,
+            sourceStage, destinationStage,
+            0,
+            0, null,
+            0, null,
+            1, &barrier
+        );
     }
 
     public override BackendPassBuilder CreatePassBuilder()
