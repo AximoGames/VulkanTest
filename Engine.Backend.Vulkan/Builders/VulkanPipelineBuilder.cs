@@ -151,21 +151,35 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
-            var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo
-            {
-                setLayoutCount = 0,
-            };
+            var descriptorSetLayouts = new VkDescriptorSetLayout[_layoutDescription.DescriptorSetLayouts.Count];
+            for (int i = 0; i < _layoutDescription.DescriptorSetLayouts.Count; i++)
+                descriptorSetLayouts[i] = CreateDescriptorSetLayout(_layoutDescription.DescriptorSetLayouts[i]);
 
-            if (_pushConstantRanges.Count > 0)
             {
-                pipelineLayoutInfo.pushConstantRangeCount = (uint)_pushConstantRanges.Count;
-                fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
-                {
-                    pipelineLayoutInfo.pPushConstantRanges = pushConstantRangesPtr;
-                }
             }
 
-            vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
+            if (descriptorSetLayouts.Length > 0 || _pushConstantRanges.Count > 0)
+            {
+                fixed (VkDescriptorSetLayout* descriptorSetLayoutsPtr = &descriptorSetLayouts[0])
+                fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
+                {
+                    var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
+
+                    if (descriptorSetLayouts.Length > 0)
+                    {
+                        pipelineLayoutInfo.setLayoutCount = (uint)descriptorSetLayouts.Length;
+                        pipelineLayoutInfo.pSetLayouts = descriptorSetLayoutsPtr;
+                    }
+
+                    if (_pushConstantRanges.Count > 0)
+                    {
+                        pipelineLayoutInfo.pushConstantRangeCount = (uint)_pushConstantRanges.Count;
+                        pipelineLayoutInfo.pPushConstantRanges = pushConstantRangesPtr;
+                    }
+
+                    vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
+                }
+            }
 
             VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
 
