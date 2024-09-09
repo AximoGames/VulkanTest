@@ -299,7 +299,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     {
         VkSemaphore acquireSemaphore = Synchronization.AcquireSemaphore();
 
-        VkResult result = vkAcquireNextImageKHR(LogicalDevice, SwapchainRenderTarget.Handle, ulong.MaxValue, acquireSemaphore, VkFence.Null, out imageIndex);
+        VkResult result = vkAcquireNextImageKHR(LogicalDevice, SwapchainRenderTarget.VkSwapchain, ulong.MaxValue, acquireSemaphore, VkFence.Null, out imageIndex);
 
         if (result != VkResult.Success)
         {
@@ -327,9 +327,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     }
 
     private VkResult PresentImage(uint imageIndex)
-    {
-        return vkQueuePresentKHR(PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, SwapchainRenderTarget.Handle, imageIndex);
-    }
+        => vkQueuePresentKHR(PresentQueue, _perFrameData[imageIndex].SwapchainReleaseSemaphore, SwapchainRenderTarget.VkSwapchain, imageIndex);
 
     public static implicit operator VkDevice(VulkanDevice device) => device.LogicalDevice;
 
@@ -360,7 +358,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
             imageView = targetImage.ImageView,
-            imageLayout = ConvertImageLayout(pass.ColorAttachment.FinalLayout),
+            imageLayout = ConvertImageLayout(pass.ColorAttachment.ImageLayout),
             loadOp = ConvertLoadOp(pass.ColorAttachment.LoadOp),
             storeOp = ConvertStoreOp(pass.ColorAttachment.StoreOp),
         };

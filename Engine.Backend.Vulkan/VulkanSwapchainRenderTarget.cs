@@ -14,7 +14,7 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
     [NotNull]
     public readonly Window? Window = default!;
 
-    public VkSwapchainKHR Handle;
+    public VkSwapchainKHR VkSwapchain;
     public VkSurfaceFormatKHR SurfaceFormat;
     private readonly VkSurfaceKHR _surface;
     private VulkanImage[] _images;
@@ -59,7 +59,7 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
             oldSwapchain = VkSwapchainKHR.Null
         };
 
-        vkCreateSwapchainKHR(Device.LogicalDevice, &createInfo, null, out Handle).CheckResult();
+        vkCreateSwapchainKHR(Device.LogicalDevice, &createInfo, null, out VkSwapchain).CheckResult();
 
         var images = GetImages();
         var imageViews = new VkImageView[images.Length];
@@ -74,7 +74,7 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
 
     private VkImage[] GetImages()
     {
-        ReadOnlySpan<VkImage> imagesSpan = vkGetSwapchainImagesKHR(Device.LogicalDevice, Handle);
+        ReadOnlySpan<VkImage> imagesSpan = vkGetSwapchainImagesKHR(Device.LogicalDevice, VkSwapchain);
         return imagesSpan.ToArray();
     }
 
@@ -97,8 +97,8 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
         for (int i = 0; i < _images.Length; i++)
             vkDestroyImageView(Device.LogicalDevice, _images[i].ImageView, null);
 
-        if (Handle != VkSwapchainKHR.Null)
-            vkDestroySwapchainKHR(Device.LogicalDevice, Handle, null);
+        if (VkSwapchain != VkSwapchainKHR.Null)
+            vkDestroySwapchainKHR(Device.LogicalDevice, VkSwapchain, null);
     }
 
     private ref struct SwapchainSupportDetails
