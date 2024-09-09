@@ -18,4 +18,5 @@ public abstract class BackendRenderContext
     public abstract void BindUniformBuffer(BackendBuffer buffer, uint set, uint binding);
     public abstract void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data) where T : unmanaged;
     public abstract void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T data) where T : unmanaged;
+    public abstract void BindTexture(BackendImage image, uint set, uint binding, BackendSampler sampler);
 }

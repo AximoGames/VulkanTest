@@ -11,7 +11,8 @@ internal unsafe class VulkanDescriptorSetManager
     private readonly uint _maxSets;
     private uint _allocatedSets;
 
-    private Dictionary<(int, uint, uint, VkBuffer), VkDescriptorSet> _descriptorSetCache = new();
+    private Dictionary<(int, uint, uint, VkBuffer), VkDescriptorSet> _bufferDescriptorSetCache = new();
+    private Dictionary<(int, uint, uint, VkImage, VkSampler), VkDescriptorSet> _imageDescriptorSetCache = new();
 
     public VulkanDescriptorSetManager(VulkanDevice device, uint maxSets)
     {
@@ -24,16 +25,29 @@ internal unsafe class VulkanDescriptorSetManager
     {
         var key = (pipeline.PipelineLayoutHash, set, binding, buffer.Buffer);
 
-        if (_descriptorSetCache.TryGetValue(key, out var descriptorSet))
+        if (_bufferDescriptorSetCache.TryGetValue(key, out var descriptorSet))
             return descriptorSet;
 
         descriptorSet = AllocateDescriptorSet(pipeline.DescriptorSetLayouts[set]);
         UpdateDescriptorSet(descriptorSet, binding, buffer);
 
-        _descriptorSetCache[key] = descriptorSet;
+        _bufferDescriptorSetCache[key] = descriptorSet;
         return descriptorSet;
     }
 
+    public VkDescriptorSet GetOrCreateDescriptorSet(VulkanPipeline pipeline, uint set, uint binding, VulkanImage image, VulkanSampler sampler)
+    {
+        var key = (pipeline.PipelineLayoutHash, set, binding, image.Image, sampler.Sampler);
+
+        if (_imageDescriptorSetCache.TryGetValue(key, out var descriptorSet))
+            return descriptorSet;
+
+        descriptorSet = AllocateDescriptorSet(pipeline.DescriptorSetLayouts[set]);
+        UpdateDescriptorSet(descriptorSet, binding, image, sampler);
+
+        _imageDescriptorSetCache[key] = descriptorSet;
+        return descriptorSet;
+    }
 
     private VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout)
     {
@@ -66,6 +80,28 @@ internal unsafe class VulkanDescriptorSetManager
             descriptorType = VkDescriptorType.UniformBuffer,
             descriptorCount = 1,
             pBufferInfo = &bufferInfo
+        };
+
+        vkUpdateDescriptorSets(_device.LogicalDevice, 1, &descriptorWrite, 0, null);
+    }
+
+    private void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint binding, VulkanImage image, VulkanSampler sampler)
+    {
+        VkDescriptorImageInfo imageInfo = new VkDescriptorImageInfo
+        {
+            imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
+            imageView = image.ImageView,
+            sampler = sampler.Sampler
+        };
+
+        VkWriteDescriptorSet descriptorWrite = new VkWriteDescriptorSet
+        {
+            dstSet = descriptorSet,
+            dstBinding = binding,
+            dstArrayElement = 0,
+            descriptorType = VkDescriptorType.CombinedImageSampler,
+            descriptorCount = 1,
+            pImageInfo = &imageInfo
         };
 
         vkUpdateDescriptorSets(_device.LogicalDevice, 1, &descriptorWrite, 0, null);

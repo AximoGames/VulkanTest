@@ -78,4 +78,12 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
         if ((flags & ShaderStageFlags.Fragment) != 0) result |= VkShaderStageFlags.Fragment;
         return result;
     }
+
+    public override void BindTexture(BackendImage image, uint set, uint binding, BackendSampler sampler)
+    {
+        var vulkanImage = (VulkanImage)image;
+        var vulkanSampler = (VulkanSampler)sampler;
+        var descriptorSet = _device.DescriptorSetManager.GetOrCreateDescriptorSet(_pipeline, set, binding, vulkanImage, vulkanSampler);
+        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 0, null);
+    }
 }
