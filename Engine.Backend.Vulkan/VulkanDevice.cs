@@ -475,10 +475,4 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     {
         return SwapchainRenderTarget;
     }
-
-    public VulkanSampler CreateSampler(VkSamplerCreateInfo samplerCreateInfo)
-    {
-        vkCreateSampler(LogicalDevice, &samplerCreateInfo, null, out VkSampler sampler).CheckResult();
-        return new VulkanSampler(this, sampler);
-    }
 }

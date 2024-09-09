@@ -50,7 +50,8 @@ public class ResourceManager
     }
 
     public void UpdateUniformBuffer<T>(Buffer buffer, T data) where T : unmanaged
-    {
-        _backendBufferManager.UpdateUniformBuffer(buffer.BackendBuffer, data);
-    }
+        => _backendBufferManager.UpdateUniformBuffer(buffer.BackendBuffer, data);
+
+    public Sampler CreateSampler(SamplerDescription description)
+        => new(_backendImageManager.CreateSampler(description));
 }

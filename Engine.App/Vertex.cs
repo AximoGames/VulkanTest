@@ -7,4 +7,5 @@ public struct Vertex
 {
     public Vector2 Position;
     public Vector3 Color;
+    public Vector2 TexCoord; // Add this line
 }

@@ -79,7 +79,7 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
         return result;
     }
 
-    public override void BindTexture(BackendImage image, uint set, uint binding, BackendSampler sampler)
+    public override void BindTexture(BackendImage image, BackendSampler sampler, uint set, uint binding)
     {
         var vulkanImage = (VulkanImage)image;
         var vulkanSampler = (VulkanSampler)sampler;

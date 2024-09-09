@@ -30,16 +30,18 @@ public class TestApp : Application
 
     public Vertex[] Vertices =
     {
-        new() { Position = new Vector2(-0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new() { Position = new Vector2(0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f) },
-        new() { Position = new Vector2(0.5f, 0.5f), Color = new Vector3(0.0f, 1.0f, 0.0f) },
-        new() { Position = new Vector2(-0.5f, 0.5f), Color = new Vector3(0.0f, 0.0f, 1.0f) }
+        new() { Position = new Vector2(-0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f), TexCoord = new Vector2(0.0f, 0.0f) },
+        new() { Position = new Vector2(0.5f, -0.5f), Color = new Vector3(1.0f, 0.0f, 0.0f), TexCoord = new Vector2(1.0f, 0.0f) },
+        new() { Position = new Vector2(0.5f, 0.5f), Color = new Vector3(0.0f, 1.0f, 0.0f), TexCoord = new Vector2(1.0f, 1.0f) },
+        new() { Position = new Vector2(-0.5f, 0.5f), Color = new Vector3(0.0f, 0.0f, 1.0f), TexCoord = new Vector2(0.0f, 1.0f) }
     };
 
     public ushort[] Indices =
     {
         0, 1, 2, 2, 3, 0,
     };
+
+    private Sampler _sampler;
 
     protected override void Initialize()
     {
@@ -74,32 +76,43 @@ public class TestApp : Application
     private void InitializePipeline(PipelineBuilder builder)
     {
         string vertexShaderCode =
+            // lang=glsl
             """
             #version 450
 
             layout(location = 0) in vec2 inPosition;
             layout(location = 1) in vec3 inColor;
+            layout(location = 2) in vec2 inTexCoord;
 
             layout(location = 0) out vec3 fragColor;
+            layout(location = 1) out vec2 fragTexCoord;
 
             void main() {
                 gl_Position = vec4(inPosition, 0.0, 1.0);
                 fragColor = inColor;
+                fragTexCoord = inTexCoord;
             }
             """;
 
         string fragShaderCode =
+            // lang=glsl
             """
             #version 450
 
             layout(location = 0) in vec3 fragColor;
+            layout(location = 1) in vec2 fragTexCoord;
+
             layout(location = 0) out vec4 outColor;
 
             layout(set = 0, binding = 0) uniform UniformBufferObject {
                 float colorFactor;
             } ubo;
 
+            //layout(set = 0, binding = 1) uniform sampler2D textureSampler;
+
             void main() {
+                //vec4 textureColor = texture(textureSampler, fragTexCoord);
+                //outColor = vec4(fragColor + ubo.colorFactor, 1.0) * textureColor;
                 outColor = vec4(fragColor + ubo.colorFactor, 1.0);
             }
             """;
@@ -127,6 +140,13 @@ public class TestApp : Application
                     Location = 1,
                     Format = VertexFormat.Float32_3,
                     Offset = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Vector2>()
+                },
+                new()
+                {
+                    Binding = 0,
+                    Location = 2,
+                    Format = VertexFormat.Float32_2,
+                    Offset = (uint)(System.Runtime.InteropServices.Marshal.SizeOf<Vector2>() + System.Runtime.InteropServices.Marshal.SizeOf<Vector3>())
                 }
             }
         };
@@ -149,7 +169,14 @@ public class TestApp : Application
                             DescriptorType = DescriptorType.UniformBuffer,
                             DescriptorCount = 1,
                             StageFlags = ShaderStageFlags.Fragment
-                        }
+                        },
+                        // new()
+                        // {
+                        //     Binding = 1,
+                        //     DescriptorType = DescriptorType.CombinedImageSampler,
+                        //     DescriptorCount = 1,
+                        //     StageFlags = ShaderStageFlags.Fragment
+                        // }
                     }
                 }
             }
@@ -168,6 +195,23 @@ public class TestApp : Application
         {
             _textureImage = allocator.CreateImage(gradientImage);
         }
+
+        _sampler = allocator.CreateSampler(new SamplerDescription
+        {
+            AddressModeU = SamplerAddressMode.Repeat,
+            AddressModeV = SamplerAddressMode.Repeat,
+            AddressModeW = SamplerAddressMode.Repeat,
+            MinFilter = Filter.Linear,
+            MagFilter = Filter.Linear,
+            MaxAnisotropy = 1.0f,
+            CompareOp = CompareOp.Never,
+            CompareEnable = false,
+            BorderColor = BorderColor.FloatOpaqueBlack,
+            UnnormalizedCoordinates = false,
+            MipLodBias = 0.0f,
+            MinLod = 0.0f,
+            MaxLod = 0.0f
+        });
     }
 
     private void InitializeRenderPass()
@@ -208,6 +252,7 @@ public class TestApp : Application
                         drawContext.BindIndexBuffer(_indexBuffer);
                         frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue);
                         drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
+                        // drawContext.BindTexture(_textureImage, _sampler, 0, 1); // Bind the texture
                         drawContext.DrawIndexed((uint)Indices.Length);
                     });
                 });

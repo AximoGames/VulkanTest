@@ -266,4 +266,81 @@ internal unsafe class VulkanImageManager : BackendImageManager
 
         return imageView;
     }
+
+    public override BackendSampler CreateSampler(SamplerDescription description)
+    {
+        var samplerCreateInfo = new VkSamplerCreateInfo
+        {
+            sType = VkStructureType.SamplerCreateInfo,
+            magFilter = ConvertFilter(description.MagFilter),
+            minFilter = ConvertFilter(description.MinFilter),
+            addressModeU = ConvertSamplerAddressMode(description.AddressModeU),
+            addressModeV = ConvertSamplerAddressMode(description.AddressModeV),
+            addressModeW = ConvertSamplerAddressMode(description.AddressModeW),
+            mipLodBias = description.MipLodBias,
+            anisotropyEnable = description.AnisotropyEnable,
+            maxAnisotropy = description.MaxAnisotropy,
+            compareEnable = description.CompareEnable,
+            compareOp = ConvertCompareOp(description.CompareOp),
+            minLod = description.MinLod,
+            maxLod = description.MaxLod,
+            borderColor = ConvertBorderColor(description.BorderColor),
+            unnormalizedCoordinates = description.UnnormalizedCoordinates
+        };
+
+        vkCreateSampler(_device.LogicalDevice, &samplerCreateInfo, null, out VkSampler sampler).CheckResult();
+        return new VulkanSampler(_device, sampler);
+    }
+
+    private VkFilter ConvertFilter(Filter filter)
+    {
+        return filter switch
+        {
+            Filter.Nearest => VkFilter.Nearest,
+            Filter.Linear => VkFilter.Linear,
+            _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null)
+        };
+    }
+
+    private VkSamplerAddressMode ConvertSamplerAddressMode(SamplerAddressMode addressMode)
+    {
+        return addressMode switch
+        {
+            SamplerAddressMode.Repeat => VkSamplerAddressMode.Repeat,
+            SamplerAddressMode.MirroredRepeat => VkSamplerAddressMode.MirroredRepeat,
+            SamplerAddressMode.ClampToEdge => VkSamplerAddressMode.ClampToEdge,
+            SamplerAddressMode.ClampToBorder => VkSamplerAddressMode.ClampToBorder,
+            _ => throw new ArgumentOutOfRangeException(nameof(addressMode), addressMode, null)
+        };
+    }
+
+    private VkCompareOp ConvertCompareOp(CompareOp compareOp)
+    {
+        return compareOp switch
+        {
+            CompareOp.Never => VkCompareOp.Never,
+            CompareOp.Less => VkCompareOp.Less,
+            CompareOp.Equal => VkCompareOp.Equal,
+            CompareOp.LessOrEqual => VkCompareOp.LessOrEqual,
+            CompareOp.Greater => VkCompareOp.Greater,
+            CompareOp.NotEqual => VkCompareOp.NotEqual,
+            CompareOp.GreaterOrEqual => VkCompareOp.GreaterOrEqual,
+            CompareOp.Always => VkCompareOp.Always,
+            _ => throw new ArgumentOutOfRangeException(nameof(compareOp), compareOp, null)
+        };
+    }
+
+    private VkBorderColor ConvertBorderColor(BorderColor borderColor)
+    {
+        return borderColor switch
+        {
+            BorderColor.FloatTransparentBlack => VkBorderColor.FloatTransparentBlack,
+            BorderColor.IntTransparentBlack => VkBorderColor.IntTransparentBlack,
+            BorderColor.FloatOpaqueBlack => VkBorderColor.FloatOpaqueBlack,
+            BorderColor.IntOpaqueBlack => VkBorderColor.IntOpaqueBlack,
+            BorderColor.FloatOpaqueWhite => VkBorderColor.FloatOpaqueWhite,
+            BorderColor.IntOpaqueWhite => VkBorderColor.IntOpaqueWhite,
+            _ => throw new ArgumentOutOfRangeException(nameof(borderColor), borderColor, null)
+        };
+    }
 }
