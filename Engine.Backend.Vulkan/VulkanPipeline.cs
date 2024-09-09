@@ -12,6 +12,7 @@ internal unsafe class VulkanPipeline : BackendPipeline
     public VkPipeline Pipeline;
     public VkPipelineLayout PipelineLayout;
     public VkDescriptorSetLayout[] DescriptorSetLayouts;
+    public uint DynamicOffsetCount { get; set; }
 
     public VulkanPipeline(VulkanDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, int pipelineLayoutHash, VkDescriptorSetLayout[] descriptorSetLayouts)
         : base(device, pipelineLayoutHash)

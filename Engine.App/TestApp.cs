@@ -166,7 +166,7 @@ public class TestApp : Application
                         new()
                         {
                             Binding = 0,
-                            DescriptorType = DescriptorType.UniformBuffer,
+                            DescriptorType = DescriptorType.UniformBufferDynamic,
                             DescriptorCount = 1,
                             StageFlags = ShaderStageFlags.Fragment
                         },
@@ -239,29 +239,29 @@ public class TestApp : Application
             g = 0.0f;
         _greenValue = g;
 
-        try
+        // try
+        // {
+        _graphicsDevice.RenderFrame(frameContext =>
         {
-            _graphicsDevice.RenderFrame(frameContext =>
+            frameContext.UsePass(_renderPass, passContext =>
             {
-                frameContext.UsePass(_renderPass, passContext =>
+                passContext.UsePipeline(_pipeline, drawContext =>
                 {
-                    passContext.UsePipeline(_pipeline, drawContext =>
-                    {
-                        drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
-                        drawContext.BindVertexBuffer(_vertexBuffer);
-                        drawContext.BindIndexBuffer(_indexBuffer);
-                        frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue);
-                        drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
-                        // drawContext.BindTexture(_textureImage, _sampler, 0, 1); // Bind the texture
-                        drawContext.DrawIndexed((uint)Indices.Length);
-                    });
+                    drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
+                    drawContext.BindVertexBuffer(_vertexBuffer);
+                    drawContext.BindIndexBuffer(_indexBuffer);
+                    frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue * 2);
+                    drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
+                    // drawContext.BindTexture(_textureImage, _sampler, 0, 1); // Bind the texture
+                    drawContext.DrawIndexed((uint)Indices.Length);
                 });
             });
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"Unexpected error occurred: {ex.Message}");
-            throw;
-        }
+        });
+        // }
+        // catch (Exception ex)
+        // {
+        //     Log.Error($"Unexpected error occurred: {ex.Message}");
+        //     throw;
+        // }
     }
 }

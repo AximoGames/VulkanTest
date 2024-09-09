@@ -30,6 +30,7 @@ public class DescriptorSetLayoutBinding
 public enum DescriptorType
 {
     UniformBuffer,
+    UniformBufferDynamic,
     StorageBuffer,
     CombinedImageSampler,
     // Add more types as needed

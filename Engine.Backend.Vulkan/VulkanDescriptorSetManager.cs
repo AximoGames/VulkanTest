@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Vortice.Vulkan;
 using static Vortice.Vulkan.Vulkan;
 
@@ -10,49 +11,39 @@ internal unsafe class VulkanDescriptorSetManager
     private readonly VkDescriptorPool _descriptorPool;
     private readonly uint _maxSets;
     private uint _allocatedSets;
-
-    private Dictionary<(int, uint, uint, VkBuffer), VkDescriptorSet> _bufferDescriptorSetCache = new();
-    private Dictionary<(int, uint, uint, VkImage, VkSampler), VkDescriptorSet> _imageDescriptorSetCache = new();
+    private Dictionary<(VkPipelineLayout layout, uint set), VkDescriptorSet> _descriptorSets;
 
     public VulkanDescriptorSetManager(VulkanDevice device, uint maxSets)
     {
         _device = device;
         _maxSets = maxSets;
         _descriptorPool = CreateDescriptorPool(maxSets);
+        _descriptorSets = new Dictionary<(VkPipelineLayout, uint), VkDescriptorSet>();
     }
 
-    public VkDescriptorSet GetOrCreateDescriptorSet(VulkanPipeline pipeline, uint set, uint binding, VulkanBuffer buffer)
+    public VkDescriptorSet GetOrAllocateDescriptorSet(VkPipelineLayout pipelineLayout, uint set, VkDescriptorSetLayout layout)
     {
-        var key = (pipeline.PipelineLayoutHash, set, binding, buffer.Buffer);
-
-        if (_bufferDescriptorSetCache.TryGetValue(key, out var descriptorSet))
-            return descriptorSet;
-
-        descriptorSet = AllocateDescriptorSet(pipeline.DescriptorSetLayouts[set]);
-        UpdateDescriptorSet(descriptorSet, binding, buffer);
-
-        _bufferDescriptorSetCache[key] = descriptorSet;
-        return descriptorSet;
-    }
-
-    public VkDescriptorSet GetOrCreateDescriptorSet(VulkanPipeline pipeline, uint set, uint binding, VulkanImage image, VulkanSampler sampler)
-    {
-        var key = (pipeline.PipelineLayoutHash, set, binding, image.Image, sampler.Sampler);
-
-        if (_imageDescriptorSetCache.TryGetValue(key, out var descriptorSet))
-            return descriptorSet;
-
-        descriptorSet = AllocateDescriptorSet(pipeline.DescriptorSetLayouts[set]);
-        UpdateDescriptorSet(descriptorSet, binding, image, sampler);
-
-        _imageDescriptorSetCache[key] = descriptorSet;
+        var key = (pipelineLayout, set);
+        if (!_descriptorSets.TryGetValue(key, out var descriptorSet))
+        {
+            descriptorSet = AllocateDescriptorSet(layout);
+            _descriptorSets[key] = descriptorSet;
+        }
         return descriptorSet;
     }
 
     private VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout)
     {
+        var pDescriptorCounts = stackalloc uint[] { 1 };
+        VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo = new VkDescriptorSetVariableDescriptorCountAllocateInfo
+        {
+            descriptorSetCount = 1,
+            pDescriptorCounts = pDescriptorCounts
+        };
+
         VkDescriptorSetAllocateInfo allocInfo = new VkDescriptorSetAllocateInfo
         {
+            pNext = &variableCountInfo,
             descriptorPool = _descriptorPool,
             descriptorSetCount = 1,
             pSetLayouts = &layout
@@ -63,7 +54,7 @@ internal unsafe class VulkanDescriptorSetManager
         return descriptorSet;
     }
 
-    private void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint binding, VulkanBuffer buffer)
+    public void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint binding, VulkanBuffer buffer)
     {
         VkDescriptorBufferInfo bufferInfo = new VkDescriptorBufferInfo
         {
@@ -77,7 +68,7 @@ internal unsafe class VulkanDescriptorSetManager
             dstSet = descriptorSet,
             dstBinding = binding,
             dstArrayElement = 0,
-            descriptorType = VkDescriptorType.UniformBuffer,
+            descriptorType = VkDescriptorType.UniformBufferDynamic,
             descriptorCount = 1,
             pBufferInfo = &bufferInfo
         };
@@ -85,7 +76,7 @@ internal unsafe class VulkanDescriptorSetManager
         vkUpdateDescriptorSets(_device.LogicalDevice, 1, &descriptorWrite, 0, null);
     }
 
-    private void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint binding, VulkanImage image, VulkanSampler sampler)
+    public void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint binding, VulkanImage image, VulkanSampler sampler)
     {
         VkDescriptorImageInfo imageInfo = new VkDescriptorImageInfo
         {
@@ -107,16 +98,37 @@ internal unsafe class VulkanDescriptorSetManager
         vkUpdateDescriptorSets(_device.LogicalDevice, 1, &descriptorWrite, 0, null);
     }
 
+    public void FreeDescriptorSet(VkPipelineLayout pipelineLayout, uint set)
+    {
+        var key = (pipelineLayout, set);
+        if (_descriptorSets.TryGetValue(key, out var descriptorSet))
+        {
+            vkFreeDescriptorSets(_device.LogicalDevice, _descriptorPool, 1, &descriptorSet);
+            _descriptorSets.Remove(key);
+        }
+    }
+
+    public void Cleanup()
+    {
+        foreach (var descriptorSet in _descriptorSets.Values)
+        {
+            vkFreeDescriptorSets(_device.LogicalDevice, _descriptorPool, 1, &descriptorSet);
+        }
+        _descriptorSets.Clear();
+        vkDestroyDescriptorPool(_device.LogicalDevice, _descriptorPool, null);
+    }
+
     private VkDescriptorPool CreateDescriptorPool(uint maxSets)
     {
         VkDescriptorPoolSize poolSize = new VkDescriptorPoolSize
         {
-            type = VkDescriptorType.UniformBuffer,
+            type = VkDescriptorType.UniformBufferDynamic,
             descriptorCount = maxSets
         };
 
         VkDescriptorPoolCreateInfo poolInfo = new VkDescriptorPoolCreateInfo
         {
+            flags = VkDescriptorPoolCreateFlags.UpdateAfterBind,
             poolSizeCount = 1,
             pPoolSizes = &poolSize,
             maxSets = maxSets
@@ -125,10 +137,5 @@ internal unsafe class VulkanDescriptorSetManager
         VkDescriptorPool descriptorPool;
         vkCreateDescriptorPool(_device.LogicalDevice, &poolInfo, null, out descriptorPool).CheckResult();
         return descriptorPool;
-    }
-
-    public void Dispose()
-    {
-        vkDestroyDescriptorPool(_device.LogicalDevice, _descriptorPool, null);
     }
 }

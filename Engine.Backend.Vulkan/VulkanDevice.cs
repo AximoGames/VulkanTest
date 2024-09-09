@@ -114,8 +114,19 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         VkPhysicalDeviceFeatures deviceFeatures = new VkPhysicalDeviceFeatures();
 
+        VkPhysicalDeviceVulkan12Features vulkan12Features = new VkPhysicalDeviceVulkan12Features
+        {
+            descriptorIndexing = true,
+            descriptorBindingPartiallyBound = true,
+            runtimeDescriptorArray = true,
+            descriptorBindingVariableDescriptorCount = true,
+            descriptorBindingUpdateUnusedWhilePending = true,
+            // descriptorBindingUniformBufferUpdateAfterBind = true,
+        };
+        
         VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures = new VkPhysicalDeviceDynamicRenderingFeatures
         {
+            pNext = &vulkan12Features,
             dynamicRendering = true
         };
 

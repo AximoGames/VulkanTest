@@ -58,8 +58,12 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     public override void BindUniformBuffer(BackendBuffer buffer, uint set, uint binding)
     {
         var vulkanBuffer = (VulkanBuffer)buffer;
-        var descriptorSet = _device.DescriptorSetManager.GetOrCreateDescriptorSet(_pipeline, set, binding, vulkanBuffer);
-        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 0, null);
+        
+        var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
+        _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanBuffer);
+        
+        uint dynamicOffset = 0; // Calculate this based on your needs
+        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 1, &dynamicOffset);
     }
 
     public override void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data)
@@ -83,7 +87,11 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     {
         var vulkanImage = (VulkanImage)image;
         var vulkanSampler = (VulkanSampler)sampler;
-        var descriptorSet = _device.DescriptorSetManager.GetOrCreateDescriptorSet(_pipeline, set, binding, vulkanImage, vulkanSampler);
-        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 0, null);
+
+        var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
+        _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanImage, vulkanSampler);
+        
+        uint dynamicOffset = 0; // This should be 0 for non-dynamic descriptors
+        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 1, &dynamicOffset);
     }
 }

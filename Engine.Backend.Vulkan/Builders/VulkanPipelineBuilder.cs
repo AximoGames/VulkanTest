@@ -285,10 +285,22 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             };
         }
 
+        VkDescriptorBindingFlags* bindingFlags = stackalloc VkDescriptorBindingFlags[] { 
+            VkDescriptorBindingFlags.PartiallyBound
+            // | VkDescriptorBindingFlags.UpdateAfterBind 
+        };
+        VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo = new VkDescriptorSetLayoutBindingFlagsCreateInfo
+        {
+            bindingCount = (uint)bindings.Length,
+            pBindingFlags = bindingFlags,
+        };
+
         fixed (VkDescriptorSetLayoutBinding* bindingsPtr = bindings)
         {
             VkDescriptorSetLayoutCreateInfo layoutInfo = new VkDescriptorSetLayoutCreateInfo
             {
+                pNext = &bindingFlagsInfo,
+                flags = VkDescriptorSetLayoutCreateFlags.UpdateAfterBindPool,
                 bindingCount = (uint)bindings.Length,
                 pBindings = bindingsPtr
             };
@@ -304,6 +316,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         return descriptorType switch
         {
             DescriptorType.UniformBuffer => VkDescriptorType.UniformBuffer,
+            DescriptorType.UniformBufferDynamic => VkDescriptorType.UniformBufferDynamic,
             DescriptorType.StorageBuffer => VkDescriptorType.StorageBuffer,
             DescriptorType.CombinedImageSampler => VkDescriptorType.CombinedImageSampler,
             // Add more cases as needed
