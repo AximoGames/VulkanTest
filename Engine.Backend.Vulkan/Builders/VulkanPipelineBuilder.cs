@@ -18,7 +18,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
     private VkPipelineLayout PipelineLayoutHandle;
     private IDictionary<ShaderKind, VulkanShaderModule> _shaderModules = new Dictionary<ShaderKind, VulkanShaderModule>();
     private VertexLayoutInfo _vertexLayoutInfo;
-    private PipelineLayoutDescription _layoutDescription;
+    private PipelineLayoutDescription? _layoutDescription;
     private List<VkPushConstantRange> _pushConstantRanges = new List<VkPushConstantRange>();
 
     internal VulkanPipelineBuilder(VulkanDevice device, VulkanSwapchainRenderTarget swapchainRenderTarget, VulkanShaderManager shaderManager, VulkanBufferManager vulkanBufferManager)
@@ -151,16 +151,21 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
-            var descriptorSetLayouts = new VkDescriptorSetLayout[_layoutDescription.DescriptorSetLayouts.Count];
-            for (int i = 0; i < _layoutDescription.DescriptorSetLayouts.Count; i++)
-                descriptorSetLayouts[i] = CreateDescriptorSetLayout(_layoutDescription.DescriptorSetLayouts[i]);
-
+            VkDescriptorSetLayout[] descriptorSetLayouts;
+            if (_layoutDescription != null)
             {
+                descriptorSetLayouts = new VkDescriptorSetLayout[_layoutDescription.DescriptorSetLayouts.Count];
+                for (int i = 0; i < _layoutDescription.DescriptorSetLayouts.Count; i++)
+                    descriptorSetLayouts[i] = CreateDescriptorSetLayout(_layoutDescription.DescriptorSetLayouts[i]);
+            }
+            else
+            {
+                descriptorSetLayouts = Array.Empty<VkDescriptorSetLayout>();
             }
 
             if (descriptorSetLayouts.Length > 0 || _pushConstantRanges.Count > 0)
             {
-                fixed (VkDescriptorSetLayout* descriptorSetLayoutsPtr = &descriptorSetLayouts[0])
+                fixed (VkDescriptorSetLayout* descriptorSetLayoutsPtr = descriptorSetLayouts)
                 fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
                 {
                     var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
