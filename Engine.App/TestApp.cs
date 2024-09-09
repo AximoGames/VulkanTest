@@ -15,6 +15,12 @@ public class TestApp : Application
     private Buffer _indexBuffer;
     private float _greenValue = 0.0f;
     private bool EnableValidationLayers = false;
+
+    private string[] suppressDebugMessages =
+    [
+        //"VUID-VkPresentInfoKHR-pImageIndices-01430",
+    ];
+
     private Pass _renderPass;
 
     public override string Name => "01-DrawTriangle";
@@ -39,7 +45,7 @@ public class TestApp : Application
         var window = windowManager.CreateWindow(Name);
         RenderFrame += (e) => { OnRenderFrame(); };
 
-        _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window));
+        _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window, suppressDebugMessages));
         _pipeline = _graphicsDevice.CreatePipeline(InitializePipeline);
         _graphicsDevice.InitializeResources(InitializeResources);
         InitializeRenderPass();

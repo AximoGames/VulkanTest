@@ -39,12 +39,12 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
     public VkClearColorValue? ClearColor { get; set; }
 
-    public VulkanDevice(string applicationName, bool enableValidation, Window window)
+    public VulkanDevice(string applicationName, bool enableValidation, Window window, IEnumerable<string>? suppressDebugMessages)
     {
         // Need to initialize
         vkInitialize().CheckResult();
 
-        VulkanInstance = new VulkanInstance(applicationName, enableValidation, window.WindowManager);
+        VulkanInstance = new VulkanInstance(applicationName, enableValidation, window.WindowManager, suppressDebugMessages);
 
         _surface = CreateSurface(window);
 
