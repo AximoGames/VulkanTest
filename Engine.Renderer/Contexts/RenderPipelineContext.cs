@@ -17,13 +17,7 @@ public class RenderPipelineContext
 
     public void BindIndexBuffer(Buffer buffer)
         => _backendContext.BindIndexBuffer(buffer.BackendBuffer);
-
-    public void Clear(Color3<Rgb> clearColor)
-        => _backendContext.Clear(clearColor);
-
-    public void Clear(Color3<Rgb> clearColor, Box2i rect)
-        => _backendContext.Clear(clearColor, rect);
-
+    
     public void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0)
         => _backendContext.DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 

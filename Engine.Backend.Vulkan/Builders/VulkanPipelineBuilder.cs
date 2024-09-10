@@ -161,28 +161,28 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             descriptorSetLayouts = [];
         }
 
-        if (descriptorSetLayouts.Length > 0 || _pushConstantRanges.Count > 0)
-        {
+        // if (descriptorSetLayouts.Length > 0 || _pushConstantRanges.Count > 0)
+        // {
             fixed (VkDescriptorSetLayout* descriptorSetLayoutsPtr = descriptorSetLayouts)
             fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
             {
                 var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
-
+        
                 if (descriptorSetLayouts.Length > 0)
                 {
                     pipelineLayoutInfo.setLayoutCount = (uint)descriptorSetLayouts.Length;
                     pipelineLayoutInfo.pSetLayouts = descriptorSetLayoutsPtr;
                 }
-
+        
                 if (_pushConstantRanges.Count > 0)
                 {
                     pipelineLayoutInfo.pushConstantRangeCount = (uint)_pushConstantRanges.Count;
                     pipelineLayoutInfo.pPushConstantRanges = pushConstantRangesPtr;
                 }
-
+        
                 vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
             }
-        }
+        // }
 
         VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
 

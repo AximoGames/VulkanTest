@@ -34,33 +34,7 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
 
     public override void Draw(uint vertexCount, uint instanceCount = 1, uint firstVertex = 0, uint firstInstance = 0)
         => vkCmdDraw(_commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
-
-    /// <remarks>Consider using <see cref="VulkanDevice.ClearColor"/> instead</remarks>
-    public override void Clear(Color3<Rgb> clearColor)
-    {
-        Clear(clearColor, new Box2i(Vector2i.Zero, _extent));
-    }
-
-    /// <remarks>Consider using <see cref="VulkanDevice.ClearColor"/> instead</remarks>
-    public override void Clear(Color3<Rgb> clearColor, Box2i rect)
-    {
-        VkClearAttachment clearAttachment = new VkClearAttachment
-        {
-            aspectMask = VkImageAspectFlags.Color,
-            colorAttachment = 0,
-            clearValue = new VkClearValue { color = clearColor.ToVkClearColorValue() },
-        };
-
-        VkClearRect clearRect = new VkClearRect
-        {
-            rect = rect.ToVkRect2D(),
-            baseArrayLayer = 0,
-            layerCount = 1,
-        };
-
-        vkCmdClearAttachments(_commandBuffer, 1, &clearAttachment, 1, &clearRect);
-    }
-
+    
     public override void BindUniformBuffer(BackendBuffer buffer, uint set, uint binding)
     {
         var vulkanBuffer = (VulkanBuffer)buffer;

@@ -369,9 +369,9 @@ public class TestApp : Application
         {
             frameContext.UsePass(_drawPass, passContext =>
             {
+                passContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
                 passContext.UsePipeline(_drawPipeline, drawContext =>
                 {
-                    drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
                     drawContext.BindVertexBuffer(_vertexBuffer);
                     drawContext.BindIndexBuffer(_indexBuffer);
                     frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue * 2);
@@ -383,9 +383,9 @@ public class TestApp : Application
 
             frameContext.UsePass(_postProcessPass, passContext =>
             {
+                passContext.Clear(new Color3<Rgb>(0.0f, 0.0f, 0.0f));
                 passContext.UsePipeline(_postProcessPipeline, drawContext =>
                 {
-                    drawContext.Clear(new Color3<Rgb>(0.0f, 0.0f, 0.0f));
                     drawContext.BindImage(_intermediateRenderTarget, _sampler, 0, 0);
                     drawContext.Draw(6);
                 });
