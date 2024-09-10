@@ -172,6 +172,6 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
         return VkPresentModeKHR.Fifo;
     }
     
-    public override VulkanImage GetImage(uint index)
+    public override BackendImage GetImage(uint index)
         => _images[index];
 }

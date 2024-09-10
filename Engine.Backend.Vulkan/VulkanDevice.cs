@@ -265,7 +265,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         CommandBufferManager.BeginCommandBuffer(cmd);
 
         // Transition image layout to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-        TransitionImageLayout(cmd, SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex).Image, 
+        TransitionImageLayout(cmd, ((VulkanImage)SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex)).Image, 
                               VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
         action(new VulkanRenderFrameContext(this, cmd));
@@ -420,7 +420,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {
-            imageView = targetImage.ImageView,
+            imageView = ((VulkanImage)targetImage).ImageView,
             imageLayout = ConvertImageLayout(pass.ColorAttachment.ImageLayout),
             loadOp = ConvertLoadOp(pass.ColorAttachment.LoadOp),
             storeOp = ConvertStoreOp(pass.ColorAttachment.StoreOp),

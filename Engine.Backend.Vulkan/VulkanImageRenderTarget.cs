@@ -19,7 +19,7 @@ internal unsafe class VulkanImageRenderTarget : VulkanRenderTarget
     public override Vector2i Extent { get; }
     public override uint ImageCount { get; }
 
-    public override VulkanImage GetImage(uint index)
+    public override BackendImage GetImage(uint index)
         => _images[index];
 
     public override void Dispose()
