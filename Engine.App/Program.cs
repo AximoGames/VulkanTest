@@ -8,13 +8,19 @@ public static partial class Program
     {
         // try
         // {
-        var testApp = new TestApp();
-        testApp.Run();
+        // Run<TestApp>();
+        Run<ClearScreenApp>();
         // }
         // catch (Exception ex)
         // {
         //     Console.WriteLine(ex.ToString());
         //     throw;
         // }
+    }
+    
+    private static void Run<TApp>() where TApp : Application, new()
+    {
+        Application app = new TApp();
+        app.Run();
     }
 }

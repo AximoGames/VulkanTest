@@ -174,9 +174,7 @@ internal unsafe class VulkanInstance : IDisposable
             case VkDebugUtilsMessageSeverityFlagsEXT.Error:
                 Log.Error($"{prefix}{messageSeverity} - {message}");
                 if (messageTypes == VkDebugUtilsMessageTypeFlagsEXT.Validation)
-                {
                     throw new Exception(message);
-                }
 
                 break;
             case VkDebugUtilsMessageSeverityFlagsEXT.Warning:
