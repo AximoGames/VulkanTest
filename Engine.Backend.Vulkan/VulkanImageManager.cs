@@ -72,11 +72,11 @@ internal unsafe class VulkanImageManager : BackendImageManager
         return new VulkanImage(_device, extent, image, imageView, imageMemory, VkFormat.R8G8B8A8Unorm, true);
     }
 
-    public override BackendImage CreateTextureImage(Image<Rgba32> image)
+    public override BackendImage CreateImage(Image<Rgba32> source)
     {
         // Convert image to byte array
-        byte[] imageData = new byte[image.Width * image.Height * 4];
-        image.CopyPixelDataTo(imageData);
+        byte[] imageData = new byte[source.Width * source.Height * 4];
+        source.CopyPixelDataTo(imageData);
 
         // Create staging buffer
         uint imageSize = (uint)(imageData.Length);
@@ -97,9 +97,9 @@ internal unsafe class VulkanImageManager : BackendImageManager
         }
 
         // Create image
-        VkImage textureImage;
-        VkDeviceMemory textureImageMemory;
-        VkExtent3D imageExtent = new VkExtent3D { width = (uint)image.Width, height = (uint)image.Height, depth = 1 };
+        VkImage image;
+        VkDeviceMemory imageMemory;
+        VkExtent3D imageExtent = new VkExtent3D { width = (uint)source.Width, height = (uint)source.Height, depth = 1 };
 
         CreateImage(
             imageExtent,
@@ -107,27 +107,27 @@ internal unsafe class VulkanImageManager : BackendImageManager
             VkImageTiling.Optimal,
             VkImageUsageFlags.TransferDst | VkImageUsageFlags.Sampled,
             VkMemoryPropertyFlags.DeviceLocal,
-            out textureImage,
-            out textureImageMemory
+            out image,
+            out imageMemory
         );
 
         // Transition image layout for copy
-        TransitionImageLayout(textureImage, VkFormat.R8G8B8A8Unorm, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
+        TransitionImageLayout(image, VkFormat.R8G8B8A8Unorm, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
 
         // Copy buffer to image
-        CopyBufferToImage(stagingBuffer, textureImage, (uint)image.Width, (uint)image.Height);
+        CopyBufferToImage(stagingBuffer, image, (uint)source.Width, (uint)source.Height);
 
         // Transition image layout for shader access
-        TransitionImageLayout(textureImage, VkFormat.R8G8B8A8Unorm, VkImageLayout.TransferDstOptimal, VkImageLayout.ShaderReadOnlyOptimal);
+        TransitionImageLayout(image, VkFormat.R8G8B8A8Unorm, VkImageLayout.TransferDstOptimal, VkImageLayout.ShaderReadOnlyOptimal);
 
         // Clean up staging buffer
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
 
         // Create image view
-        VkImageView textureImageView = CreateImageView(textureImage, VkFormat.R8G8B8A8Unorm, VkImageAspectFlags.Color);
+        VkImageView imageView = CreateImageView(image, VkFormat.R8G8B8A8Unorm, VkImageAspectFlags.Color);
 
-        return new VulkanImage(_device, new Vector2i(image.Width, image.Height), textureImage, textureImageView, textureImageMemory, VkFormat.R8G8B8A8Unorm, false);
+        return new VulkanImage(_device, new Vector2i(source.Width, source.Height), image, imageView, imageMemory, VkFormat.R8G8B8A8Unorm, false);
     }
 
     private void CreateImage(VkExtent3D extent, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, out VkImage image, out VkDeviceMemory imageMemory)

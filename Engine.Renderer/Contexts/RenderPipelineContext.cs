@@ -30,8 +30,8 @@ public class RenderPipelineContext
     public void BindUniformBuffer(Buffer buffer, uint set, uint binding)
         => _backendContext.BindUniformBuffer(buffer.BackendBuffer, set, binding);
 
-    public void BindTexture(Image buffer, Sampler sampler, uint set, uint binding)
-        => _backendContext.BindTexture(buffer.BackendImage, sampler.BackendSampler, set, binding);
+    public void BindImage(Image buffer, Sampler sampler, uint set, uint binding)
+        => _backendContext.BindImage(buffer.BackendImage, sampler.BackendSampler, set, binding);
 
     public void SetPushConstants<T>(ShaderStageFlags stageFlags, uint offset, T[] data) where T : unmanaged
         => _backendContext.SetPushConstants(stageFlags, offset, data);

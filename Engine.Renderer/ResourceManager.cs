@@ -39,7 +39,7 @@ public class ResourceManager
 
     public Image CreateImage(Image<Rgba32> image)
     {
-        var backendImage = _backendImageManager.CreateTextureImage(image);
+        var backendImage = _backendImageManager.CreateImage(image);
         return new Image(backendImage);
     }
 

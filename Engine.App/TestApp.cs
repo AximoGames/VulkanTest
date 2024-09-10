@@ -24,7 +24,7 @@ public class TestApp : Application
     ];
 
     private Pass _renderPass;
-    private Image _textureImage;
+    private Image _image;
 
     public override string Name => "01-DrawTriangle";
 
@@ -108,10 +108,10 @@ public class TestApp : Application
                 float colorFactor;
             } ubo;
 
-            layout(set = 1, binding = 0) uniform sampler2D textureSampler;
+            layout(set = 1, binding = 0) uniform sampler2D image;
 
             void main() {
-                vec4 textureColor = texture(textureSampler, fragTexCoord);
+                vec4 textureColor = texture(image, fragTexCoord);
                 outColor = vec4(fragColor + ubo.colorFactor, 1.0) * textureColor;
                 //outColor = vec4(fragColor + ubo.colorFactor, 1.0);
             }
@@ -198,7 +198,7 @@ public class TestApp : Application
 
         using (var gradientImage = CreateGradientImage(100, 100))
         {
-            _textureImage = allocator.CreateImage(gradientImage);
+            _image = allocator.CreateImage(gradientImage);
         }
 
         _sampler = allocator.CreateSampler(new SamplerDescription
@@ -257,7 +257,7 @@ public class TestApp : Application
                     drawContext.BindIndexBuffer(_indexBuffer);
                     frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue * 2);
                     drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
-                    drawContext.BindTexture(_textureImage, _sampler, 1, 0); // Bind the texture
+                    drawContext.BindImage(_image, _sampler, 1, 0); // Bind the image
                     drawContext.DrawIndexed((uint)Indices.Length);
                 });
             });
