@@ -11,7 +11,7 @@ namespace Engine.App;
 public class TestApp : Application
 {
     private GraphicsDevice _graphicsDevice;
-    private Pipeline _pipeline;
+    private Pipeline _drawPipeline;
     private Buffer _vertexBuffer;
     private Buffer _indexBuffer;
     private Buffer _uniformBuffer;
@@ -23,7 +23,7 @@ public class TestApp : Application
         //"VUID-VkPresentInfoKHR-pImageIndices-01430",
     ];
 
-    private Pass _renderPass;
+    private Pass _drawPass;
     private Image _image;
 
     public override string Name => "01-DrawTriangle";
@@ -51,9 +51,15 @@ public class TestApp : Application
         RenderFrame += (e) => { OnRenderFrame(); };
 
         _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window, suppressDebugMessages));
-        _pipeline = _graphicsDevice.CreatePipeline(InitializePipeline);
         _graphicsDevice.InitializeResources(InitializeResources);
-        InitializeRenderPass();
+
+        CreatePipelines();
+        CreatePasses();
+    }
+
+    private void CreatePipelines()
+    {
+        _drawPipeline = _graphicsDevice.CreatePipeline(ConfigureDrawPipeline);
     }
 
     private Image<Rgba32> CreateGradientImage(int width, int height)
@@ -73,7 +79,7 @@ public class TestApp : Application
         return image;
     }
 
-    private void InitializePipeline(PipelineBuilder builder)
+    private void ConfigureDrawPipeline(PipelineBuilder builder)
     {
         string vertexShaderCode =
             // lang=glsl
@@ -217,11 +223,16 @@ public class TestApp : Application
         });
     }
 
-    private void InitializeRenderPass()
+    private void CreatePasses()
+    {
+        CreateDrawPass();
+    }
+
+    private void CreateDrawPass()
     {
         var swapchainRenderTarget = _graphicsDevice.GetSwapchainRenderTarget();
 
-        _renderPass = _graphicsDevice.CreatePass(builder =>
+        _drawPass = _graphicsDevice.CreatePass(builder =>
         {
             var colorAttachmentDescription = new AttachmentDescription
             {
@@ -246,9 +257,9 @@ public class TestApp : Application
         // {
         _graphicsDevice.RenderFrame(frameContext =>
         {
-            frameContext.UsePass(_renderPass, passContext =>
+            frameContext.UsePass(_drawPass, passContext =>
             {
-                passContext.UsePipeline(_pipeline, drawContext =>
+                passContext.UsePipeline(_drawPipeline, drawContext =>
                 {
                     drawContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
                     drawContext.BindVertexBuffer(_vertexBuffer);
