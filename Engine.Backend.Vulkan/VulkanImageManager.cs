@@ -18,7 +18,17 @@ internal unsafe class VulkanImageManager : BackendImageManager
         _bufferManager = bufferManager;
     }
 
-    public override BackendImage CreateRenderTargetImage(Vector2i extent)
+    public override BackendRenderTarget CreateImageRenderTarget(Vector2i extent)
+    {
+        var imageCount = _device.GetSwapchainRenderTarget().ImageCount;
+        var images = new VulkanImage[imageCount];
+        for (int i = 0; i < imageCount; i++)
+            images[i] = CreateRenderTargetImage(extent);
+
+        return new VulkanImageRenderTarget(_device, images);
+    }
+
+    private VulkanImage CreateRenderTargetImage(Vector2i extent)
     {
         VkImageCreateInfo imageInfo = new VkImageCreateInfo
         {
@@ -93,6 +103,7 @@ internal unsafe class VulkanImageManager : BackendImageManager
             {
                 Buffer.MemoryCopy(imageDataPtr, data, imageSize, imageSize);
             }
+
             vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
         }
 

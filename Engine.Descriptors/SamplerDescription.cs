@@ -17,39 +17,3 @@ public class SamplerDescription
     public BorderColor BorderColor { get; set; }
     public bool UnnormalizedCoordinates { get; set; }
 }
-
-public enum Filter
-{
-    Nearest,
-    Linear
-}
-
-public enum SamplerAddressMode
-{
-    Repeat,
-    MirroredRepeat,
-    ClampToEdge,
-    ClampToBorder
-}
-
-public enum CompareOp
-{
-    Never,
-    Less,
-    Equal,
-    LessOrEqual,
-    Greater,
-    NotEqual,
-    GreaterOrEqual,
-    Always
-}
-
-public enum BorderColor
-{
-    FloatTransparentBlack,
-    IntTransparentBlack,
-    FloatOpaqueBlack,
-    IntOpaqueBlack,
-    FloatOpaqueWhite,
-    IntOpaqueWhite
-}

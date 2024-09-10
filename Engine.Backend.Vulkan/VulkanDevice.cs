@@ -483,7 +483,5 @@ internal unsafe sealed class VulkanDevice : BackendDevice
     }
 
     public override BackendRenderTarget GetSwapchainRenderTarget()
-    {
-        return SwapchainRenderTarget;
-    }
+        => SwapchainRenderTarget;
 }
