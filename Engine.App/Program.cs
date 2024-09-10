@@ -9,7 +9,9 @@ public static partial class Program
         // try
         // {
         // Run<TestApp>();
-        Run<ClearScreenApp>();
+        // Run<ClearScreenApp>();
+        //Run<MultiWindowApp>();
+        Run<MultiInstanceWindowApp>();
         // }
         // catch (Exception ex)
         // {
