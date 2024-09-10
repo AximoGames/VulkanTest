@@ -53,7 +53,7 @@ public class TestApp : Application
         var window = windowManager.CreateWindow(Name);
         RenderFrame += (e) => { OnRenderFrame(); };
 
-        _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(Name, EnableValidationLayers, window, suppressDebugMessages));
+        _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(window, Name, EnableValidationLayers, suppressDebugMessages));
         _graphicsDevice.InitializeResources(InitializeResources);
 
         CreatePipelines();
