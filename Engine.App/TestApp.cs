@@ -300,9 +300,9 @@ public class TestApp : Application
 
         _sampler = allocator.CreateSampler(new SamplerDescription
         {
-            AddressModeU = SamplerAddressMode.Repeat,
-            AddressModeV = SamplerAddressMode.Repeat,
-            AddressModeW = SamplerAddressMode.Repeat,
+            AddressModeU = SamplerAddressMode.ClampToEdge,
+            AddressModeV = SamplerAddressMode.ClampToEdge,
+            AddressModeW = SamplerAddressMode.ClampToEdge,
             MinFilter = Filter.Linear,
             MagFilter = Filter.Linear,
             MaxAnisotropy = 1.0f,
