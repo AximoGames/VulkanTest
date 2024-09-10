@@ -32,6 +32,9 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     public override void DrawIndexed(uint indexCount, uint instanceCount = 1, uint firstIndex = 0, int vertexOffset = 0, uint firstInstance = 0)
         => vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 
+    public override void Draw(uint vertexCount, uint instanceCount = 1, uint firstVertex = 0, uint firstInstance = 0)
+        => vkCmdDraw(_commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
+
     /// <remarks>Consider using <see cref="VulkanDevice.ClearColor"/> instead</remarks>
     public override void Clear(Color3<Rgb> clearColor)
     {
@@ -61,10 +64,10 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     public override void BindUniformBuffer(BackendBuffer buffer, uint set, uint binding)
     {
         var vulkanBuffer = (VulkanBuffer)buffer;
-        
+
         var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
         _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanBuffer);
-        
+
         uint dynamicOffset = 0; // Calculate this based on your needs
         vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 1, &dynamicOffset);
     }
@@ -93,7 +96,7 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
 
         var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
         _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanImage, vulkanSampler);
-        
+
         vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 0, null);
     }
 }

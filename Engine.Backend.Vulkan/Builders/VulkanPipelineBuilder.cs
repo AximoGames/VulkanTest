@@ -64,7 +64,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             inputRate = ConvertInputRate(_vertexLayoutInfo.BindingDescription.InputRate)
         };
 
-        var attributeDescriptions = new VkVertexInputAttributeDescription[_vertexLayoutInfo.AttributeDescriptions.Count];
+        var attributeDescriptions = stackalloc VkVertexInputAttributeDescription[_vertexLayoutInfo.AttributeDescriptions.Count];
         for (int i = 0; i < _vertexLayoutInfo.AttributeDescriptions.Count; i++)
         {
             attributeDescriptions[i] = new VkVertexInputAttributeDescription
@@ -77,144 +77,141 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         }
 
         VkDescriptorSetLayout[] descriptorSetLayouts;
-        fixed (VkVertexInputAttributeDescription* attributeDescriptionsPtr = &attributeDescriptions[0])
+        var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo
         {
-            var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo
-            {
-                vertexBindingDescriptionCount = 1,
-                pVertexBindingDescriptions = &bindingDescription,
-                vertexAttributeDescriptionCount = (uint)attributeDescriptions.Length,
-                pVertexAttributeDescriptions = attributeDescriptionsPtr
-            };
+            pVertexBindingDescriptions = &bindingDescription,
+            vertexBindingDescriptionCount = 1,
+            pVertexAttributeDescriptions = attributeDescriptions,
+            vertexAttributeDescriptionCount = (uint)_vertexLayoutInfo.AttributeDescriptions.Count,
+        };
 
-            var inputAssembly = new VkPipelineInputAssemblyStateCreateInfo
-            {
-                topology = VkPrimitiveTopology.TriangleList,
-                primitiveRestartEnable = VkBool32.False
-            };
+        var inputAssembly = new VkPipelineInputAssemblyStateCreateInfo
+        {
+            topology = VkPrimitiveTopology.TriangleList,
+            primitiveRestartEnable = VkBool32.False
+        };
 
-            var viewport = new VkViewport
-            {
-                x = 0.0f,
-                y = 0.0f,
-                width = _swapchainRenderTarget.Extent.X,
-                height = _swapchainRenderTarget.Extent.Y,
-                minDepth = 0.0f,
-                maxDepth = 1.0f
-            };
+        var viewport = new VkViewport
+        {
+            x = 0.0f,
+            y = 0.0f,
+            width = _swapchainRenderTarget.Extent.X,
+            height = _swapchainRenderTarget.Extent.Y,
+            minDepth = 0.0f,
+            maxDepth = 1.0f
+        };
 
-            var scissor = new VkRect2D
-            {
-                offset = new VkOffset2D(0, 0),
-                extent = _swapchainRenderTarget.Extent.ToVkExtent2D(),
-            };
+        var scissor = new VkRect2D
+        {
+            offset = new VkOffset2D(0, 0),
+            extent = _swapchainRenderTarget.Extent.ToVkExtent2D(),
+        };
 
-            var viewportState = new VkPipelineViewportStateCreateInfo
-            {
-                viewportCount = 1,
-                pViewports = &viewport,
-                scissorCount = 1,
-                pScissors = &scissor
-            };
+        var viewportState = new VkPipelineViewportStateCreateInfo
+        {
+            viewportCount = 1,
+            pViewports = &viewport,
+            scissorCount = 1,
+            pScissors = &scissor
+        };
 
-            var rasterizer = new VkPipelineRasterizationStateCreateInfo
-            {
-                depthClampEnable = VkBool32.False,
-                rasterizerDiscardEnable = VkBool32.False,
-                polygonMode = VkPolygonMode.Fill,
-                lineWidth = 1.0f,
-                cullMode = VkCullModeFlags.Back,
-                frontFace = VkFrontFace.Clockwise,
-                depthBiasEnable = VkBool32.False
-            };
+        var rasterizer = new VkPipelineRasterizationStateCreateInfo
+        {
+            depthClampEnable = VkBool32.False,
+            rasterizerDiscardEnable = VkBool32.False,
+            polygonMode = VkPolygonMode.Fill,
+            lineWidth = 1.0f,
+            cullMode = VkCullModeFlags.Back,
+            frontFace = VkFrontFace.Clockwise,
+            depthBiasEnable = VkBool32.False
+        };
 
-            var multisampling = new VkPipelineMultisampleStateCreateInfo
-            {
-                sampleShadingEnable = VkBool32.False,
-                rasterizationSamples = VkSampleCountFlags.Count1
-            };
+        var multisampling = new VkPipelineMultisampleStateCreateInfo
+        {
+            sampleShadingEnable = VkBool32.False,
+            rasterizationSamples = VkSampleCountFlags.Count1
+        };
 
-            var colorBlendAttachment = new VkPipelineColorBlendAttachmentState
-            {
-                colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A,
-                blendEnable = VkBool32.False
-            };
+        var colorBlendAttachment = new VkPipelineColorBlendAttachmentState
+        {
+            colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A,
+            blendEnable = VkBool32.False
+        };
 
-            var colorBlending = new VkPipelineColorBlendStateCreateInfo
-            {
-                logicOpEnable = VkBool32.False,
-                logicOp = VkLogicOp.Copy,
-                attachmentCount = 1,
-                pAttachments = &colorBlendAttachment,
-            };
-            colorBlending.blendConstants[0] = 0.0f;
-            colorBlending.blendConstants[1] = 0.0f;
-            colorBlending.blendConstants[2] = 0.0f;
-            colorBlending.blendConstants[3] = 0.0f;
+        var colorBlending = new VkPipelineColorBlendStateCreateInfo
+        {
+            logicOpEnable = VkBool32.False,
+            logicOp = VkLogicOp.Copy,
+            attachmentCount = 1,
+            pAttachments = &colorBlendAttachment,
+        };
+        colorBlending.blendConstants[0] = 0.0f;
+        colorBlending.blendConstants[1] = 0.0f;
+        colorBlending.blendConstants[2] = 0.0f;
+        colorBlending.blendConstants[3] = 0.0f;
 
-            if (_layoutDescription != null)
-            {
-                descriptorSetLayouts = new VkDescriptorSetLayout[_layoutDescription.DescriptorSetLayouts.Count];
-                for (int i = 0; i < _layoutDescription.DescriptorSetLayouts.Count; i++)
-                    descriptorSetLayouts[i] = CreateDescriptorSetLayout(_layoutDescription.DescriptorSetLayouts[i]);
-            }
-            else
-            {
-                descriptorSetLayouts = [];
-            }
-
-            if (descriptorSetLayouts.Length > 0 || _pushConstantRanges.Count > 0)
-            {
-                fixed (VkDescriptorSetLayout* descriptorSetLayoutsPtr = descriptorSetLayouts)
-                fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
-                {
-                    var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
-
-                    if (descriptorSetLayouts.Length > 0)
-                    {
-                        pipelineLayoutInfo.setLayoutCount = (uint)descriptorSetLayouts.Length;
-                        pipelineLayoutInfo.pSetLayouts = descriptorSetLayoutsPtr;
-                    }
-
-                    if (_pushConstantRanges.Count > 0)
-                    {
-                        pipelineLayoutInfo.pushConstantRangeCount = (uint)_pushConstantRanges.Count;
-                        pipelineLayoutInfo.pPushConstantRanges = pushConstantRangesPtr;
-                    }
-
-                    vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
-                }
-            }
-
-            VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
-
-            var colorAttachmentFormat = _swapchainRenderTarget.SurfaceFormat.format;
-            VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
-            {
-                colorAttachmentCount = 1,
-                pColorAttachmentFormats = &colorAttachmentFormat,
-            };
-
-            var pipelineInfo = new VkGraphicsPipelineCreateInfo
-            {
-                pNext = &pipelineRenderingCreateInfo,
-                stageCount = 2,
-                pStages = shaderStages,
-                pVertexInputState = &vertexInputInfo,
-                pInputAssemblyState = &inputAssembly,
-                pViewportState = &viewportState,
-                pRasterizationState = &rasterizer,
-                pMultisampleState = &multisampling,
-                pColorBlendState = &colorBlending,
-                layout = PipelineLayoutHandle,
-                subpass = 0,
-                basePipelineHandle = VkPipeline.Null
-            };
-
-            VkPipeline graphicsPipeline;
-            vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
-            PipelineHandle = graphicsPipeline;
+        if (_layoutDescription != null)
+        {
+            descriptorSetLayouts = new VkDescriptorSetLayout[_layoutDescription.DescriptorSetLayouts.Count];
+            for (int i = 0; i < _layoutDescription.DescriptorSetLayouts.Count; i++)
+                descriptorSetLayouts[i] = CreateDescriptorSetLayout(_layoutDescription.DescriptorSetLayouts[i]);
         }
+        else
+        {
+            descriptorSetLayouts = [];
+        }
+
+        if (descriptorSetLayouts.Length > 0 || _pushConstantRanges.Count > 0)
+        {
+            fixed (VkDescriptorSetLayout* descriptorSetLayoutsPtr = descriptorSetLayouts)
+            fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
+            {
+                var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
+
+                if (descriptorSetLayouts.Length > 0)
+                {
+                    pipelineLayoutInfo.setLayoutCount = (uint)descriptorSetLayouts.Length;
+                    pipelineLayoutInfo.pSetLayouts = descriptorSetLayoutsPtr;
+                }
+
+                if (_pushConstantRanges.Count > 0)
+                {
+                    pipelineLayoutInfo.pushConstantRangeCount = (uint)_pushConstantRanges.Count;
+                    pipelineLayoutInfo.pPushConstantRanges = pushConstantRangesPtr;
+                }
+
+                vkCreatePipelineLayout(_device.LogicalDevice, &pipelineLayoutInfo, null, out PipelineLayoutHandle).CheckResult();
+            }
+        }
+
+        VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
+
+        var colorAttachmentFormat = _swapchainRenderTarget.SurfaceFormat.format;
+        VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
+        {
+            colorAttachmentCount = 1,
+            pColorAttachmentFormats = &colorAttachmentFormat,
+        };
+
+        var pipelineInfo = new VkGraphicsPipelineCreateInfo
+        {
+            pNext = &pipelineRenderingCreateInfo,
+            stageCount = 2,
+            pStages = shaderStages,
+            pVertexInputState = &vertexInputInfo,
+            pInputAssemblyState = &inputAssembly,
+            pViewportState = &viewportState,
+            pRasterizationState = &rasterizer,
+            pMultisampleState = &multisampling,
+            pColorBlendState = &colorBlending,
+            layout = PipelineLayoutHandle,
+            subpass = 0,
+            basePipelineHandle = VkPipeline.Null
+        };
+
+        VkPipeline graphicsPipeline;
+        vkCreateGraphicsPipelines(_device.LogicalDevice, VkPipelineCache.Null, 1, &pipelineInfo, null, &graphicsPipeline).CheckResult();
+        PipelineHandle = graphicsPipeline;
 
         fragShaderModule.Free();
         vertShaderModule.Free();
@@ -285,7 +282,8 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             };
         }
 
-        VkDescriptorBindingFlags* bindingFlags = stackalloc VkDescriptorBindingFlags[] { 
+        VkDescriptorBindingFlags* bindingFlags = stackalloc VkDescriptorBindingFlags[]
+        {
             VkDescriptorBindingFlags.PartiallyBound
             // | VkDescriptorBindingFlags.UpdateAfterBind 
         };

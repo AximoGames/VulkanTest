@@ -40,8 +40,11 @@ public class ResourceManager
     public Image CreateImage(Image<Rgba32> image)
     {
         var backendImage = _backendImageManager.CreateImage(image);
-        return new Image(backendImage);
+        return new(backendImage);
     }
+
+    public RenderTarget CreateImageRenderTarget(Vector2i extent)
+        => new(_backendImageManager.CreateImageRenderTarget(extent));
 
     public Buffer CreateUniformBuffer<T>() where T : unmanaged
     {
