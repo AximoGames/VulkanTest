@@ -36,10 +36,10 @@ internal unsafe class VulkanImageManager : BackendImageManager
             extent = new VkExtent3D { width = (uint)extent.X, height = (uint)extent.Y, depth = 1 },
             mipLevels = 1,
             arrayLayers = 1,
-            format = VkFormat.R8G8B8A8Unorm,
+            format = VkFormat.B8G8R8A8Unorm,
             tiling = VkImageTiling.Optimal,
             initialLayout = VkImageLayout.Undefined,
-            usage = VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferSrc,
+            usage = VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.Sampled,
             sharingMode = VkSharingMode.Exclusive,
             samples = VkSampleCountFlags.Count1
         };
@@ -65,7 +65,7 @@ internal unsafe class VulkanImageManager : BackendImageManager
         {
             image = image,
             viewType = VkImageViewType.Image2D,
-            format = VkFormat.R8G8B8A8Unorm,
+            format = VkFormat.B8G8R8A8Unorm,
             subresourceRange = new VkImageSubresourceRange
             {
                 aspectMask = VkImageAspectFlags.Color,
@@ -79,10 +79,10 @@ internal unsafe class VulkanImageManager : BackendImageManager
         VkImageView imageView;
         vkCreateImageView(_device.LogicalDevice, &viewInfo, null, out imageView).CheckResult();
 
-        return new VulkanImage(_device, extent, image, imageView, imageMemory, VkFormat.R8G8B8A8Unorm, true);
+        return new VulkanImage(_device, extent, image, imageView, imageMemory, VkFormat.B8G8R8A8Unorm, true);
     }
 
-    public override BackendImage CreateImage(Image<Rgba32> source)
+    public override BackendImage CreateImage(Image<Bgra32> source)
     {
         // Convert image to byte array
         byte[] imageData = new byte[source.Width * source.Height * 4];
@@ -114,7 +114,7 @@ internal unsafe class VulkanImageManager : BackendImageManager
 
         CreateImage(
             imageExtent,
-            VkFormat.R8G8B8A8Unorm,
+            VkFormat.B8G8R8A8Unorm,
             VkImageTiling.Optimal,
             VkImageUsageFlags.TransferDst | VkImageUsageFlags.Sampled,
             VkMemoryPropertyFlags.DeviceLocal,
@@ -123,22 +123,22 @@ internal unsafe class VulkanImageManager : BackendImageManager
         );
 
         // Transition image layout for copy
-        TransitionImageLayout(image, VkFormat.R8G8B8A8Unorm, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
+        TransitionImageLayout(image, VkFormat.B8G8R8A8Unorm, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
 
         // Copy buffer to image
         CopyBufferToImage(stagingBuffer, image, (uint)source.Width, (uint)source.Height);
 
         // Transition image layout for shader access
-        TransitionImageLayout(image, VkFormat.R8G8B8A8Unorm, VkImageLayout.TransferDstOptimal, VkImageLayout.ShaderReadOnlyOptimal);
+        TransitionImageLayout(image, VkFormat.B8G8R8A8Unorm, VkImageLayout.TransferDstOptimal, VkImageLayout.ShaderReadOnlyOptimal);
 
         // Clean up staging buffer
         vkDestroyBuffer(_device.LogicalDevice, stagingBuffer, null);
         vkFreeMemory(_device.LogicalDevice, stagingBufferMemory, null);
 
         // Create image view
-        VkImageView imageView = CreateImageView(image, VkFormat.R8G8B8A8Unorm, VkImageAspectFlags.Color);
+        VkImageView imageView = CreateImageView(image, VkFormat.B8G8R8A8Unorm, VkImageAspectFlags.Color);
 
-        return new VulkanImage(_device, new Vector2i(source.Width, source.Height), image, imageView, imageMemory, VkFormat.R8G8B8A8Unorm, false);
+        return new VulkanImage(_device, new Vector2i(source.Width, source.Height), image, imageView, imageMemory, VkFormat.B8G8R8A8Unorm, false);
     }
 
     private void CreateImage(VkExtent3D extent, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, out VkImage image, out VkDeviceMemory imageMemory)

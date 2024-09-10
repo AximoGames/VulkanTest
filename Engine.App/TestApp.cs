@@ -25,6 +25,9 @@ public class TestApp : Application
 
     private Pass _drawPass;
     private Image _image;
+    private Pass _postProcessPass;
+    private Pipeline _postProcessPipeline;
+    private RenderTarget _intermediateRenderTarget;
 
     public override string Name => "01-DrawTriangle";
 
@@ -60,11 +63,12 @@ public class TestApp : Application
     private void CreatePipelines()
     {
         _drawPipeline = _graphicsDevice.CreatePipeline(ConfigureDrawPipeline);
+        _postProcessPipeline = _graphicsDevice.CreatePipeline(ConfigurePostProcessPipeline);
     }
 
-    private Image<Rgba32> CreateGradientImage(int width, int height)
+    private Image<Bgra32> CreateGradientImage(int width, int height)
     {
-        var image = new Image<Rgba32>(width, height);
+        var image = new Image<Bgra32>(width, height);
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -72,7 +76,7 @@ public class TestApp : Application
                 float r = (float)x / width;
                 float g = (float)y / height;
                 float b = 1.0f - ((float)x / width + (float)y / height) / 2;
-                image[x, y] = new Rgba32(r, g, b);
+                image[x, y] = new Bgra32((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
             }
         }
 
@@ -196,6 +200,95 @@ public class TestApp : Application
         builder.ConfigurePipelineLayout(layoutDescription);
     }
 
+    private void ConfigurePostProcessPipeline(PipelineBuilder builder)
+    {
+        string vertexShaderCode =
+            // lang=glsl
+            """
+            #version 450
+
+            layout(location = 0) out vec2 fragTexCoord;
+
+            vec2 positions[6] = vec2[](
+                vec2(-1.0, -1.0),
+                vec2(1.0, -1.0),
+                vec2(-1.0, 1.0),
+                vec2(-1.0, 1.0),
+                vec2(1.0, -1.0),
+                vec2(1.0, 1.0)
+            );
+
+            vec2 texCoords[6] = vec2[](
+                vec2(0.0, 0.0),
+                vec2(1.0, 0.0),
+                vec2(0.0, 1.0),
+                vec2(0.0, 1.0),
+                vec2(1.0, 0.0),
+                vec2(1.0, 1.0)
+            );
+
+            void main() {
+                gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+                fragTexCoord = texCoords[gl_VertexIndex];
+            }
+            """;
+
+        string fragShaderCode =
+            // lang=glsl
+            """
+            #version 450
+
+            layout(location = 0) in vec2 fragTexCoord;
+            layout(location = 0) out vec4 outColor;
+
+            layout(set = 0, binding = 0) uniform sampler2D inputImage;
+
+            void main() {
+                vec4 color = texture(inputImage, fragTexCoord);
+                float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                outColor = vec4(gray, gray, gray, color.a);
+            }
+            """;
+
+        builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
+        builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
+
+        // Add this new section for ConfigureVertexLayout
+        var vertexLayoutInfo = new VertexLayoutInfo
+        {
+            BindingDescription = new VertexInputBindingDescription
+            {
+                Binding = 0,
+                Stride = 0, // We're using gl_VertexIndex, so no vertex data
+                InputRate = VertexInputRate.Vertex
+            },
+            AttributeDescriptions = new List<VertexInputAttributeDescription>()
+            // No attribute descriptions needed as we're using gl_VertexIndex
+        };
+        builder.ConfigureVertexLayout(vertexLayoutInfo);
+
+        var layoutDescription = new PipelineLayoutDescription
+        {
+            DescriptorSetLayouts = new List<DescriptorSetLayoutDescription>
+            {
+                new()
+                {
+                    Bindings = new List<DescriptorSetLayoutBinding>
+                    {
+                        new()
+                        {
+                            Binding = 0,
+                            DescriptorType = DescriptorType.CombinedImageSampler,
+                            DescriptorCount = 1,
+                            StageFlags = ShaderStageFlags.Fragment
+                        }
+                    }
+                }
+            },
+        };
+        builder.ConfigurePipelineLayout(layoutDescription);
+    }
+
     private void InitializeResources(ResourceManager allocator)
     {
         _vertexBuffer = allocator.CreateVertexBuffer(Vertices);
@@ -221,18 +314,37 @@ public class TestApp : Application
             MinLod = 0.0f,
             MaxLod = 0.0f
         });
+
+        _intermediateRenderTarget = allocator.CreateImageRenderTarget(_graphicsDevice.GetSwapchainRenderTarget().Extent);
     }
 
     private void CreatePasses()
     {
         CreateDrawPass();
+        CreatePostProcessPass();
     }
 
     private void CreateDrawPass()
     {
+        _drawPass = _graphicsDevice.CreatePass(builder =>
+        {
+            var colorAttachmentDescription = new AttachmentDescription
+            {
+                LoadOp = AttachmentLoadOp.Clear,
+                StoreOp = AttachmentStoreOp.Store,
+                ImageLayout = ImageLayout.ColorAttachmentOptimal,
+            };
+
+            builder.ConfigureColorAttachment(colorAttachmentDescription);
+            builder.SetRenderTarget(_intermediateRenderTarget);
+        });
+    }
+
+    private void CreatePostProcessPass()
+    {
         var swapchainRenderTarget = _graphicsDevice.GetSwapchainRenderTarget();
 
-        _drawPass = _graphicsDevice.CreatePass(builder =>
+        _postProcessPass = _graphicsDevice.CreatePass(builder =>
         {
             var colorAttachmentDescription = new AttachmentDescription
             {
@@ -253,8 +365,6 @@ public class TestApp : Application
             g = 0.0f;
         _greenValue = g;
 
-        // try
-        // {
         _graphicsDevice.RenderFrame(frameContext =>
         {
             frameContext.UsePass(_drawPass, passContext =>
@@ -266,16 +376,20 @@ public class TestApp : Application
                     drawContext.BindIndexBuffer(_indexBuffer);
                     frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue * 2);
                     drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
-                    drawContext.BindImage(_image, _sampler, 1, 0); // Bind the image
+                    drawContext.BindImage(_image, _sampler, 1, 0);
                     drawContext.DrawIndexed((uint)Indices.Length);
                 });
             });
+
+            frameContext.UsePass(_postProcessPass, passContext =>
+            {
+                passContext.UsePipeline(_postProcessPipeline, drawContext =>
+                {
+                    drawContext.Clear(new Color3<Rgb>(0.0f, 0.0f, 0.0f));
+                    drawContext.BindImage(_intermediateRenderTarget, _sampler, 0, 0);
+                    drawContext.Draw(6);
+                });
+            });
         });
-        // }
-        // catch (Exception ex)
-        // {
-        //     Log.Error($"Unexpected error occurred: {ex.Message}");
-        //     throw;
-        // }
     }
 }

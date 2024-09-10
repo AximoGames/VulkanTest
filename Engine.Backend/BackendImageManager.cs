@@ -7,6 +7,6 @@ namespace Engine;
 public abstract class BackendImageManager
 {
     public abstract BackendRenderTarget CreateImageRenderTarget(Vector2i extent);
-    public abstract BackendImage CreateImage(Image<Rgba32> source);
+    public abstract BackendImage CreateImage(Image<Bgra32> source);
     public abstract BackendSampler CreateSampler(SamplerDescription description);
 }

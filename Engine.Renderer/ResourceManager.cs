@@ -37,7 +37,7 @@ public class ResourceManager
         throw new NotImplementedException();
     }
 
-    public Image CreateImage(Image<Rgba32> image)
+    public Image CreateImage(Image<Bgra32> image)
     {
         var backendImage = _backendImageManager.CreateImage(image);
         return new(backendImage);
