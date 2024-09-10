@@ -108,7 +108,7 @@ public class TestApp : Application
                 float colorFactor;
             } ubo;
 
-            layout(set = 0, binding = 1) uniform sampler2D textureSampler;
+            layout(set = 1, binding = 0) uniform sampler2D textureSampler;
 
             void main() {
                 vec4 textureColor = texture(textureSampler, fragTexCoord);
@@ -170,18 +170,23 @@ public class TestApp : Application
                             DescriptorCount = 1,
                             StageFlags = ShaderStageFlags.Fragment
                         },
+                    },
+                },
+                new()
+                {
+                    Bindings = new List<DescriptorSetLayoutBinding>
+                    {
                         new()
                         {
-                            Binding = 1,
+                            Binding = 0,
                             DescriptorType = DescriptorType.CombinedImageSampler,
                             DescriptorCount = 1,
                             StageFlags = ShaderStageFlags.Fragment
                         }
                     }
                 }
-            }
+            },
         };
-
         builder.ConfigurePipelineLayout(layoutDescription);
     }
 
@@ -252,7 +257,7 @@ public class TestApp : Application
                     drawContext.BindIndexBuffer(_indexBuffer);
                     frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue * 2);
                     drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
-                    drawContext.BindTexture(_textureImage, _sampler, 0, 1); // Bind the texture
+                    drawContext.BindTexture(_textureImage, _sampler, 1, 0); // Bind the texture
                     drawContext.DrawIndexed((uint)Indices.Length);
                 });
             });

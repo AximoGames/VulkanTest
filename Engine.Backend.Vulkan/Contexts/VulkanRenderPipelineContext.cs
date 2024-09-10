@@ -91,7 +91,6 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
         var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
         _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanImage, vulkanSampler);
         
-        uint dynamicOffset = 0; // This should be 0 for non-dynamic descriptors
-        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 1, &dynamicOffset);
+        vkCmdBindDescriptorSets(_commandBuffer, VkPipelineBindPoint.Graphics, _pipeline.PipelineLayout, set, 1, &descriptorSet, 0, null);
     }
 }
