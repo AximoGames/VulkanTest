@@ -12,4 +12,7 @@ public class RenderTarget
     }
 
     public Vector2i Extent => BackendRenderTarget.Extent;
+    
+    public Image GetImage(uint index)
+        => new(BackendRenderTarget.GetImage(index));
 }

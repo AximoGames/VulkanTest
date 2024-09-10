@@ -5,6 +5,9 @@ namespace Engine;
 
 public abstract class BackendRenderContext
 {
+    public abstract BackendUsePassContext PassContext { get; }
+    public BackendRenderFrameContext FrameContext => PassContext.FrameContext;
+
     public abstract void BindVertexBuffer(BackendBuffer backendBuffer, uint binding = 0);
     public abstract void BindIndexBuffer(BackendBuffer backendBuffer);
 

@@ -12,13 +12,16 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
     private readonly Vector2i _extent;
     private VulkanPipeline _pipeline;
 
-    internal VulkanRenderPipelineContext(VulkanDevice device, VkCommandBuffer commandBuffer, Vector2i extent, VulkanPipeline pipeline)
+    internal VulkanRenderPipelineContext(BackendUsePassContext passContext, VulkanDevice device, VkCommandBuffer commandBuffer, Vector2i extent, VulkanPipeline pipeline)
     {
         _device = device;
         _commandBuffer = commandBuffer;
         _extent = extent;
         _pipeline = pipeline;
+        PassContext = passContext;
     }
+
+    public override BackendUsePassContext PassContext { get; }
 
     public override void BindVertexBuffer(BackendBuffer backendBuffer, uint binding = 0)
         => vkCmdBindVertexBuffer(_commandBuffer, binding, ((VulkanBuffer)backendBuffer).Buffer);

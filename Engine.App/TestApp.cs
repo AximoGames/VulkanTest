@@ -197,9 +197,7 @@ public class TestApp : Application
         _uniformBuffer = allocator.CreateUniformBuffer<float>();
 
         using (var gradientImage = CreateGradientImage(100, 100))
-        {
             _image = allocator.CreateImage(gradientImage);
-        }
 
         _sampler = allocator.CreateSampler(new SamplerDescription
         {

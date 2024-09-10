@@ -268,7 +268,7 @@ internal unsafe sealed class VulkanDevice : BackendDevice
         TransitionImageLayout(cmd, ((VulkanImage)SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex)).Image, 
                               VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        action(new VulkanRenderFrameContext(this, cmd));
+        action(new VulkanRenderFrameContext(this, cmd, CurrentSwapchainImageIndex));
 
         CommandBufferManager.EndCommandBuffer(cmd);
 
