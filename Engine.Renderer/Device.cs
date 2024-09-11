@@ -2,14 +2,14 @@ using System.Runtime.CompilerServices;
 
 namespace Engine;
 
-public class GraphicsDevice : IDisposable
+public class Device : IDisposable
 {
     private readonly BackendDevice _backendDevice;
 
     // private Pipeline _pipeline;
     private ResourceManager _resourceManager;
 
-    public GraphicsDevice(BackendDevice backendDevice)
+    public Device(BackendDevice backendDevice)
     {
         _backendDevice = backendDevice;
         _resourceManager = new ResourceManager(_backendDevice.BackendBufferManager, _backendDevice.BackendImageManager);

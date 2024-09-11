@@ -12,9 +12,9 @@ public class ClearScreenApp : Application
 {
     public override string Name => "02-ClearScreen";
 
-    private GraphicsDevice _graphicsDevice;
+    private Device _graphicsDevice;
     private const bool _enableValidationLayers = true;
-    
+
     private Pass _drawPass;
     private float _greenValue = 0.0f;
 
@@ -25,7 +25,10 @@ public class ClearScreenApp : Application
         var window = windowManager.CreateWindow(Name);
         RenderFrame += OnRenderFrame;
 
-        _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(window, Name, _enableValidationLayers));
+        _graphicsDevice = new VulkanFactory()
+            .CreateInstance(windowManager, Name, _enableValidationLayers)
+            .CreateDevice(window);
+
         CreatePasses();
     }
 

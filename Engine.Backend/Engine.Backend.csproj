@@ -11,6 +11,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Engine.Descriptors\Engine.Descriptors.csproj" />
+      <ProjectReference Include="..\Engine\Engine.csproj" />
     </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ using static Vortice.Vulkan.Vulkan;
 
 namespace Engine.Vulkan;
 
-internal unsafe class VulkanInstance : IDisposable
+internal unsafe class VulkanInstance : BackendInstance
 {
     private readonly WindowManager _windowManager;
     private static IEnumerable<string>? _suppressDebugMessages;
@@ -24,6 +24,9 @@ internal unsafe class VulkanInstance : IDisposable
 
     private void CreateInstance(string applicationName, bool enableValidation)
     {
+        // Need to initialize
+        vkInitialize().CheckResult();
+
         var appInfo = new VkApplicationInfo
         {
             pApplicationName = applicationName.ToVkUtf8ReadOnlyString(),
@@ -191,7 +194,10 @@ internal unsafe class VulkanInstance : IDisposable
         return VK_FALSE;
     }
 
-    public void Dispose()
+    public override BackendDevice CreateDevice(Window window)
+        => new VulkanDevice(this, window);
+
+    public override void Dispose()
     {
         if (_debugMessenger != VkDebugUtilsMessengerEXT.Null)
         {

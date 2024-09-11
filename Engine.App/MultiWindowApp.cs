@@ -12,7 +12,7 @@ public class MultiWindowApp : Application
 {
     public override string Name => "03-MultiWindow";
 
-    private List<GraphicsDevice> _graphicsDevices = new();
+    private List<Device> _graphicsDevices = new();
     private List<Pass> _drawPasses = new();
     private const bool _enableValidationLayers = true;
     
@@ -30,9 +30,11 @@ public class MultiWindowApp : Application
 
         RenderFrame += OnRenderFrame;
 
+        var instance = new VulkanFactory().CreateInstance(windowManager, Name, _enableValidationLayers);
+
         // Create a GraphicsDevice for each window
-        _graphicsDevices.Add(new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(window1, Name, _enableValidationLayers)));
-        _graphicsDevices.Add(new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(window2, Name, _enableValidationLayers)));
+        _graphicsDevices.Add(instance.CreateDevice(window1));
+        _graphicsDevices.Add(instance.CreateDevice(window2));
 
         CreatePasses();
     }
@@ -61,7 +63,7 @@ public class MultiWindowApp : Application
     private void OnRenderFrame(FrameEventArgs args)
     {
         _redValue = (_redValue + 0.0003f) % 1.0f;
-        _blueValue = (_blueValue + 0.0005f) % 1.0f;
+        _blueValue = (_blueValue + 0.0003f) % 1.0f;
 
         for (int i = 0; i < _graphicsDevices.Count; i++)
         {

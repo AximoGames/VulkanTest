@@ -10,7 +10,7 @@ namespace Engine.App;
 
 public class TestApp : Application
 {
-    private GraphicsDevice _graphicsDevice;
+    private Device _device;
     private Pipeline _drawPipeline;
     private Buffer _vertexBuffer;
     private Buffer _indexBuffer;
@@ -53,8 +53,11 @@ public class TestApp : Application
         var window = windowManager.CreateWindow(Name);
         RenderFrame += (e) => { OnRenderFrame(); };
 
-        _graphicsDevice = new GraphicsDevice(VulkanGraphicsFactory.CreateVulkanGraphicsDevice(window, Name, EnableValidationLayers, suppressDebugMessages));
-        _graphicsDevice.InitializeResources(InitializeResources);
+        _device = new VulkanFactory()
+            .CreateInstance(windowManager, Name, EnableValidationLayers, suppressDebugMessages)
+            .CreateDevice(window);
+
+        _device.InitializeResources(InitializeResources);
 
         CreatePipelines();
         CreatePasses();
@@ -62,8 +65,8 @@ public class TestApp : Application
 
     private void CreatePipelines()
     {
-        _drawPipeline = _graphicsDevice.CreatePipeline(ConfigureDrawPipeline);
-        _postProcessPipeline = _graphicsDevice.CreatePipeline(ConfigurePostProcessPipeline);
+        _drawPipeline = _device.CreatePipeline(ConfigureDrawPipeline);
+        _postProcessPipeline = _device.CreatePipeline(ConfigurePostProcessPipeline);
     }
 
     private Image<Bgra32> CreateGradientImage(int width, int height)
@@ -315,7 +318,7 @@ public class TestApp : Application
             MaxLod = 0.0f
         });
 
-        _intermediateRenderTarget = allocator.CreateImageRenderTarget(_graphicsDevice.GetSwapchainRenderTarget().Extent);
+        _intermediateRenderTarget = allocator.CreateImageRenderTarget(_device.GetSwapchainRenderTarget().Extent);
     }
 
     private void CreatePasses()
@@ -326,7 +329,7 @@ public class TestApp : Application
 
     private void CreateDrawPass()
     {
-        _drawPass = _graphicsDevice.CreatePass(builder =>
+        _drawPass = _device.CreatePass(builder =>
         {
             var colorAttachmentDescription = new AttachmentDescription
             {
@@ -342,9 +345,9 @@ public class TestApp : Application
 
     private void CreatePostProcessPass()
     {
-        var swapchainRenderTarget = _graphicsDevice.GetSwapchainRenderTarget();
+        var swapchainRenderTarget = _device.GetSwapchainRenderTarget();
 
-        _postProcessPass = _graphicsDevice.CreatePass(builder =>
+        _postProcessPass = _device.CreatePass(builder =>
         {
             var colorAttachmentDescription = new AttachmentDescription
             {
@@ -365,7 +368,7 @@ public class TestApp : Application
             g = 0.0f;
         _greenValue = g;
 
-        _graphicsDevice.RenderFrame(frameContext =>
+        _device.RenderFrame(frameContext =>
         {
             frameContext.UsePass(_drawPass, passContext =>
             {

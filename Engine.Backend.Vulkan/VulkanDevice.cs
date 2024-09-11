@@ -11,7 +11,7 @@ using OpenTK.Mathematics;
 
 namespace Engine.Vulkan;
 
-internal unsafe sealed class VulkanDevice : BackendDevice
+internal sealed unsafe class VulkanDevice : BackendDevice
 {
     private static readonly string _engineName = "Vortice";
 
@@ -33,19 +33,15 @@ internal unsafe sealed class VulkanDevice : BackendDevice
 
     public uint CurrentSwapchainImageIndex;
 
-
     public VulkanShaderManager ShaderManager { get; private set; }
     public VulkanCommandBufferManager CommandBufferManager;
     public VulkanDescriptorSetManager DescriptorSetManager { get; private set; }
 
     public VkClearColorValue? ClearColor { get; set; }
 
-    public VulkanDevice(Window window, string applicationName, bool enableValidation, IEnumerable<string>? suppressDebugMessages)
+    public VulkanDevice(VulkanInstance instance, Window window)
     {
-        // Need to initialize
-        vkInitialize().CheckResult();
-
-        VulkanInstance = new VulkanInstance(applicationName, enableValidation, window.WindowManager, suppressDebugMessages);
+        VulkanInstance = instance;
 
         _surface = CreateSurface(window);
 

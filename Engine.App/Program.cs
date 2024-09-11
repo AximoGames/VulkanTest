@@ -10,7 +10,7 @@ public static partial class Program
         // {
         // Run<TestApp>();
         // Run<ClearScreenApp>();
-        //Run<MultiWindowApp>();
+        // Run<MultiWindowApp>();
         Run<MultiInstanceWindowApp>();
         // }
         // catch (Exception ex)
@@ -19,7 +19,7 @@ public static partial class Program
         //     throw;
         // }
     }
-    
+
     private static void Run<TApp>() where TApp : Application, new()
     {
         Application app = new TApp();
