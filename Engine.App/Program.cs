@@ -8,10 +8,10 @@ public static partial class Program
     {
         // try
         // {
-        Run<TestApp>();
+        // Run<TestApp>();
         // Run<ClearScreenApp>();
         // Run<MultiWindowApp>();
-        // Run<MultiInstanceWindowApp>();
+        Run<MultiInstanceWindowApp>();
         // }
         // catch (Exception ex)
         // {
