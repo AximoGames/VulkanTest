@@ -9,8 +9,9 @@ namespace Engine.Vulkan;
 internal unsafe class VulkanInstance : BackendInstance
 {
     private readonly WindowManager _windowManager;
-    private static IEnumerable<string>? _suppressDebugMessages;
-    private static readonly string[] _requestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
+    private IEnumerable<string>? _suppressDebugMessages;
+    private readonly string[] _requestedValidationLayers = ["VK_LAYER_KHRONOS_validation"];
+    private DebugMessengerDelegateWrapper _debugMessengerDelegateWrapper; // keep reference to prevent GC
 
     public VkInstance Instance;
     private VkDebugUtilsMessengerEXT _debugMessenger = VkDebugUtilsMessengerEXT.Null;
@@ -62,13 +63,13 @@ internal unsafe class VulkanInstance : BackendInstance
             instanceCreateInfo.ppEnabledLayerNames = vkLayerNames;
         }
 
-        var callbackHandler = new DebugMessengerDelegateWrapper(DebugMessengerCallback);
+        _debugMessengerDelegateWrapper = new DebugMessengerDelegateWrapper(DebugMessengerCallback);
         var debugUtilsCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT
         {
             messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Error | VkDebugUtilsMessageSeverityFlagsEXT.Warning,
             messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance | VkDebugUtilsMessageTypeFlagsEXT.General,
             pfnUserCallback = &DebugMessengerDelegateWrapper.DebugMessengerCallbackWrapper,
-            pUserData = callbackHandler.UserData,
+            pUserData = _debugMessengerDelegateWrapper.UserData,
         };
 
         if (instanceLayers.Count > 0)
@@ -128,7 +129,7 @@ internal unsafe class VulkanInstance : BackendInstance
         }
     }
 
-    private static void FindValidationLayers(List<string> appendTo)
+    private void FindValidationLayers(List<string> appendTo)
     {
         ReadOnlySpan<VkLayerProperties> availableLayers = vkEnumerateInstanceLayerProperties();
 
