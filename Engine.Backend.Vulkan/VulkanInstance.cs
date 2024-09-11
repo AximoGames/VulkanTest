@@ -62,11 +62,13 @@ internal unsafe class VulkanInstance : BackendInstance
             instanceCreateInfo.ppEnabledLayerNames = vkLayerNames;
         }
 
+        var callbackHandler = new DebugMessengerDelegateWrapper(DebugMessengerCallback);
         var debugUtilsCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT
         {
             messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Error | VkDebugUtilsMessageSeverityFlagsEXT.Warning,
             messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance | VkDebugUtilsMessageTypeFlagsEXT.General,
-            pfnUserCallback = &DebugMessengerCallback
+            pfnUserCallback = &DebugMessengerDelegateWrapper.DebugMessengerCallbackWrapper,
+            pUserData = callbackHandler.UserData,
         };
 
         if (instanceLayers.Count > 0)
@@ -159,11 +161,51 @@ internal unsafe class VulkanInstance : BackendInstance
         }
     }
 
-    [UnmanagedCallersOnly]
-    private static uint DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagsEXT messageSeverity,
+    private delegate uint DebugMessengerDelegate(
+        VkDebugUtilsMessageSeverityFlagsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageTypes,
         VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* userData)
+        void* pUserData);
+
+    private class DebugMessengerDelegateWrapper : IDisposable
+    {
+        private GCHandle _gcHandle;
+        private DebugMessengerDelegate _callback;
+
+        public void* UserData => GCHandle.ToIntPtr(_gcHandle).ToPointer();
+
+        public DebugMessengerDelegateWrapper(DebugMessengerDelegate callback)
+        {
+            _callback = callback;
+            _gcHandle = GCHandle.Alloc(this);
+        }
+
+        [UnmanagedCallersOnly]
+        public static uint DebugMessengerCallbackWrapper(
+            VkDebugUtilsMessageSeverityFlagsEXT messageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+            VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+            void* pUserData)
+        {
+            var handle = GCHandle.FromIntPtr((IntPtr)pUserData);
+            if (handle.Target == null)
+                throw new ObjectDisposedException(nameof(DebugMessengerDelegateWrapper));
+
+            var instance = (DebugMessengerDelegateWrapper)handle.Target;
+            return instance._callback(messageSeverity, messageTypes, pCallbackData, pUserData);
+        }
+
+        public void Dispose()
+        {
+            _gcHandle.Free();
+            _gcHandle = default;
+        }
+    }
+
+    private uint DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+        VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData)
     {
         string? message = VkStringInterop.ConvertToManaged(pCallbackData->pMessage);
         string? messageIdName = VkStringInterop.ConvertToManaged(pCallbackData->pMessageIdName);
