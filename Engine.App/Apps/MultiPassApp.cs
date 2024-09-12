@@ -8,14 +8,9 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Engine.App;
 
-public class TestApp : Application
+public class MultiPassApp : Application
 {
-    public override string Name => "01-DrawTriangle";
-    private bool _enableValidationLayers = true;
-    private string[] _suppressDebugMessages =
-    [
-        //"VUID-VkPresentInfoKHR-pImageIndices-01430",
-    ];
+    public override string Name => "05-MultiPass";
 
     private Device _device;
     private Pipeline _drawPipeline;
@@ -23,14 +18,12 @@ public class TestApp : Application
     private Buffer _indexBuffer;
     private Buffer _uniformBuffer;
     private float _greenValue = 0.0f;
-
-
+    
     private Pass _drawPass;
     private Image _image;
     private Pass _postProcessPass;
     private Pipeline _postProcessPipeline;
     private RenderTarget _intermediateRenderTarget;
-
 
     public Vertex[] Vertices =
     {
@@ -55,7 +48,7 @@ public class TestApp : Application
         RenderFrame += (e) => { OnRenderFrame(); };
 
         _device = new VulkanFactory()
-            .CreateInstance(windowManager, Name, _enableValidationLayers, _suppressDebugMessages)
+            .CreateInstance(windowManager, Name)
             .CreateDevice(window);
 
         _device.InitializeResources(InitializeResources);

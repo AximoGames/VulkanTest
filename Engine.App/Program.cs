@@ -2,16 +2,17 @@
 
 namespace Engine.App;
 
-public static partial class Program
+public static class Program
 {
     public static void Main()
     {
         // try
         // {
-        // Run<TestApp>();
+        Run<TestApp>();
+        // Run<MultiPassApp>();
         // Run<ClearScreenApp>();
         // Run<MultiWindowApp>();
-        Run<MultiInstanceWindowApp>();
+        // Run<MultiInstanceWindowApp>();
         // }
         // catch (Exception ex)
         // {

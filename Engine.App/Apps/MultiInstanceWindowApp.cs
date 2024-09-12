@@ -14,7 +14,6 @@ public class MultiInstanceWindowApp : Application
 
     private List<Device> _graphicsDevices = new();
     private List<Pass> _drawPasses = new();
-    private const bool _enableValidationLayers = true;
     
     private float _redValue = 0.0f;
     private float _blueValue = 0.0f;
@@ -31,9 +30,9 @@ public class MultiInstanceWindowApp : Application
         RenderFrame += OnRenderFrame;
 
         var instance1 = new VulkanFactory()
-            .CreateInstance(windowManager, Name + " - Instance 1", _enableValidationLayers);
+            .CreateInstance(windowManager, Name + " - Instance 1");
         var instance2 = new VulkanFactory()
-            .CreateInstance(windowManager, Name + " - Instance 2", _enableValidationLayers);
+            .CreateInstance(windowManager, Name + " - Instance 2");
         
         // Create a separate GraphicsDevice (and VkInstance) for each window
         _graphicsDevices.Add(instance1.CreateDevice(window1));
