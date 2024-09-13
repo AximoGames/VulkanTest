@@ -7,7 +7,7 @@ public class SdlWindowManager : WindowManager
 {
     private static SdlWindowManager? _instance;
 
-    private List<Window> _windows = new();
+    private List<SdlWindow> _windows = new();
 
     public static SdlWindowManager? TryGetInstance()
         => TryCreateInstance().Instance;

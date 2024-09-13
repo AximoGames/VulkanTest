@@ -6,9 +6,12 @@ namespace Engine;
 
 public class SdlWindow : Window
 {
+    internal readonly IntPtr Handle;
+
     internal SdlWindow(string title, IntPtr handle, Vector2i clientSize, WindowManager windowManager)
-        : base(title, handle, clientSize, windowManager)
+        : base(title, clientSize, windowManager)
     {
+        Handle = handle;
     }
 
     public override ulong CreateVulkanSurfaceHandle(IntPtr vulkanInstanceHandle)
@@ -23,9 +26,7 @@ public class SdlWindow : Window
         SDL.SDL_Vulkan_GetInstanceExtensions(Handle, out count, IntPtr.Zero);
 
         if (count == 0)
-        {
             return new string[0];
-        }
 
         IntPtr[] pointers = new IntPtr[count];
         if (SDL.SDL_Vulkan_GetInstanceExtensions(Handle, out count, pointers) == SDL.SDL_bool.SDL_FALSE)

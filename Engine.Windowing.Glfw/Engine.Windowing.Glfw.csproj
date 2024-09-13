@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Engine.OpenTkWindowing</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Engine\Engine.csproj"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.GLFW" Version="2.21.0" />
+  </ItemGroup>
+
+</Project>

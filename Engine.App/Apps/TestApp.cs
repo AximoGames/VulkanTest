@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Vulkan;
+using Engine.Windowing.Glfw;
 using OpenTK;
 using OpenTK.Mathematics;
 using SixLabors.ImageSharp;
@@ -49,7 +50,7 @@ public class TestApp : Application
 
     protected override void Initialize()
     {
-        var windowManager = SdlWindowManager.GetInstance();
+        var windowManager = GlfwWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
         var window = windowManager.CreateWindow(Name);
         RenderFrame += (e) => { OnRenderFrame(); };
