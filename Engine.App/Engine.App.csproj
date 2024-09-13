@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Engine.Backend\Engine.Backend.csproj"/>
+        <ProjectReference Include="..\Engine.ImGui\Engine.ImGui.csproj" />
         <ProjectReference Include="..\Engine.Renderer\Engine.Renderer.csproj"/>
         <ProjectReference Include="..\Engine.Windowing.Glfw\Engine.Windowing.Glfw.csproj"/>
         <ProjectReference Include="..\Engine.Windowing.Sdl\Engine.Windowing.Sdl.csproj"/>

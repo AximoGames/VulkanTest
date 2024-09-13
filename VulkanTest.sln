@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Renderer", "Engine.R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Windowing.Glfw", "Engine.Windowing.Glfw\Engine.Windowing.Glfw.csproj", "{0B25D423-7926-4C8C-B730-DF3F5D78A539}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ImGui", "Engine.ImGui\Engine.ImGui.csproj", "{374AE57F-B458-41A9-938F-4A581EFE53DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{0B25D423-7926-4C8C-B730-DF3F5D78A539}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B25D423-7926-4C8C-B730-DF3F5D78A539}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B25D423-7926-4C8C-B730-DF3F5D78A539}.Release|Any CPU.Build.0 = Release|Any CPU
+		{374AE57F-B458-41A9-938F-4A581EFE53DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{374AE57F-B458-41A9-938F-4A581EFE53DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{374AE57F-B458-41A9-938F-4A581EFE53DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{374AE57F-B458-41A9-938F-4A581EFE53DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

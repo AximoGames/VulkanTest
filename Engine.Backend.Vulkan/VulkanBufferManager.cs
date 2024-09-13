@@ -57,7 +57,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         vkUnmapMemory(_device.LogicalDevice, vulkanBuffer.Memory);
     }
 
-    public override void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
+    public override void CopyBuffer<T>(Span<T> source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
     {
         var elementSize = Unsafe.SizeOf<T>();
         uint bufferSize = (uint)(elementSize * count);

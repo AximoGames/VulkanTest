@@ -1,8 +1,8 @@
 namespace Engine;
 
-public class Buffer
+public class Buffer : IDisposable
 {
-    internal BackendBuffer BackendBuffer { get; }
+    internal BackendBuffer BackendBuffer { get; private set; }
 
     internal Buffer(BackendBuffer backendBuffer)
     {
@@ -10,4 +10,11 @@ public class Buffer
     }
 
     public Type ElementType => BackendBuffer.ElementType;
+    public int Size => (int)BackendBuffer.Size;
+
+    public void Dispose()
+    {
+        BackendBuffer?.Dispose();
+        BackendBuffer = null!;
+    }
 }

@@ -32,13 +32,13 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
     public override BackendBuffer CreateBuffer<T>(BufferType bufferType, int count)
         => _vulkanBufferManager.CreateBuffer<T>(bufferType, count);
 
-    public override void CopyBuffer<T>(T[] source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
+    public override void CopyBuffer<T>(Span<T> source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
         => _vulkanBufferManager.CopyBuffer(source, 0, (VulkanBuffer)destinationBuffer, 0, count);
 
     public override BackendPipeline Build()
     {
-        VulkanShaderModule vertShaderModule = _shaderModules[ShaderKind.VertexShader];
-        VulkanShaderModule fragShaderModule = _shaderModules[ShaderKind.FragmentShader];
+        VulkanShaderModule vertShaderModule = _shaderModules[ShaderKind.Vertex];
+        VulkanShaderModule fragShaderModule = _shaderModules[ShaderKind.Fragment];
 
         var name = "main".ToVkUtf8ReadOnlyString();
 
@@ -264,6 +264,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             VertexFormat.Float32_2 => VkFormat.R32G32Sfloat,
             VertexFormat.Float32_3 => VkFormat.R32G32B32Sfloat,
             VertexFormat.Float32_4 => VkFormat.R32G32B32A32Sfloat,
+            VertexFormat.Float8_4_Normalized => VkFormat.R8G8B8A8Unorm,
             _ => throw new ArgumentOutOfRangeException(nameof(format))
         };
     }

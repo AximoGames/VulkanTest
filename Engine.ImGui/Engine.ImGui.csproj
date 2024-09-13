@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="ImGui.NET" Version="1.91.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Engine.Renderer\Engine.Renderer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="OpenTK.Mathematics">
+        <HintPath>..\..\..\..\..\.nuget\packages\opentk.mathematics\5.0.0-pre.8\lib\net5.0\OpenTK.Mathematics.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

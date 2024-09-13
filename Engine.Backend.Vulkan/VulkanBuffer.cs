@@ -17,7 +17,7 @@ internal class VulkanBuffer : BackendBuffer
         Memory = memory;
     }
 
-    public unsafe void Dispose()
+    public override unsafe void Dispose()
     {
         vkDestroyBuffer(_device.LogicalDevice, Buffer, null);
         vkFreeMemory(_device.LogicalDevice, Memory, null);

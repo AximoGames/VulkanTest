@@ -167,8 +167,8 @@ public class TestApp : Application
         };
 
         builder.ConfigureVertexLayout(vertexLayoutInfo);
-        builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
-        builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
+        builder.ConfigureShader(vertexShaderCode, ShaderKind.Vertex);
+        builder.ConfigureShader(fragShaderCode, ShaderKind.Fragment);
 
         var layoutDescription = new PipelineLayoutDescription
         {
@@ -178,26 +178,14 @@ public class TestApp : Application
                 {
                     Bindings = new List<DescriptorSetLayoutBinding>
                     {
-                        new()
-                        {
-                            Binding = 0,
-                            DescriptorType = DescriptorType.UniformBufferDynamic,
-                            DescriptorCount = 1,
-                            StageFlags = ShaderStageFlags.Fragment
-                        },
+                        new(binding: 0, descriptorType: DescriptorType.UniformBufferDynamic, descriptorCount: 1, stageFlags: ShaderStageFlags.Fragment),
                     },
                 },
                 new()
                 {
                     Bindings = new List<DescriptorSetLayoutBinding>
                     {
-                        new()
-                        {
-                            Binding = 0,
-                            DescriptorType = DescriptorType.CombinedImageSampler,
-                            DescriptorCount = 1,
-                            StageFlags = ShaderStageFlags.Fragment
-                        }
+                        new(binding: 0, descriptorType: DescriptorType.CombinedImageSampler, descriptorCount: 1, stageFlags: ShaderStageFlags.Fragment)
                     }
                 }
             },
@@ -255,8 +243,8 @@ public class TestApp : Application
             }
             """;
 
-        builder.ConfigureShader(vertexShaderCode, ShaderKind.VertexShader);
-        builder.ConfigureShader(fragShaderCode, ShaderKind.FragmentShader);
+        builder.ConfigureShader(vertexShaderCode, ShaderKind.Vertex);
+        builder.ConfigureShader(fragShaderCode, ShaderKind.Fragment);
 
         // Add this new section for ConfigureVertexLayout
         var vertexLayoutInfo = new VertexLayoutInfo
@@ -280,13 +268,7 @@ public class TestApp : Application
                 {
                     Bindings = new List<DescriptorSetLayoutBinding>
                     {
-                        new()
-                        {
-                            Binding = 0,
-                            DescriptorType = DescriptorType.CombinedImageSampler,
-                            DescriptorCount = 1,
-                            StageFlags = ShaderStageFlags.Fragment
-                        }
+                        new(binding: 0, descriptorType: DescriptorType.CombinedImageSampler, descriptorCount: 1, stageFlags: ShaderStageFlags.Fragment)
                     }
                 }
             },

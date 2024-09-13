@@ -6,10 +6,10 @@ internal static class VulkanShaderKindExtensions
     {
         return shaderKind switch
         {
-            ShaderKind.VertexShader => Vortice.ShaderCompiler.ShaderKind.VertexShader,
-            ShaderKind.FragmentShader => Vortice.ShaderCompiler.ShaderKind.FragmentShader,
-            ShaderKind.ComputeShader => Vortice.ShaderCompiler.ShaderKind.ComputeShader,
-            ShaderKind.GeometryShader => Vortice.ShaderCompiler.ShaderKind.GeometryShader,
+            ShaderKind.Vertex => Vortice.ShaderCompiler.ShaderKind.VertexShader,
+            ShaderKind.Fragment => Vortice.ShaderCompiler.ShaderKind.FragmentShader,
+            ShaderKind.Compute => Vortice.ShaderCompiler.ShaderKind.ComputeShader,
+            ShaderKind.Geometry => Vortice.ShaderCompiler.ShaderKind.GeometryShader,
             _ => throw new NotSupportedException($"ShaderKind {shaderKind} not supported.")
         };
     }

@@ -5,6 +5,7 @@ public enum VertexFormat
     Float32_2,
     Float32_3,
     Float32_4,
+    Float8_4_Normalized,
     // Add more formats as needed
 }
 
@@ -16,11 +17,19 @@ public class PipelineLayoutDescription
 
 public class DescriptorSetLayoutDescription
 {
-    public List<DescriptorSetLayoutBinding> Bindings { get; set; } = new List<DescriptorSetLayoutBinding>();
+    public List<DescriptorSetLayoutBinding> Bindings { get; set; } = new();
 }
 
 public class DescriptorSetLayoutBinding
 {
+    public DescriptorSetLayoutBinding(uint binding, DescriptorType descriptorType, uint descriptorCount, ShaderStageFlags stageFlags)
+    {
+        Binding = binding;
+        DescriptorType = descriptorType;
+        DescriptorCount = descriptorCount;
+        StageFlags = stageFlags;
+    }
+
     public uint Binding { get; set; }
     public DescriptorType DescriptorType { get; set; }
     public uint DescriptorCount { get; set; }

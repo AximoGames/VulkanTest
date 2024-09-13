@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-      <ProjectReference Include="..\Engine.Backend\Engine.Backend.csproj" PrivateAssets="compile" />
-      <ProjectReference Include="..\Engine.Descriptors\Engine.Descriptors.csproj" />
+        <ProjectReference Include="..\Engine.Backend\Engine.Backend.csproj" PrivateAssets="compile"/>
+        <ProjectReference Include="..\Engine.Descriptors\Engine.Descriptors.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5"/>
     </ItemGroup>
 
 </Project>
