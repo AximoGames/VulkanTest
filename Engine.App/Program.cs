@@ -8,8 +8,8 @@ public static class Program
     {
         // try
         // {
-        Run<ImGuiApp>();
-        // Run<TestApp>();
+        // Run<ImGuiApp>();
+        Run<TestApp>();
         // Run<MultiPassApp>();
         // Run<ClearScreenApp>();
         // Run<MultiWindowApp>();
