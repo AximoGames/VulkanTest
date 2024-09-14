@@ -75,7 +75,7 @@ public unsafe class ImGuiRenderer
                     {
                         Bindings = new List<DescriptorSetLayoutBinding>
                         {
-                            new(binding: 0, descriptorType: DescriptorType.UniformBuffer, descriptorCount: 1, stageFlags: ShaderStageFlags.Vertex),
+                            new(binding: 0, descriptorType: DescriptorType.UniformBufferDynamic, descriptorCount: 1, stageFlags: ShaderStageFlags.Vertex),
                             new(binding: 1, descriptorType: DescriptorType.CombinedImageSampler, descriptorCount: 1, stageFlags: ShaderStageFlags.Fragment)
                         }
                     }
