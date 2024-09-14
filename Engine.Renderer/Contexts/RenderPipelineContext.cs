@@ -24,8 +24,11 @@ public class RenderPipelineContext
     public void Draw(uint vertexCount, uint instanceCount = 1, uint firstVertex = 0, uint firstInstance = 0)
         => _backendContext.Draw(vertexCount, instanceCount, firstVertex, firstInstance);
 
+    public void BindUniformBuffer(Buffer buffer, uint set, uint binding, Span<uint> dynamicOffsets)
+        => _backendContext.BindUniformBuffer(buffer.BackendBuffer, set, binding, dynamicOffsets);
+
     public void BindUniformBuffer(Buffer buffer, uint set, uint binding)
-        => _backendContext.BindUniformBuffer(buffer.BackendBuffer, set, binding);
+        => _backendContext.BindUniformBuffer(buffer.BackendBuffer, set, binding, Span<uint>.Empty);
 
     public void BindImage(Image image, Sampler sampler, uint set, uint binding, Span<uint> dynamicOffsets)
         => _backendContext.BindImage(image.BackendImage, sampler.BackendSampler, set, binding, dynamicOffsets);

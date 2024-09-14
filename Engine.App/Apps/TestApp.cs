@@ -13,6 +13,7 @@ public class TestApp : Application
 {
     public override string Name => "01-DrawTriangle";
     private bool _enableValidationLayers = true;
+
     private string[] _suppressDebugMessages =
     [
         //"VUID-VkPresentInfoKHR-pImageIndices-01430",
@@ -363,7 +364,7 @@ public class TestApp : Application
                 {
                     drawContext.BindVertexBuffer(_vertexBuffer);
                     drawContext.BindIndexBuffer(_indexBuffer);
-                    drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
+                    drawContext.BindUniformBuffer(_uniformBuffer, 0, 0, [0]);
                     drawContext.BindImage(_image, _sampler, 1, 0);
                     drawContext.DrawIndexed((uint)Indices.Length);
                 });
