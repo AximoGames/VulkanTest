@@ -36,7 +36,7 @@ public unsafe class ImGuiRenderer
                 BindingDescription = new VertexInputBindingDescription
                 {
                     Binding = 0,
-                    Stride = (uint)System.Runtime.InteropServices.Marshal.SizeOf<ImDrawVert>(),
+                    Stride = (uint)Marshal.SizeOf<ImDrawVert>(),
                     InputRate = VertexInputRate.Vertex
                 },
                 AttributeDescriptions = new List<VertexInputAttributeDescription>
@@ -46,21 +46,21 @@ public unsafe class ImGuiRenderer
                         Binding = 0,
                         Location = 0,
                         Format = VertexFormat.Float32_2,
-                        Offset = (uint)System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawVert>("pos")
+                        Offset = (uint)Marshal.OffsetOf<ImDrawVert>("pos")
                     },
                     new()
                     {
                         Binding = 0,
                         Location = 1,
                         Format = VertexFormat.Float32_2,
-                        Offset = (uint)System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawVert>("uv")
+                        Offset = (uint)Marshal.OffsetOf<ImDrawVert>("uv")
                     },
                     new()
                     {
                         Binding = 0,
                         Location = 2,
                         Format = VertexFormat.Float8_4_Normalized,
-                        Offset = (uint)System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawVert>("col")
+                        Offset = (uint)Marshal.OffsetOf<ImDrawVert>("col")
                     }
                 }
             };
@@ -110,11 +110,8 @@ public unsafe class ImGuiRenderer
         return resources.CreateImage(pixelData, new Vector2i(width, height));
     }
 
-    public void Render(UsePassContext passContext)
+    public void Render(UsePassContext passContext, ImDrawDataPtr drawData)
     {
-        ImGuiNET.ImGui.Render();
-        var drawData = ImGuiNET.ImGui.GetDrawData();
-
         passContext.UsePipeline(_pipeline, pipelineContext =>
         {
             // Update buffers and bind resources
@@ -136,10 +133,8 @@ public unsafe class ImGuiRenderer
         });
     }
 
-    public void UpdateBuffers(ResourceManager resources)
+    public void UpdateBuffers(ResourceManager resources, ImDrawDataPtr drawData)
     {
-        var drawData = ImGuiNET.ImGui.GetDrawData();
-
         // Update vertex and index buffers
         if (drawData.TotalVtxCount > 0)
         {

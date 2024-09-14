@@ -45,7 +45,7 @@ public class MultiPassApp : Application
         var windowManager = SdlWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
         var window = windowManager.CreateWindow(Name);
-        RenderFrame += (e) => { OnRenderFrame(); };
+        RenderFrame += e => { OnRenderFrame(); };
 
         _device = new VulkanFactory()
             .CreateInstance(windowManager, Name)

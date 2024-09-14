@@ -57,14 +57,17 @@ public class ImGuiApp : Application
         ImGuiNET.ImGui.Text("This is an ImGui window.");
         ImGuiNET.ImGui.End();
 
+        ImGuiNET.ImGui.Render();
+        var drawData = ImGuiNET.ImGui.GetDrawData();
+        
         _device.RenderFrame(frameContext =>
         {
-            _imGuiRenderer.UpdateBuffers(frameContext.ResourceManager);
+            _imGuiRenderer.UpdateBuffers(frameContext.ResourceManager, drawData);
 
             frameContext.UsePass(_imGuiPass, passContext =>
             {
                 passContext.Clear(new Color3<Rgb>(0.45f, 0.55f, 0.60f));
-                _imGuiRenderer.Render(passContext);
+                _imGuiRenderer.Render(passContext, drawData);
             });
         });
     }

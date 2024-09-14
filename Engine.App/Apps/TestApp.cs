@@ -53,7 +53,7 @@ public class TestApp : Application
         var windowManager = GlfwWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
         var window = windowManager.CreateWindow(Name);
-        RenderFrame += (e) => { OnRenderFrame(); };
+        RenderFrame += e => { OnRenderFrame(); };
 
         _device = new VulkanFactory()
             .CreateInstance(windowManager, Name, _enableValidationLayers, _suppressDebugMessages)
@@ -354,6 +354,8 @@ public class TestApp : Application
 
         _device.RenderFrame(frameContext =>
         {
+            frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue * 2);
+
             frameContext.UsePass(_drawPass, passContext =>
             {
                 passContext.Clear(new Color3<Rgb>(0.0f, _greenValue, 0.0f));
@@ -361,7 +363,6 @@ public class TestApp : Application
                 {
                     drawContext.BindVertexBuffer(_vertexBuffer);
                     drawContext.BindIndexBuffer(_indexBuffer);
-                    frameContext.ResourceManager.UpdateUniformBuffer(_uniformBuffer, _greenValue * 2);
                     drawContext.BindUniformBuffer(_uniformBuffer, 0, 0);
                     drawContext.BindImage(_image, _sampler, 1, 0);
                     drawContext.DrawIndexed((uint)Indices.Length);
