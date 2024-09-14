@@ -14,7 +14,7 @@ public class Buffer : IDisposable
 
     public void Dispose()
     {
-        BackendBuffer?.Dispose();
+        //BackendBuffer?.Dispose();
         BackendBuffer = null!;
     }
 }

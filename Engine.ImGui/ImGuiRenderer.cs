@@ -105,6 +105,7 @@ public unsafe class ImGuiRenderer
     private Image CreateFontTexture(ResourceManager resources)
     {
         ImGuiNET.ImGui.GetIO().Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out int width, out int height, out int bytesPerPixel);
+
         var pixelData = new byte[width * height * bytesPerPixel];
         Marshal.Copy(pixels, pixelData, 0, pixelData.Length);
         return resources.CreateImage(pixelData, new Vector2i(width, height));
@@ -117,8 +118,8 @@ public unsafe class ImGuiRenderer
             // Update buffers and bind resources
             pipelineContext.BindVertexBuffer(_vertexBuffer);
             pipelineContext.BindIndexBuffer(_indexBuffer);
-            pipelineContext.BindUniformBuffer(_uniformBuffer, 0, 0);
-            pipelineContext.BindImage(_fontTexture, _fontSampler, 0, 1);
+            pipelineContext.BindUniformBuffer(_uniformBuffer, 0, 0, [0]);
+            pipelineContext.BindImage(_fontTexture, _fontSampler, 0, 1, [0]);
 
             // Draw ImGui
             for (int i = 0; i < drawData.CmdListsCount; i++)
@@ -159,10 +160,12 @@ public unsafe class ImGuiRenderer
             {
                 ImDrawListPtr cmdList = drawData.CmdLists[n];
                 
-                var vertexData = new Span<byte>((void*)cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
+                var vertexData = new Span<ImDrawVert>((void*)cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
+                //var debugVertexData = vertexData.ToArray();
                 resources.CopyBuffer(vertexData, 0, _vertexBuffer, vtxOffset, cmdList.VtxBuffer.Size);
                 
-                var indexData = new Span<byte>((void*)cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
+                var indexData = new Span<ushort>((void*)cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
+                var debugIndexData = indexData.ToArray();
                 resources.CopyBuffer(indexData, 0, _indexBuffer, idxOffset, cmdList.IdxBuffer.Size);
                 
                 vtxOffset += cmdList.VtxBuffer.Size;

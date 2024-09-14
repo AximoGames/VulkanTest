@@ -54,6 +54,7 @@ public class ImGuiApp : Application
         _imGuiRenderer.NewFrame(_device.GetSwapchainRenderTarget().Extent);
 
         ImGuiNET.ImGui.Begin("Hello, world!");
+        ImGuiNET.ImGui.ShowDemoWindow();
         ImGuiNET.ImGui.Text("This is an ImGui window.");
         ImGuiNET.ImGui.End();
 

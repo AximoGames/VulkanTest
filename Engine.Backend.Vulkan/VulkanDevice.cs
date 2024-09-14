@@ -119,7 +119,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
             descriptorBindingUpdateUnusedWhilePending = true,
             // descriptorBindingUniformBufferUpdateAfterBind = true,
         };
-        
+
         VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures = new VkPhysicalDeviceDynamicRenderingFeatures
         {
             pNext = &vulkan12Features,
@@ -239,6 +239,8 @@ internal sealed unsafe class VulkanDevice : BackendDevice
     public override BackendBufferManager BackendBufferManager => VulkanBufferManager;
     public override BackendImageManager BackendImageManager => VulkanImageManager;
 
+    private long _frameIndex = 0;
+
     public override void RenderFrame(Action<BackendRenderFrameContext> action, [CallerMemberName] string? frameName = null)
     {
         VkResult result = AcquireNextImage(out CurrentSwapchainImageIndex);
@@ -261,9 +263,10 @@ internal sealed unsafe class VulkanDevice : BackendDevice
         CommandBufferManager.BeginCommandBuffer(cmd);
 
         // Transition image layout to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-        TransitionImageLayout(cmd, ((VulkanImage)SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex)).Image, 
-                              VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        TransitionImageLayout(cmd, ((VulkanImage)SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex)).Image,
+            VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
+        var frameIndex = _frameIndex++;
         action(new VulkanRenderFrameContext(this, cmd, CurrentSwapchainImageIndex));
 
         CommandBufferManager.EndCommandBuffer(cmd);
@@ -422,7 +425,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
             storeOp = ConvertStoreOp(pass.ColorAttachment.StoreOp),
         };
 
-        if (ClearColor.HasValue) 
+        if (ClearColor.HasValue)
             colorAttachmentInfo.clearValue = new VkClearValue { color = ClearColor.Value };
 
         VkRenderingInfo renderingInfo = new VkRenderingInfo

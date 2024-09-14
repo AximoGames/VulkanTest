@@ -31,23 +31,26 @@ public abstract class Application
     }
 
     public bool IsQuitRequested { get; internal set; }
-    
+
+    private long _frameIndex;
+
     public void Run()
     {
         Initialize();
         while (!IsQuitRequested)
         {
-            ProcessEvents();
-            ProcessRenderFrame();
+            var framIndex = _frameIndex++;
+            ProcessEvents(framIndex);
+            ProcessRenderFrame(framIndex);
         }
     }
 
-    private void ProcessEvents()
+    private void ProcessEvents(long frameIndex)
     {
         foreach (var windowManager in _windowManagers)
             windowManager.ProcessEvents();
     }
 
-    private void ProcessRenderFrame()
-        => RenderFrame?.Invoke(new FrameEventArgs());
+    private void ProcessRenderFrame(long frameIndex)
+        => RenderFrame?.Invoke(new FrameEventArgs { FrameIndex = frameIndex });
 }
