@@ -34,7 +34,7 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
 
     public override void Draw(uint vertexCount, uint instanceCount = 1, uint firstVertex = 0, uint firstInstance = 0)
         => vkCmdDraw(_commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
-    
+
     public override void BindUniformBuffer(BackendBuffer buffer, uint set, uint binding)
     {
         var vulkanBuffer = (VulkanBuffer)buffer;
@@ -71,7 +71,7 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
         return result;
     }
 
-    public override void BindImage(BackendImage image, BackendSampler sampler, uint set, uint binding)
+    public override void BindImage(BackendImage image, BackendSampler sampler, uint set, uint binding, Span<uint> dynamicOffsets)
     {
         var vulkanImage = (VulkanImage)image;
         var vulkanSampler = (VulkanSampler)sampler;
@@ -79,15 +79,32 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
         var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
         _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanImage, vulkanSampler);
 
-        // uint dynamicOffset = 0; // Calculate this based on your needs
-        vkCmdBindDescriptorSets(
-            commandBuffer: _commandBuffer,
-            pipelineBindPoint: VkPipelineBindPoint.Graphics,
-            layout: _pipeline.PipelineLayout,
-            firstSet: set,
-            descriptorSetCount: 1,
-            descriptorSets: &descriptorSet,
-            dynamicOffsetCount: 0,
-            null);
+        if (dynamicOffsets.Length == 0)
+        {
+            vkCmdBindDescriptorSets(
+                commandBuffer: _commandBuffer,
+                pipelineBindPoint: VkPipelineBindPoint.Graphics,
+                layout: _pipeline.PipelineLayout,
+                firstSet: set,
+                descriptorSetCount: 1,
+                descriptorSets: &descriptorSet,
+                dynamicOffsetCount: 0,
+                dynamicOffsets: null);
+        }
+        else
+        {
+            fixed (uint* dynamicOffsetPtr = dynamicOffsets)
+            {
+                vkCmdBindDescriptorSets(
+                    commandBuffer: _commandBuffer,
+                    pipelineBindPoint: VkPipelineBindPoint.Graphics,
+                    layout: _pipeline.PipelineLayout,
+                    firstSet: set,
+                    descriptorSetCount: 1,
+                    descriptorSets: &descriptorSet,
+                    dynamicOffsetCount: (uint)dynamicOffsets.Length,
+                    dynamicOffsets: dynamicOffsetPtr);
+            }
+        }
     }
 }
