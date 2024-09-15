@@ -17,16 +17,16 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
         _commandPool = commandPool;
     }
 
-    public override BackendBuffer CreateBuffer<T>(BufferType bufferType, int elementCount)
+    public override BackendBuffer CreateBuffer<T>(BufferUsage bufferUsage, int elementCount)
     {
         uint bufferSize = (uint)(Unsafe.SizeOf<T>() * elementCount);
         VkBuffer buffer;
         VkDeviceMemory bufferMemory;
 
-        VkBufferUsageFlags vkBufferType = bufferType switch
+        VkBufferUsageFlags vkBufferType = bufferUsage switch 
         {
-            BufferType.Vertex => VkBufferUsageFlags.VertexBuffer,
-            BufferType.Index => VkBufferUsageFlags.IndexBuffer,
+            BufferUsage.Vertex => VkBufferUsageFlags.VertexBuffer,
+            BufferUsage.Index => VkBufferUsageFlags.IndexBuffer,
             _ => throw new InvalidOperationException(),
         };
 

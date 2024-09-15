@@ -185,37 +185,39 @@ public unsafe class ImGuiRenderer
         ImGuiNET.ImGui.NewFrame();
     }
 
-    private static readonly string ImGuiVertexShader = @"
-#version 450
-layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec2 inUV;
-layout(location = 2) in vec4 inColor;
+    private static readonly string ImGuiVertexShader =
+        """
+        #version 450
+        layout(location = 0) in vec2 inPosition;
+        layout(location = 1) in vec2 inUV;
+        layout(location = 2) in vec4 inColor;
 
-layout(location = 0) out vec2 outUV;
-layout(location = 1) out vec4 outColor;
+        layout(location = 0) out vec2 outUV;
+        layout(location = 1) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform UniformBufferObject {
-    mat4 projectionMatrix;
-} ubo;
+        layout(set = 0, binding = 0) uniform UniformBufferObject {
+            mat4 projectionMatrix;
+        } ubo;
 
-void main() {
-    gl_Position = ubo.projectionMatrix * vec4(inPosition.xy, 0.0, 1.0);
-    outUV = inUV;
-    outColor = inColor;
-}
-";
+        void main() {
+            gl_Position = ubo.projectionMatrix * vec4(inPosition.xy, 0.0, 1.0);
+            outUV = inUV;
+            outColor = inColor;
+        }
+        """;
 
-    private static readonly string ImGuiFragmentShader = @"
-#version 450
-layout(location = 0) in vec2 inUV;
-layout(location = 1) in vec4 inColor;
+    private static readonly string ImGuiFragmentShader =
+        """
+        #version 450
+        layout(location = 0) in vec2 inUV;
+        layout(location = 1) in vec4 inColor;
 
-layout(location = 0) out vec4 outColor;
+        layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 1) uniform sampler2D fontSampler;
+        layout(set = 0, binding = 1) uniform sampler2D fontSampler;
 
-void main() {
-    outColor = inColor * texture(fontSampler, inUV);
-}
-";
+        void main() {
+            outColor = inColor * texture(fontSampler, inUV);
+        }
+        """;
 }

@@ -29,8 +29,8 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         _vulkanBufferManager = vulkanBufferManager;
     }
 
-    public override BackendBuffer CreateBuffer<T>(BufferType bufferType, int count)
-        => _vulkanBufferManager.CreateBuffer<T>(bufferType, count);
+    public override BackendBuffer CreateBuffer<T>(BufferUsage bufferUsage, int count)
+        => _vulkanBufferManager.CreateBuffer<T>(bufferUsage, count);
 
     public override void CopyBuffer<T>(Span<T> source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
         => _vulkanBufferManager.CopyBuffer(source, 0, (VulkanBuffer)destinationBuffer, 0, count);
@@ -64,6 +64,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             inputRate = ConvertInputRate(_vertexLayoutInfo.BindingDescription.InputRate)
         };
 
+        // Convert vertex attribute descriptions to Vulkan-specific format
         VkVertexInputAttributeDescription* attributeDescriptions = stackalloc VkVertexInputAttributeDescription[_vertexLayoutInfo.AttributeDescriptions.Count];
         for (int i = 0; i < _vertexLayoutInfo.AttributeDescriptions.Count; i++)
         {

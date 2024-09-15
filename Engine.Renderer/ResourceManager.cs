@@ -20,26 +20,26 @@ public class ResourceManager
 
     public Buffer CreateVertexBuffer<T>(Span<T> vertices) where T : unmanaged
     {
-        BackendBuffer backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferType.Vertex, vertices.Length);
+        BackendBuffer backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferUsage.Vertex, vertices.Length);
         _backendBufferManager.CopyBuffer(vertices, 0, backendBuffer, 0, vertices.Length);
         return new Buffer(backendBuffer);
     }
 
     public Buffer CreateVertexBuffer<T>(int length) where T : unmanaged
-        => new(_backendBufferManager.CreateBuffer<T>(BufferType.Vertex, length));
+        => new(_backendBufferManager.CreateBuffer<T>(BufferUsage.Vertex, length));
 
     public Buffer CreateIndexBuffer<T>(T[] indices) where T : unmanaged
         => CreateIndexBuffer(indices.AsSpan());
 
     public Buffer CreateIndexBuffer<T>(Span<T> indices) where T : unmanaged
     {
-        BackendBuffer backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferType.Index, indices.Length);
+        BackendBuffer backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferUsage.Index, indices.Length);
         _backendBufferManager.CopyBuffer(indices, 0, backendBuffer, 0, indices.Length);
         return new Buffer(backendBuffer);
     }
 
     public Buffer CreateIndexBuffer<T>(int length) where T : unmanaged
-        => new(_backendBufferManager.CreateBuffer<T>(BufferType.Index, length));
+        => new(_backendBufferManager.CreateBuffer<T>(BufferUsage.Index, length));
 
     public Image CreateImage<T>(Span<T> pixelData, Vector2i extent) where T : unmanaged
     {
