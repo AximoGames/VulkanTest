@@ -42,7 +42,7 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
         }
         ImageCount = imageCount;
         
-        var createInfo = new VkSwapchainCreateInfoKHR
+        VkSwapchainCreateInfoKHR createInfo = new VkSwapchainCreateInfoKHR
         {
             surface = _surface,
             minImageCount = imageCount,
@@ -61,12 +61,12 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
 
         vkCreateSwapchainKHR(Device.LogicalDevice, &createInfo, null, out VkSwapchain).CheckResult();
 
-        var images = GetImages();
-        var imageViews = new VkImageView[images.Length];
+        VkImage[] images = GetImages();
+        VkImageView[] imageViews = new VkImageView[images.Length];
         for (int i = 0; i < images.Length; i++)
             imageViews[i] = CreateImageView(images[i]);
 
-        var vulkanImages = new VulkanImage[images.Length];
+        VulkanImage[] vulkanImages = new VulkanImage[images.Length];
         for (int i = 0; i < images.Length; i++)
             vulkanImages[i] = new VulkanImage(Device, Extent, images[i], imageViews[i], VkDeviceMemory.Null, SurfaceFormat.format, true);
         _images = vulkanImages;
@@ -80,7 +80,7 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
 
     private VkImageView CreateImageView(VkImage image)
     {
-        var viewCreateInfo = new VkImageViewCreateInfo(
+        VkImageViewCreateInfo viewCreateInfo = new VkImageViewCreateInfo(
             image,
             VkImageViewType.Image2D,
             SurfaceFormat.format,
@@ -88,7 +88,7 @@ internal sealed unsafe class VulkanSwapchainRenderTarget : VulkanRenderTarget
             new VkImageSubresourceRange(VkImageAspectFlags.Color, 0, 1, 0, 1)
         );
 
-        vkCreateImageView(Device.LogicalDevice, &viewCreateInfo, null, out var imageView).CheckResult();
+        vkCreateImageView(Device.LogicalDevice, &viewCreateInfo, null, out VkImageView imageView).CheckResult();
         return imageView;
     }
 

@@ -74,7 +74,7 @@ internal unsafe class VulkanCommandBufferManager : IDisposable
 
     public void Dispose()
     {
-        foreach (var commandBuffer in _allocatedCommandBuffers)
+        foreach (VkCommandBuffer commandBuffer in _allocatedCommandBuffers)
         {
             _commandPool.FreeCommandBuffer(commandBuffer);
         }

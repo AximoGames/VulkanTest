@@ -19,9 +19,9 @@ public class ClearScreenApp : Application
 
     protected override void Initialize()
     {
-        var windowManager = SdlWindowManager.GetInstance();
+        SdlWindowManager windowManager = SdlWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
-        var window = windowManager.CreateWindow(Name);
+        Window window = windowManager.CreateWindow(Name);
         RenderFrame += OnRenderFrame;
 
         _graphicsDevice = new VulkanFactory()
@@ -35,7 +35,7 @@ public class ClearScreenApp : Application
     {
         _drawPass = _graphicsDevice.CreatePass(builder =>
         {
-            var colorAttachmentDescription = new AttachmentDescription
+            AttachmentDescription colorAttachmentDescription = new AttachmentDescription
             {
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,

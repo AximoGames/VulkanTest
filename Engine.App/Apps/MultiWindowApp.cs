@@ -20,16 +20,16 @@ public class MultiWindowApp : Application
 
     protected override void Initialize()
     {
-        var windowManager = SdlWindowManager.GetInstance();
+        SdlWindowManager windowManager = SdlWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
 
         // Create two windows
-        var window1 = windowManager.CreateWindow(Name + " - Window 1");
-        var window2 = windowManager.CreateWindow(Name + " - Window 2");
+        Window window1 = windowManager.CreateWindow(Name + " - Window 1");
+        Window window2 = windowManager.CreateWindow(Name + " - Window 2");
 
         RenderFrame += OnRenderFrame;
 
-        var instance = new VulkanFactory().CreateInstance(windowManager, Name);
+        Instance instance = new VulkanFactory().CreateInstance(windowManager, Name);
 
         // Create a GraphicsDevice for each window
         _graphicsDevices.Add(instance.CreateDevice(window1));
@@ -40,11 +40,11 @@ public class MultiWindowApp : Application
 
     private void CreatePasses()
     {
-        foreach (var graphicsDevice in _graphicsDevices)
+        foreach (Device graphicsDevice in _graphicsDevices)
         {
-            var drawPass = graphicsDevice.CreatePass(builder =>
+            Pass drawPass = graphicsDevice.CreatePass(builder =>
             {
-                var colorAttachmentDescription = new AttachmentDescription
+                AttachmentDescription colorAttachmentDescription = new AttachmentDescription
                 {
                     LoadOp = AttachmentLoadOp.Clear,
                     StoreOp = AttachmentStoreOp.Store,
@@ -66,8 +66,8 @@ public class MultiWindowApp : Application
 
         for (int i = 0; i < _graphicsDevices.Count; i++)
         {
-            var graphicsDevice = _graphicsDevices[i];
-            var drawPass = _drawPasses[i];
+            Device graphicsDevice = _graphicsDevices[i];
+            Pass drawPass = _drawPasses[i];
 
             graphicsDevice.RenderFrame(frameContext =>
             {

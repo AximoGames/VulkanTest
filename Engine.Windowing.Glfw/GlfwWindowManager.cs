@@ -13,13 +13,13 @@ public unsafe class GlfwWindowManager : WindowManager
 
     internal (ErrorCode ErrorCode, string? Description) GetError()
     {
-        var error = Api.GetError(out var description);
+        ErrorCode error = Api.GetError(out byte* description);
         return (error, Marshal.PtrToStringAnsi((IntPtr)description));
     }
 
     internal string ErrorCodeWithDescription()
     {
-        var errorInfo = GetError();
+        (ErrorCode ErrorCode, string Description) errorInfo = GetError();
         return $"{errorInfo.ErrorCode}: {errorInfo.Description}";
     }
 
@@ -36,7 +36,7 @@ public unsafe class GlfwWindowManager : WindowManager
 
     public static GlfwWindowManager GetInstance()
     {
-        var (instance, error) = TryCreateInstance();
+        (GlfwWindowManager? instance, string? error) = TryCreateInstance();
         if (instance == null)
             throw new InvalidOperationException(error);
 
@@ -51,15 +51,15 @@ public unsafe class GlfwWindowManager : WindowManager
 
     public override Window CreateWindow(string name)
     {
-        var size = new Vector2i(800, 600);
+        Vector2i size = new Vector2i(800, 600);
         Api.WindowHint(WindowHintClientApi.ClientApi, ClientApi.NoApi);
         Api.WindowHint(WindowHintBool.Resizable, false);
-        var window = Api.CreateWindow(size.X, size.Y, name, null, null);
+        WindowHandle* window = Api.CreateWindow(size.X, size.Y, name, null, null);
 
         if (window == null)
             throw new InvalidOperationException($"Window creation failed. GLFW Error: {Api.GetError(out _)}");
 
-        var win = new GlfwWindow(name, window, size, this);
+        GlfwWindow win = new GlfwWindow(name, window, size, this);
         _windows.Add(win);
         return win;
     }
@@ -70,7 +70,7 @@ public unsafe class GlfwWindowManager : WindowManager
     {
         Api.PollEvents();
 
-        foreach (var window in _windows)
+        foreach (GlfwWindow window in _windows)
         {
             if (Api.WindowShouldClose(window.Handle))
             {

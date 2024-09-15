@@ -20,7 +20,7 @@ public class ResourceManager
 
     public Buffer CreateVertexBuffer<T>(Span<T> vertices) where T : unmanaged
     {
-        var backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferType.Vertex, vertices.Length);
+        BackendBuffer backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferType.Vertex, vertices.Length);
         _backendBufferManager.CopyBuffer(vertices, 0, backendBuffer, 0, vertices.Length);
         return new Buffer(backendBuffer);
     }
@@ -33,7 +33,7 @@ public class ResourceManager
 
     public Buffer CreateIndexBuffer<T>(Span<T> indices) where T : unmanaged
     {
-        var backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferType.Index, indices.Length);
+        BackendBuffer backendBuffer = _backendBufferManager.CreateBuffer<T>(BufferType.Index, indices.Length);
         _backendBufferManager.CopyBuffer(indices, 0, backendBuffer, 0, indices.Length);
         return new Buffer(backendBuffer);
     }
@@ -43,7 +43,7 @@ public class ResourceManager
 
     public Image CreateImage<T>(Span<T> pixelData, Vector2i extent) where T : unmanaged
     {
-        var backendImage = _backendImageManager.CreateImage(pixelData, extent);
+        BackendImage backendImage = _backendImageManager.CreateImage(pixelData, extent);
         return new(backendImage);
     }
 
@@ -52,7 +52,7 @@ public class ResourceManager
 
     public Image CreateImage(Image<Bgra32> image)
     {
-        var backendImage = _backendImageManager.CreateImage(image);
+        BackendImage backendImage = _backendImageManager.CreateImage(image);
         return new(backendImage);
     }
 
@@ -61,7 +61,7 @@ public class ResourceManager
 
     public Buffer CreateUniformBuffer<T>() where T : unmanaged
     {
-        var backendBuffer = _backendBufferManager.CreateUniformBuffer<T>();
+        BackendBuffer backendBuffer = _backendBufferManager.CreateUniformBuffer<T>();
         return new Buffer(backendBuffer);
     }
 

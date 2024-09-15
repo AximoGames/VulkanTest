@@ -20,7 +20,7 @@ public class Device : IDisposable
 
     public Pipeline CreatePipeline(Action<PipelineBuilder> callback)
     {
-        var pipelineBuilder = new PipelineBuilder(_backendDevice.CreatePipelineBuilder());
+        PipelineBuilder pipelineBuilder = new PipelineBuilder(_backendDevice.CreatePipelineBuilder());
         callback(pipelineBuilder);
         return pipelineBuilder.Build();
     }
@@ -37,7 +37,7 @@ public class Device : IDisposable
     
     public Pass CreatePass(Action<PassBuilder> callback)
     {
-        var passBuilder = new PassBuilder(_backendDevice.CreatePassBuilder());
+        PassBuilder passBuilder = new PassBuilder(_backendDevice.CreatePassBuilder());
         callback(passBuilder);
         return passBuilder.Build();
     }

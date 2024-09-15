@@ -66,7 +66,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
 
         DescriptorSetManager = new VulkanDescriptorSetManager(this, 1000); // Adjust the number as needed
 
-        for (var i = 0; i < _perFrameData.Length; i++)
+        for (int i = 0; i < _perFrameData.Length; i++)
         {
             _perFrameData[i].QueueSubmitFence = Synchronization.CreateFence();
 
@@ -83,7 +83,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
 
     private void PickPhysicalDevice()
     {
-        var physicalDevices = vkEnumeratePhysicalDevices(VulkanInstance.Instance);
+        ReadOnlySpan<VkPhysicalDevice> physicalDevices = vkEnumeratePhysicalDevices(VulkanInstance.Instance);
         PhysicalDevice = physicalDevices[0]; // For simplicity, we're just picking the first device
 
         vkGetPhysicalDeviceProperties(PhysicalDevice, out VkPhysicalDeviceProperties properties);
@@ -126,9 +126,9 @@ internal sealed unsafe class VulkanDevice : BackendDevice
             dynamicRendering = true
         };
 
-        using var deviceExtensionNames = new VkStringArray(enabledExtensions);
+        using VkStringArray deviceExtensionNames = new VkStringArray(enabledExtensions);
 
-        var deviceCreateInfo = new VkDeviceCreateInfo
+        VkDeviceCreateInfo deviceCreateInfo = new VkDeviceCreateInfo
         {
             pNext = &dynamicRenderingFeatures,
             queueCreateInfoCount = 1,
@@ -188,7 +188,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
 
         SwapchainRenderTarget.Dispose();
 
-        for (var i = 0; i < _perFrameData.Length; i++)
+        for (int i = 0; i < _perFrameData.Length; i++)
         {
             vkDestroyFence(LogicalDevice, _perFrameData[i].QueueSubmitFence, null);
 
@@ -266,7 +266,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
         TransitionImageLayout(cmd, ((VulkanImage)SwapchainRenderTarget.GetImage(CurrentSwapchainImageIndex)).Image,
             VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        var frameIndex = _frameIndex++;
+        long frameIndex = _frameIndex++;
         action(new VulkanRenderFrameContext(this, cmd, CurrentSwapchainImageIndex));
 
         CommandBufferManager.EndCommandBuffer(cmd);
@@ -398,7 +398,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
     private VkSurfaceKHR CreateSurface(Window window)
     {
         // GLFW.CreateWindowSurface(new VkHandle(VulkanInstance.Instance.Handle), window.WindowPtr, null, out var handle);
-        var handle = window.CreateVulkanSurfaceHandle(VulkanInstance.Instance.Handle);
+        ulong handle = window.CreateVulkanSurfaceHandle(VulkanInstance.Instance.Handle);
         return new VkSurfaceKHR((ulong)handle);
     }
 
@@ -415,7 +415,7 @@ internal sealed unsafe class VulkanDevice : BackendDevice
 
     public void BeginRenderPass(VulkanPass pass, VkCommandBuffer commandBuffer, Vector2i size)
     {
-        var targetImage = ((VulkanRenderTarget)pass.RenderTarget).GetImage(CurrentSwapchainImageIndex);
+        BackendImage targetImage = ((VulkanRenderTarget)pass.RenderTarget).GetImage(CurrentSwapchainImageIndex);
 
         VkRenderingAttachmentInfo colorAttachmentInfo = new VkRenderingAttachmentInfo
         {

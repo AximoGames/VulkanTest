@@ -18,7 +18,7 @@ public unsafe class GlfwWindow : Window
 
     public override ulong CreateVulkanSurfaceHandle(IntPtr vulkanInstanceHandle)
     {
-        var e = ((GlfwWindowManager)WindowManager).Api.GetError(out _);
+        ErrorCode e = ((GlfwWindowManager)WindowManager).Api.GetError(out _);
         VkNonDispatchableHandle ptr;
         if (((GlfwWindowManager)WindowManager).Api.CreateWindowSurface(new VkHandle(vulkanInstanceHandle), Handle, null, &ptr) != 0)
             throw new Exception($"Failed to create Vulkan surface. Error: {((GlfwWindowManager)WindowManager).ErrorCodeWithDescription()}");
@@ -28,9 +28,9 @@ public unsafe class GlfwWindow : Window
 
     public override IEnumerable<string> GetRequiredInstanceExtensions()
     {
-        var extensions = ((GlfwWindowManager)WindowManager).Api.GetRequiredInstanceExtensions(out uint count);
-        var names = new string[count];
-        for (var i = 0; i < count; i++)
+        byte** extensions = ((GlfwWindowManager)WindowManager).Api.GetRequiredInstanceExtensions(out uint count);
+        string[] names = new string[count];
+        for (int i = 0; i < count; i++)
         {
             names[i] = Marshal.PtrToStringAnsi((IntPtr)extensions[i]);
         }

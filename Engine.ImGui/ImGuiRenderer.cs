@@ -31,7 +31,7 @@ public unsafe class ImGuiRenderer
             builder.ConfigureShader(ImGuiFragmentShader, ShaderKind.Fragment);
 
             // Configure vertex layout
-            var vertexLayoutInfo = new VertexLayoutInfo
+            VertexLayoutInfo vertexLayoutInfo = new VertexLayoutInfo
             {
                 BindingDescription = new VertexInputBindingDescription
                 {
@@ -67,7 +67,7 @@ public unsafe class ImGuiRenderer
             builder.ConfigureVertexLayout(vertexLayoutInfo);
 
             // Configure pipeline layout
-            var layoutDescription = new PipelineLayoutDescription
+            PipelineLayoutDescription layoutDescription = new PipelineLayoutDescription
             {
                 DescriptorSetLayouts = new List<DescriptorSetLayoutDescription>
                 {
@@ -106,7 +106,7 @@ public unsafe class ImGuiRenderer
     {
         ImGuiNET.ImGui.GetIO().Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out int width, out int height, out int bytesPerPixel);
 
-        var pixelData = new byte[width * height * bytesPerPixel];
+        byte[] pixelData = new byte[width * height * bytesPerPixel];
         Marshal.Copy(pixels, pixelData, 0, pixelData.Length);
         return resources.CreateImage(pixelData, new Vector2i(width, height));
     }
@@ -124,10 +124,10 @@ public unsafe class ImGuiRenderer
             // Draw ImGui
             for (int i = 0; i < drawData.CmdListsCount; i++)
             {
-                var cmdList = drawData.CmdLists[i];
+                ImDrawListPtr cmdList = drawData.CmdLists[i];
                 for (int j = 0; j < cmdList.CmdBuffer.Size; j++)
                 {
-                    var drawCmd = cmdList.CmdBuffer[j];
+                    ImDrawCmdPtr drawCmd = cmdList.CmdBuffer[j];
                     pipelineContext.DrawIndexed(drawCmd.ElemCount, 1, drawCmd.IdxOffset, (int)drawCmd.VtxOffset, 0);
                 }
             }
@@ -158,14 +158,14 @@ public unsafe class ImGuiRenderer
             int indexOffset = 0;
             for (int n = 0; n < drawData.CmdListsCount; n++)
             {
-                var cmdList = drawData.CmdLists[n];
+                ImDrawListPtr cmdList = drawData.CmdLists[n];
 
                 // Copy vertex data
-                var vertexData = new Span<ImDrawVert>((void*)cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
+                Span<ImDrawVert> vertexData = new Span<ImDrawVert>((void*)cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
                 resources.CopyBuffer(vertexData, 0, _vertexBuffer, vertexOffset, cmdList.VtxBuffer.Size);
 
                 // Copy index data
-                var indexData = new Span<ushort>((void*)cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
+                Span<ushort> indexData = new Span<ushort>((void*)cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
                 resources.CopyBuffer(indexData, 0, _indexBuffer, indexOffset, cmdList.IdxBuffer.Size);
 
                 vertexOffset += cmdList.VtxBuffer.Size;
@@ -174,7 +174,7 @@ public unsafe class ImGuiRenderer
         }
 
         // Update uniform buffer with projection matrix
-        var io = ImGuiNET.ImGui.GetIO();
+        ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
         Matrix4 mvp = Matrix4.CreateOrthographicOffCenter(0f, io.DisplaySize.X, io.DisplaySize.Y, 0f, -1f, 1f);
         resources.UpdateUniformBuffer(_uniformBuffer, mvp);
     }

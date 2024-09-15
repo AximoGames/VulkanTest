@@ -37,9 +37,9 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
 
     public override void BindUniformBuffer(BackendBuffer buffer, uint set, uint binding, Span<uint> dynamicOffsets)
     {
-        var vulkanBuffer = (VulkanBuffer)buffer;
+        VulkanBuffer vulkanBuffer = (VulkanBuffer)buffer;
 
-        var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
+        VkDescriptorSet descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
         _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanBuffer);
 
         if (dynamicOffsets.Length == 0)
@@ -90,10 +90,10 @@ internal unsafe class VulkanRenderPipelineContext : BackendRenderContext
 
     public override void BindImage(BackendImage image, BackendSampler sampler, uint set, uint binding, Span<uint> dynamicOffsets)
     {
-        var vulkanImage = (VulkanImage)image;
-        var vulkanSampler = (VulkanSampler)sampler;
+        VulkanImage vulkanImage = (VulkanImage)image;
+        VulkanSampler vulkanSampler = (VulkanSampler)sampler;
 
-        var descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
+        VkDescriptorSet descriptorSet = _device.DescriptorSetManager.GetOrAllocateDescriptorSet(_pipeline.PipelineLayout, set, _pipeline.DescriptorSetLayouts[set]);
         _device.DescriptorSetManager.UpdateDescriptorSet(descriptorSet, binding, vulkanImage, vulkanSampler);
 
         if (dynamicOffsets.Length == 0)

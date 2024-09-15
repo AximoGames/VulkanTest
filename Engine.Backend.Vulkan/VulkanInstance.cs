@@ -28,7 +28,7 @@ internal unsafe class VulkanInstance : BackendInstance
         // Need to initialize
         vkInitialize().CheckResult();
 
-        var appInfo = new VkApplicationInfo
+        VkApplicationInfo appInfo = new VkApplicationInfo
         {
             pApplicationName = applicationName.ToVkUtf8ReadOnlyString(),
             applicationVersion = new VkVersion(1, 0, 0),
@@ -47,16 +47,16 @@ internal unsafe class VulkanInstance : BackendInstance
         if (instanceLayers.Count > 0)
             instanceExtensions.Add(VK_EXT_DEBUG_UTILS_EXTENSION_NAME.GetStringFromUtf8Buffer());
 
-        using var vkInstanceExtensions = new VkStringArray(instanceExtensions);
+        using VkStringArray vkInstanceExtensions = new VkStringArray(instanceExtensions);
 
-        var instanceCreateInfo = new VkInstanceCreateInfo
+        VkInstanceCreateInfo instanceCreateInfo = new VkInstanceCreateInfo
         {
             pApplicationInfo = &appInfo,
             enabledExtensionCount = vkInstanceExtensions.Length,
             ppEnabledExtensionNames = vkInstanceExtensions
         };
 
-        using var vkLayerNames = new VkStringArray(instanceLayers);
+        using VkStringArray vkLayerNames = new VkStringArray(instanceLayers);
         if (instanceLayers.Count > 0)
         {
             instanceCreateInfo.enabledLayerCount = vkLayerNames.Length;
@@ -64,7 +64,7 @@ internal unsafe class VulkanInstance : BackendInstance
         }
 
         _debugMessengerDelegateWrapper = new DebugMessengerDelegateWrapper(DebugMessengerCallback);
-        var debugUtilsCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT
+        VkDebugUtilsMessengerCreateInfoEXT debugUtilsCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT
         {
             messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Error | VkDebugUtilsMessageSeverityFlagsEXT.Warning,
             messageType = VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance | VkDebugUtilsMessageTypeFlagsEXT.General,
@@ -95,7 +95,7 @@ internal unsafe class VulkanInstance : BackendInstance
         Log.Info($"Created VkInstance with version: {appInfo.apiVersion.Major}.{appInfo.apiVersion.Minor}.{appInfo.apiVersion.Patch}");
         if (instanceLayers.Count > 0)
         {
-            foreach (var layer in instanceLayers)
+            foreach (string layer in instanceLayers)
             {
                 Log.Info($"Instance layer '{layer}'");
             }
@@ -112,19 +112,19 @@ internal unsafe class VulkanInstance : BackendInstance
     private void GetAvailableExtensions()
     {
         uint count;
-        var result = vkEnumerateInstanceExtensionProperties(&count, null);
+        VkResult result = vkEnumerateInstanceExtensionProperties(&count, null);
         if (result != VkResult.Success)
             throw new Exception($"Failed to enumerate instance extensions, {result}");
 
-        var properties = new VkExtensionProperties[count];
+        VkExtensionProperties[] properties = new VkExtensionProperties[count];
         result = vkEnumerateInstanceExtensionProperties(properties);
         if (result != VkResult.Success)
             throw new Exception($"Failed to enumerate instance extensions, {result}");
 
         Log.Verbose($"Found {count} instance extensions:");
-        foreach (var prop in properties)
+        foreach (VkExtensionProperties prop in properties)
         {
-            var name = prop.GetExtensionName();
+            string name = prop.GetExtensionName();
             Log.Verbose(name);
         }
     }
@@ -135,7 +135,7 @@ internal unsafe class VulkanInstance : BackendInstance
 
         for (int j = 0; j < availableLayers.Length; j++)
         {
-            var name = availableLayers[j].GetLayerName();
+            string name = availableLayers[j].GetLayerName();
             Log.Info($"Found Layer: {name}");
         }
 
@@ -188,11 +188,11 @@ internal unsafe class VulkanInstance : BackendInstance
             VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
             void* pUserData)
         {
-            var handle = GCHandle.FromIntPtr((IntPtr)pUserData);
+            GCHandle handle = GCHandle.FromIntPtr((IntPtr)pUserData);
             if (handle.Target == null)
                 throw new ObjectDisposedException(nameof(DebugMessengerDelegateWrapper));
 
-            var instance = (DebugMessengerDelegateWrapper)handle.Target;
+            DebugMessengerDelegateWrapper? instance = (DebugMessengerDelegateWrapper)handle.Target;
             return instance._callback(messageSeverity, messageTypes, pCallbackData, pUserData);
         }
 

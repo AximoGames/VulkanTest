@@ -16,7 +16,7 @@ public class SdlWindow : Window
 
     public override ulong CreateVulkanSurfaceHandle(IntPtr vulkanInstanceHandle)
     {
-        SDL.SDL_Vulkan_CreateSurface(Handle, vulkanInstanceHandle, out var surface);
+        SDL.SDL_Vulkan_CreateSurface(Handle, vulkanInstanceHandle, out ulong surface);
         return surface;
     }
 

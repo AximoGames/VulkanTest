@@ -23,8 +23,8 @@ internal unsafe class VulkanDescriptorSetManager
 
     public VkDescriptorSet GetOrAllocateDescriptorSet(VkPipelineLayout pipelineLayout, uint set, VkDescriptorSetLayout layout)
     {
-        var key = (pipelineLayout, set);
-        if (!_descriptorSets.TryGetValue(key, out var descriptorSet))
+        (VkPipelineLayout pipelineLayout, uint set) key = (pipelineLayout, set);
+        if (!_descriptorSets.TryGetValue(key, out VkDescriptorSet descriptorSet))
         {
             descriptorSet = AllocateDescriptorSet(layout);
             _descriptorSets[key] = descriptorSet;
@@ -34,7 +34,7 @@ internal unsafe class VulkanDescriptorSetManager
 
     private VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout)
     {
-        var pDescriptorCounts = stackalloc uint[] { 1 };
+        uint* pDescriptorCounts = stackalloc uint[] { 1 };
         VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo = new VkDescriptorSetVariableDescriptorCountAllocateInfo
         {
             descriptorSetCount = 1,
@@ -100,8 +100,8 @@ internal unsafe class VulkanDescriptorSetManager
 
     public void FreeDescriptorSet(VkPipelineLayout pipelineLayout, uint set)
     {
-        var key = (pipelineLayout, set);
-        if (_descriptorSets.TryGetValue(key, out var descriptorSet))
+        (VkPipelineLayout pipelineLayout, uint set) key = (pipelineLayout, set);
+        if (_descriptorSets.TryGetValue(key, out VkDescriptorSet descriptorSet))
         {
             vkFreeDescriptorSets(_device.LogicalDevice, _descriptorPool, 1, &descriptorSet);
             _descriptorSets.Remove(key);
@@ -110,7 +110,7 @@ internal unsafe class VulkanDescriptorSetManager
 
     public void Cleanup()
     {
-        foreach (var descriptorSet in _descriptorSets.Values)
+        foreach (VkDescriptorSet descriptorSet in _descriptorSets.Values)
         {
             vkFreeDescriptorSets(_device.LogicalDevice, _descriptorPool, 1, &descriptorSet);
         }

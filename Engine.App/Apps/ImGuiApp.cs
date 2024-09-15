@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.ImGui;
 using Engine.Vulkan;
 using Engine.Windowing.Glfw;
+using ImGuiNET;
 using OpenTK;
 using OpenTK.Mathematics;
 using SixLabors.ImageSharp;
@@ -20,9 +21,9 @@ public class ImGuiApp : Application
 
     protected override void Initialize()
     {
-        var windowManager = GlfwWindowManager.GetInstance();
+        GlfwWindowManager windowManager = GlfwWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
-        var window = windowManager.CreateWindow(Name);
+        Window window = windowManager.CreateWindow(Name);
         RenderFrame += OnRenderFrame;
 
         _device = new VulkanFactory()
@@ -37,7 +38,7 @@ public class ImGuiApp : Application
     {
         _imGuiPass = _device.CreatePass(builder =>
         {
-            var colorAttachmentDescription = new AttachmentDescription
+            AttachmentDescription colorAttachmentDescription = new AttachmentDescription
             {
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
@@ -59,7 +60,7 @@ public class ImGuiApp : Application
         ImGuiNET.ImGui.End();
 
         ImGuiNET.ImGui.Render();
-        var drawData = ImGuiNET.ImGui.GetDrawData();
+        ImDrawDataPtr drawData = ImGuiNET.ImGui.GetDrawData();
         
         _device.RenderFrame(frameContext =>
         {

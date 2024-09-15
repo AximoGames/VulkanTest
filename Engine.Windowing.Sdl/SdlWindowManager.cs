@@ -18,7 +18,7 @@ public class SdlWindowManager : WindowManager
         {
             if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
             {
-                var error = $"SDL initialization failed. SDL Error: {SDL.SDL_GetError()}";
+                string error = $"SDL initialization failed. SDL Error: {SDL.SDL_GetError()}";
                 Console.WriteLine(error);
                 return (null, error);
             }
@@ -33,7 +33,7 @@ public class SdlWindowManager : WindowManager
 
     public static SdlWindowManager GetInstance()
     {
-        var (instance, error) = TryCreateInstance();
+        (SdlWindowManager? instance, string? error) = TryCreateInstance();
         if (instance == null)
             throw new InvalidOperationException(error);
 
@@ -46,7 +46,7 @@ public class SdlWindowManager : WindowManager
 
     public override Window CreateWindow(string name)
     {
-        var size = new Vector2i(800, 600);
+        Vector2i size = new Vector2i(800, 600);
         IntPtr window = SDL.SDL_CreateWindow(
             name,
             SDL.SDL_WINDOWPOS_UNDEFINED,
@@ -59,7 +59,7 @@ public class SdlWindowManager : WindowManager
         if (window == IntPtr.Zero)
             throw new InvalidOperationException($"Window creation failed. SDL Error: {SDL.SDL_GetError()}");
 
-        var win = new SdlWindow(name, window, size, this);
+        SdlWindow win = new SdlWindow(name, window, size, this);
         _windows.Add(win);
         return win;
     }

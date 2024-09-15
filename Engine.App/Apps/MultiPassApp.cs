@@ -42,9 +42,9 @@ public class MultiPassApp : Application
 
     protected override void Initialize()
     {
-        var windowManager = SdlWindowManager.GetInstance();
+        SdlWindowManager windowManager = SdlWindowManager.GetInstance();
         RegisterWindowManager(windowManager);
-        var window = windowManager.CreateWindow(Name);
+        Window window = windowManager.CreateWindow(Name);
         RenderFrame += e => { OnRenderFrame(); };
 
         _device = new VulkanFactory()
@@ -65,7 +65,7 @@ public class MultiPassApp : Application
 
     private Image<Bgra32> CreateGradientImage(int width, int height)
     {
-        var image = new Image<Bgra32>(width, height);
+        Image<Bgra32> image = new Image<Bgra32>(width, height);
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -124,7 +124,7 @@ public class MultiPassApp : Application
             }
             """;
 
-        var vertexLayoutInfo = new VertexLayoutInfo
+        VertexLayoutInfo vertexLayoutInfo = new VertexLayoutInfo
         {
             BindingDescription = new VertexInputBindingDescription
             {
@@ -162,7 +162,7 @@ public class MultiPassApp : Application
         builder.ConfigureShader(vertexShaderCode, ShaderKind.Vertex);
         builder.ConfigureShader(fragShaderCode, ShaderKind.Fragment);
 
-        var layoutDescription = new PipelineLayoutDescription
+        PipelineLayoutDescription layoutDescription = new PipelineLayoutDescription
         {
             DescriptorSetLayouts = new List<DescriptorSetLayoutDescription>
             {
@@ -239,7 +239,7 @@ public class MultiPassApp : Application
         builder.ConfigureShader(fragShaderCode, ShaderKind.Fragment);
 
         // Add this new section for ConfigureVertexLayout
-        var vertexLayoutInfo = new VertexLayoutInfo
+        VertexLayoutInfo vertexLayoutInfo = new VertexLayoutInfo
         {
             BindingDescription = new VertexInputBindingDescription
             {
@@ -252,7 +252,7 @@ public class MultiPassApp : Application
         };
         builder.ConfigureVertexLayout(vertexLayoutInfo);
 
-        var layoutDescription = new PipelineLayoutDescription
+        PipelineLayoutDescription layoutDescription = new PipelineLayoutDescription
         {
             DescriptorSetLayouts = new List<DescriptorSetLayoutDescription>
             {
@@ -274,7 +274,7 @@ public class MultiPassApp : Application
         _indexBuffer = allocator.CreateIndexBuffer(Indices);
         _uniformBuffer = allocator.CreateUniformBuffer<float>();
 
-        using (var gradientImage = CreateGradientImage(100, 100))
+        using (Image<Bgra32> gradientImage = CreateGradientImage(100, 100))
             _image = allocator.CreateImage(gradientImage);
 
         _sampler = allocator.CreateSampler(new SamplerDescription
@@ -307,7 +307,7 @@ public class MultiPassApp : Application
     {
         _drawPass = _device.CreatePass(builder =>
         {
-            var colorAttachmentDescription = new AttachmentDescription
+            AttachmentDescription colorAttachmentDescription = new AttachmentDescription
             {
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
@@ -321,11 +321,11 @@ public class MultiPassApp : Application
 
     private void CreatePostProcessPass()
     {
-        var swapchainRenderTarget = _device.GetSwapchainRenderTarget();
+        RenderTarget swapchainRenderTarget = _device.GetSwapchainRenderTarget();
 
         _postProcessPass = _device.CreatePass(builder =>
         {
-            var colorAttachmentDescription = new AttachmentDescription
+            AttachmentDescription colorAttachmentDescription = new AttachmentDescription
             {
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,

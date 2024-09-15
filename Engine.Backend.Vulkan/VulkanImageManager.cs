@@ -20,8 +20,8 @@ internal unsafe class VulkanImageManager : BackendImageManager
 
     public override BackendRenderTarget CreateImageRenderTarget(Vector2i extent)
     {
-        var imageCount = _device.GetSwapchainRenderTarget().ImageCount;
-        var images = new VulkanImage[imageCount];
+        uint imageCount = _device.GetSwapchainRenderTarget().ImageCount;
+        VulkanImage[] images = new VulkanImage[imageCount];
         for (int i = 0; i < imageCount; i++)
             images[i] = CreateRenderTargetImage(extent);
 
@@ -95,7 +95,7 @@ internal unsafe class VulkanImageManager : BackendImageManager
         {
             void* data;
             vkMapMemory(_device.LogicalDevice, stagingBufferMemory, 0, imageSize, 0, &data);
-            var dataSpan = new Span<T>(data, (int)imageSize);
+            Span<T> dataSpan = new Span<T>(data, (int)imageSize);
             imageData.CopyTo(dataSpan);
 
             vkUnmapMemory(_device.LogicalDevice, stagingBufferMemory);
@@ -274,7 +274,7 @@ internal unsafe class VulkanImageManager : BackendImageManager
 
     public override BackendSampler CreateSampler(SamplerDescription description)
     {
-        var samplerCreateInfo = new VkSamplerCreateInfo
+        VkSamplerCreateInfo samplerCreateInfo = new VkSamplerCreateInfo
         {
             sType = VkStructureType.SamplerCreateInfo,
             magFilter = ConvertFilter(description.MagFilter),

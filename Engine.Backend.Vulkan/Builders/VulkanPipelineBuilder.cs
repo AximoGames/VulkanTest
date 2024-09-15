@@ -40,16 +40,16 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         VulkanShaderModule vertShaderModule = _shaderModules[ShaderKind.Vertex];
         VulkanShaderModule fragShaderModule = _shaderModules[ShaderKind.Fragment];
 
-        var name = "main".ToVkUtf8ReadOnlyString();
+        VkUtf8ReadOnlyString name = "main".ToVkUtf8ReadOnlyString();
 
-        var vertShaderStageInfo = new VkPipelineShaderStageCreateInfo
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo = new VkPipelineShaderStageCreateInfo
         {
             stage = VkShaderStageFlags.Vertex,
             module = vertShaderModule.Module,
             pName = name
         };
 
-        var fragShaderStageInfo = new VkPipelineShaderStageCreateInfo
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo = new VkPipelineShaderStageCreateInfo
         {
             stage = VkShaderStageFlags.Fragment,
             module = fragShaderModule.Module,
@@ -64,7 +64,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             inputRate = ConvertInputRate(_vertexLayoutInfo.BindingDescription.InputRate)
         };
 
-        var attributeDescriptions = stackalloc VkVertexInputAttributeDescription[_vertexLayoutInfo.AttributeDescriptions.Count];
+        VkVertexInputAttributeDescription* attributeDescriptions = stackalloc VkVertexInputAttributeDescription[_vertexLayoutInfo.AttributeDescriptions.Count];
         for (int i = 0; i < _vertexLayoutInfo.AttributeDescriptions.Count; i++)
         {
             attributeDescriptions[i] = new VkVertexInputAttributeDescription
@@ -77,7 +77,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         }
 
         VkDescriptorSetLayout[] descriptorSetLayouts;
-        var vertexInputInfo = new VkPipelineVertexInputStateCreateInfo
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo = new VkPipelineVertexInputStateCreateInfo
         {
             pVertexBindingDescriptions = &bindingDescription,
             vertexBindingDescriptionCount = 1,
@@ -85,13 +85,13 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             vertexAttributeDescriptionCount = (uint)_vertexLayoutInfo.AttributeDescriptions.Count,
         };
 
-        var inputAssembly = new VkPipelineInputAssemblyStateCreateInfo
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = new VkPipelineInputAssemblyStateCreateInfo
         {
             topology = VkPrimitiveTopology.TriangleList,
             primitiveRestartEnable = VkBool32.False
         };
 
-        var viewport = new VkViewport
+        VkViewport viewport = new VkViewport
         {
             x = 0.0f,
             y = 0.0f,
@@ -101,13 +101,13 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             maxDepth = 1.0f
         };
 
-        var scissor = new VkRect2D
+        VkRect2D scissor = new VkRect2D
         {
             offset = new VkOffset2D(0, 0),
             extent = _swapchainRenderTarget.Extent.ToVkExtent2D(),
         };
 
-        var viewportState = new VkPipelineViewportStateCreateInfo
+        VkPipelineViewportStateCreateInfo viewportState = new VkPipelineViewportStateCreateInfo
         {
             viewportCount = 1,
             pViewports = &viewport,
@@ -115,7 +115,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             pScissors = &scissor
         };
 
-        var rasterizer = new VkPipelineRasterizationStateCreateInfo
+        VkPipelineRasterizationStateCreateInfo rasterizer = new VkPipelineRasterizationStateCreateInfo
         {
             depthClampEnable = VkBool32.False,
             rasterizerDiscardEnable = VkBool32.False,
@@ -126,19 +126,19 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             depthBiasEnable = VkBool32.False
         };
 
-        var multisampling = new VkPipelineMultisampleStateCreateInfo
+        VkPipelineMultisampleStateCreateInfo multisampling = new VkPipelineMultisampleStateCreateInfo
         {
             sampleShadingEnable = VkBool32.False,
             rasterizationSamples = VkSampleCountFlags.Count1
         };
 
-        var colorBlendAttachment = new VkPipelineColorBlendAttachmentState
+        VkPipelineColorBlendAttachmentState colorBlendAttachment = new VkPipelineColorBlendAttachmentState
         {
             colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A,
             blendEnable = VkBool32.False
         };
 
-        var colorBlending = new VkPipelineColorBlendStateCreateInfo
+        VkPipelineColorBlendStateCreateInfo colorBlending = new VkPipelineColorBlendStateCreateInfo
         {
             logicOpEnable = VkBool32.False,
             logicOp = VkLogicOp.Copy,
@@ -166,7 +166,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
             fixed (VkDescriptorSetLayout* descriptorSetLayoutsPtr = descriptorSetLayouts)
             fixed (VkPushConstantRange* pushConstantRangesPtr = _pushConstantRanges.ToArray())
             {
-                var pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
+                VkPipelineLayoutCreateInfo pipelineLayoutInfo = new VkPipelineLayoutCreateInfo();
         
                 if (descriptorSetLayouts.Length > 0)
                 {
@@ -186,14 +186,14 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
 
         VkPipelineShaderStageCreateInfo* shaderStages = stackalloc VkPipelineShaderStageCreateInfo[] { vertShaderStageInfo, fragShaderStageInfo };
 
-        var colorAttachmentFormat = _swapchainRenderTarget.SurfaceFormat.format;
+        VkFormat colorAttachmentFormat = _swapchainRenderTarget.SurfaceFormat.format;
         VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = new VkPipelineRenderingCreateInfo
         {
             colorAttachmentCount = 1,
             pColorAttachmentFormats = &colorAttachmentFormat,
         };
 
-        var pipelineInfo = new VkGraphicsPipelineCreateInfo
+        VkGraphicsPipelineCreateInfo pipelineInfo = new VkGraphicsPipelineCreateInfo
         {
             pNext = &pipelineRenderingCreateInfo,
             stageCount = 2,
@@ -216,7 +216,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
         fragShaderModule.Free();
         vertShaderModule.Free();
 
-        var pipelineLayoutHash = PipelineLayoutHandle.GetHashCode();
+        int pipelineLayoutHash = PipelineLayoutHandle.GetHashCode();
         return new VulkanPipeline(_device, PipelineHandle, PipelineLayoutHandle, pipelineLayoutHash, descriptorSetLayouts);
     }
 
@@ -237,7 +237,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
 
     public override void ConfigurePushConstants(uint size, ShaderStageFlags stageFlags)
     {
-        var pushConstantRange = new VkPushConstantRange
+        VkPushConstantRange pushConstantRange = new VkPushConstantRange
         {
             stageFlags = ConvertShaderStageFlags(stageFlags),
             offset = 0,
@@ -271,7 +271,7 @@ internal unsafe class VulkanPipelineBuilder : BackendPipelineBuilder
 
     private VkDescriptorSetLayout CreateDescriptorSetLayout(DescriptorSetLayoutDescription layoutDescription)
     {
-        var bindings = new VkDescriptorSetLayoutBinding[layoutDescription.Bindings.Count];
+        VkDescriptorSetLayoutBinding[] bindings = new VkDescriptorSetLayoutBinding[layoutDescription.Bindings.Count];
         for (int i = 0; i < layoutDescription.Bindings.Count; i++)
         {
             bindings[i] = new VkDescriptorSetLayoutBinding

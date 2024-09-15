@@ -48,7 +48,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
 
     public override void UpdateUniformBuffer<T>(BackendBuffer buffer, T data)
     {
-        var vulkanBuffer = (VulkanBuffer)buffer;
+        VulkanBuffer vulkanBuffer = (VulkanBuffer)buffer;
         uint bufferSize = (uint)Unsafe.SizeOf<T>();
 
         void* mappedMemory;
@@ -59,7 +59,7 @@ internal unsafe class VulkanBufferManager : BackendBufferManager
 
     public override void CopyBuffer<T>(Span<T> source, int sourceStartIndex, BackendBuffer destinationBuffer, int destinationStartIndex, int count)
     {
-        var elementSize = Unsafe.SizeOf<T>();
+        int elementSize = Unsafe.SizeOf<T>();
         uint bufferSize = (uint)(elementSize * count);
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;

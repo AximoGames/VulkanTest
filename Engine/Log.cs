@@ -30,7 +30,7 @@ public static class Log
 
     private static void WriteColored(ConsoleColor color, string message)
     {
-        var currentColor = Console.ForegroundColor;
+        ConsoleColor currentColor = Console.ForegroundColor;
         Console.ForegroundColor = color;
         Console.Write(message);
         Console.ForegroundColor = currentColor;

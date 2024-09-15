@@ -39,7 +39,7 @@ public abstract class Application
         Initialize();
         while (!IsQuitRequested)
         {
-            var framIndex = _frameIndex++;
+            long framIndex = _frameIndex++;
             ProcessEvents(framIndex);
             ProcessRenderFrame(framIndex);
         }
@@ -47,7 +47,7 @@ public abstract class Application
 
     private void ProcessEvents(long frameIndex)
     {
-        foreach (var windowManager in _windowManagers)
+        foreach (WindowManager windowManager in _windowManagers)
             windowManager.ProcessEvents();
     }
 

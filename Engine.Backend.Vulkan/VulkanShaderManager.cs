@@ -17,7 +17,7 @@ internal unsafe class VulkanShaderManager
     public VulkanShaderModule CreateShaderModuleFromCode(string shaderCode, ShaderKind shaderKind)
     {
         using Compiler compiler = new Compiler();
-        using (var compilationResult = compiler.Compile(shaderCode, "main", shaderKind.ToVkShaderKind()))
+        using (Result compilationResult = compiler.Compile(shaderCode, "main", shaderKind.ToVkShaderKind()))
         {
             vkCreateShaderModule(_device.LogicalDevice, compilationResult.GetBytecode(), null, out VkShaderModule module).CheckResult();
             return new VulkanShaderModule(_device, module);

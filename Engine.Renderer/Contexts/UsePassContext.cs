@@ -17,7 +17,7 @@ public class UsePassContext
     {
         _backendContext.UsePipeline(pipeline.BackendPipeline, backendContext =>
         {
-            var drawContext = new RenderPipelineContext(backendContext);
+            RenderPipelineContext drawContext = new RenderPipelineContext(backendContext);
             draw(drawContext);
         });
     }
