@@ -154,22 +154,22 @@ public unsafe class ImGuiRenderer
             }
 
             // Update vertex and index buffers
-            int vtxOffset = 0;
-            int idxOffset = 0;
+            int vertexOffset = 0;
+            int indexOffset = 0;
             for (int n = 0; n < drawData.CmdListsCount; n++)
             {
-                ImDrawListPtr cmdList = drawData.CmdLists[n];
-                
+                var cmdList = drawData.CmdLists[n];
+
+                // Copy vertex data
                 var vertexData = new Span<ImDrawVert>((void*)cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
-                //var debugVertexData = vertexData.ToArray();
-                resources.CopyBuffer(vertexData, 0, _vertexBuffer, vtxOffset, cmdList.VtxBuffer.Size);
-                
+                resources.CopyBuffer(vertexData, 0, _vertexBuffer, vertexOffset, cmdList.VtxBuffer.Size);
+
+                // Copy index data
                 var indexData = new Span<ushort>((void*)cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
-                var debugIndexData = indexData.ToArray();
-                resources.CopyBuffer(indexData, 0, _indexBuffer, idxOffset, cmdList.IdxBuffer.Size);
-                
-                vtxOffset += cmdList.VtxBuffer.Size;
-                idxOffset += cmdList.IdxBuffer.Size;
+                resources.CopyBuffer(indexData, 0, _indexBuffer, indexOffset, cmdList.IdxBuffer.Size);
+
+                vertexOffset += cmdList.VtxBuffer.Size;
+                indexOffset += cmdList.IdxBuffer.Size;
             }
         }
 
